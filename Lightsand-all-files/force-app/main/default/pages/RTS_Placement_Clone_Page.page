@@ -1,0 +1,5 @@
+<apex:page standardController="RTS_Placement__c"  
+     extensions="RTS_Placement_Clone_Controller"
+     action="{!cloneWithItems}">
+     <apex:pageMessages />
+</apex:page>

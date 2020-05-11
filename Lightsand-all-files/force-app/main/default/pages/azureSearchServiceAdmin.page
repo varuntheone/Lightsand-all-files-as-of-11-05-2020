@@ -1,0 +1,148 @@
+<apex:page title="Marketing Portal" lightningStyleSheets="true" >
+    <apex:includeScript value="{!$Resource.AzureSearchService}"/>
+    <script type="text/javascript">
+    
+          
+    /************************************/
+    //This function will initialise the Azure Service.
+    /************************************/    
+     var client = AzureSearch({
+          url: "https://search4mpdm01.search.windows.net",
+          key:"22F77AD683F6AACA08FF00BDB192F3C7"         
+        });
+    //('Access-Control-Allow-Origin', 'http://localhost:4200');
+    //  Query key
+    //E7CED04980CD5CB9D8388A352051FC0C
+     /************************************/
+    //This function lists both the directories
+    // and the files in those directories.
+    // This is called when the user clicks on the folders.
+    /************************************/
+    /*  function searchResult() {
+    
+     var filePath = document.getElementById("search").value;
+        
+    var prefix = filePath;
+    if(prefix != null){
+            if (blobService) {          
+                alert('prefix'+prefix);
+                blobService.listBlobsSegmentedWithPrefix(containerName, prefix, null, function(error, results) {                                
+                        aggregateBlobs(error, results, function(error, blobs) {
+                            if (error) {             
+                                alert('inside error');
+                                document.getElementById("response").innerHTML = JSON.stringify(error);
+                            } else {        
+                                alert('results.entries.length'+results.entries.length);
+                                if(results.entries.length > 0){
+                                    
+                                    document.getElementById("fileSection").style.display = 'block';
+                                    var list = document.getElementById("files");
+                                    list.innerHTML ='';
+                                    list.innerHTML ="<tr><th style='text-align:center;background-color:powderblue'><b>S#</b></th><th style='text-align:center;background-color:powderblue'><b>File Name</b></th><th style='text-align:center;background-color:powderblue'><b>Created Date</b></th><th style='text-align:center;background-color:powderblue'><b>Owner</b></th><th style='text-align:center;background-color:powderblue'><b>Action</b></th></tr>";
+                                    for (var i = 0, container; container = results.entries[i]; i++) {
+                                        var  tr = document.createElement('tr');
+                                        var tdSNo = document.createElement('td');
+                                        var td = document.createElement('td'); 
+                                        var tdUpOn = document.createElement('td');
+                                        var tdUpBy = document.createElement('td');
+                                        var tdDel = document.createElement('td');
+                                        
+                                        tdSNo.innerHTML = parseInt(i)+1 ;
+                                        tdSNo.setAttribute('align', 'center');  
+                                        tdSNo.setAttribute('width', '10%'); 
+                                        
+                                        var link = document.createElement('a');
+                                        var accessPolicy = generateAccessPolicy();
+                                        var blobFileName = container.name;  
+                                        var token = blobService.generateSharedAccessSignature(containerName,blobFileName, accessPolicy);
+                                        var downloadLink = blobService.getUrl(containerName, blobFileName, token);                                                                            
+                                        
+                                        link.setAttribute('href', downloadLink);                        
+                                        var fileName = blobFileName.split( '/' );                 
+                                        var fileNameOnly = fileName[ fileName.length - 1 ] ;
+                                        link.innerHTML = fileNameOnly ;
+                                        link.setAttribute('target','_blank');
+                                        td.appendChild(link);
+                                        td.setAttribute('align', 'center');
+                                        td.setAttribute('width', '30%'); 
+                                        
+                                        tdUpOn.innerHTML = container.metadata.uploadedon;
+                                        tdUpOn.setAttribute('align', 'center');
+                                        tdUpOn.setAttribute('width', '20%'); 
+                                        tdUpBy.innerHTML = container.metadata.uploadedby;                                
+                                        tdUpBy.setAttribute('align', 'center');
+                                        tdUpBy.setAttribute('width', '20%');
+                                        
+                                        var linkDel = document.createElement('a');
+                                        var deleteImg = '{!$Resource.delete}';
+                                        linkDel.setAttribute('href', 'javascript:deleteFile(\''+container.name+'\')');                                                                        
+                                        linkDel.innerHTML = '<img src='+ deleteImg +' border=1 width=10% height=5%>';
+                                        tdDel.setAttribute('align', 'center');
+                                        tdDel.setAttribute('width', '20%'); 
+                                        tdDel.appendChild(linkDel);
+                                        
+                                        tr.appendChild(tdSNo);
+                                        tr.appendChild(td);
+                                        tr.appendChild(tdUpOn);
+                                        tr.appendChild(tdUpBy);
+                                        tr.appendChild(tdDel);
+                                        
+                                        list.appendChild(tr);
+                                        
+                                    }
+                                }else{}            
+                            }
+                        });
+                    });
+          
+        } else {
+            alert("Blob Service not Found !");
+        }
+    }
+}*/
+   
+     
+     
+    /************************************/
+    // This function generates the access policy 
+    // which is used for the file access token 
+    // generation.
+    /************************************/
+    /* function generateAccessPolicy(){
+        var startDate = new Date();
+        var expiryDate = new Date(startDate);
+        expiryDate.setMinutes(startDate.getMinutes() + 100);
+        startDate.setMinutes(startDate.getMinutes() - 100);
+        return sharedAccessPolicy = {
+            AccessPolicy: {
+                Permissions: AzureStorage.BlobUtilities.SharedAccessPermissions.READ,
+                Start: startDate,
+                Expiry: expiryDate
+            }
+        };
+        
+    }  */
+    </script>
+    <script>
+  var schema = {
+  name: 'azureblob-indexer',
+  dataSourceName: 'marketing-blob-datasource', //Required. The name of an existing data source
+  targetIndexName: 'azureblob-index', //Required. The name of an existing index
+  parameters: { //Optional. All of the parameters below are optional.
+    'failOnUnsupportedContentType' : false, 
+    'failOnUnprocessableDocument' : false,      
+    'indexStorageMetadataOnlyForOversizedDocuments': true
+  }};
+   
+    //alert(client);
+    client.listIndexes(function(err, schemas){
+        console.log('###ERR'+err);
+        alert('data source created'+err +'::schemas:::'+schemas);       
+    });
+    
+    
+    </script>
+    <div>
+    Welcome Admin
+</div>
+</apex:page>

@@ -1,0 +1,512 @@
+<apex:page standardcontroller="Online_Enquiry__c" extensions="OnlineEnquiryOrderFormExEdit" id="thePage"><apex:messages />
+    <style>
+    .datePicker, .datePicker .dateBar ,.datePicker .calBody, .datePicker .calDays, .datePicker .buttonBar, .datePicker Select
+    {
+        display:none;
+    }
+    
+    .dateFormat{ 
+        display:none;
+    }
+    
+    .watermark { color: #999; }
+    
+    </style>
+        <apex:stylesheet value="{!URLFOR($Resource.JqueryUiCssZip, 'JqueryUiCssZip/jqueryui.css')}"/>
+    <!--<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css"/>-->
+    
+<script src="{!URLFOR($Resource.JQueryJS)}"/>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"/>-->
+            <script src="{!URLFOR($Resource.JQueryUI)}"/>
+    <script>
+    var j$ = jQuery.noConflict();
+
+    // disable enter    
+    function stopRKey(evt) {
+       var evt = (evt) ? evt : ((event) ? event : null);
+       var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+       if ((evt.keyCode == 13) && (node.type=="text")) {return false;}
+    }
+    document.onkeypress = stopRKey; 
+    // disable enter
+
+   // model to show error  
+    var j$modalDialog = j$('<div></div>')
+       .dialog({
+            autoOpen: false,
+            title: 'Form Validation Error',
+            resizable: false,
+            width: 600,
+            autoResize: true,
+            modal: true,
+            draggable: false
+    });
+
+    var newWin = null;
+    var clickedId = '';
+    var clickedHiddenId = '';
+    function openLookupPopup(htmlId, lookupHiddenId) {
+            clickedId=htmlId;
+            clickedHiddenId=lookupHiddenId;
+        //alert('clickedId--->'+clickedId);
+        //alert('clickedHiddenId--->'+clickedHiddenId);
+        //alert('is Disabled:'+document.getElementById(clickedId).disabled);
+        if(document.getElementById(clickedId).disabled){
+            return false;
+        }
+            var url = "/CustomerPortal/ListOfRetailerCodeForUser";
+                newWin = window.open(url, 'Popup', 'height=500,width=1080,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no');
+             if (window.focus) {
+                    newWin.focus();
+            }
+            return false;
+        }
+    function closeLookupPopup() {
+
+            if (null != newWin) {
+                newWin.close();
+            }
+            // populateNumber();     
+        }
+    
+    function retailerLookupPick(recordId,recordName){
+        //alert('called from parent recordId--->'+recordId);
+        //alert('called from parent recordName--->'+recordName);
+        //alert('clickedId--->'+clickedId);
+        //alert('clickedHiddenId--->'+clickedHiddenId);
+        document.getElementById(clickedId).value=recordName;
+        document.getElementById(clickedHiddenId).value=recordId;
+        //Added new Code on 24-Aug 2015 Start
+        //document.getElementById(clickedId).select();
+        //j$('input[id="'+clickedId+'"]').select();
+        //Added new Code on 24-Aug 2015 End
+}
+function jq( myid ) {
+    return "#" + myid.replace( /(:|\.|\[|\]|,)/g, "\\$1" );
+}
+function escapeStr(str) 
+{
+    //if (str)
+    //  return str.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');      
+    var find = ':';
+    var re = new RegExp(find, 'g');
+    str = str.replace(re, '\\\\:');
+    str = '#'+str;
+    return str;
+}
+
+function IsNumeric(input){
+    var RE = /^-{0,1}\d*\.{0,1}\d+$/;
+    return (RE.test(input));
+}
+        
+function validate()
+{
+    var isError = false;
+    var errorMsg = 'Your Order was not successfully processed. Please follow the highlighted warning for the correction!';
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection1.ExpectedShipDatec}"))){
+        var expectedShipDateValue = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection1.ExpectedShipDatec}").value;
+        if(isRequiredFieldEmpty(expectedShipDateValue)){
+            isError = true;
+            errorMsg = buildErrorMsg('Expected Hanger Ship Date',errorMsg);
+        }
+    }
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection1.shipmenTermc}"))){
+        var shipmentTerm = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection1.shipmenTermc}").value;
+        if(isRequiredFieldEmpty(shipmentTerm)){
+            isError = true;
+            errorMsg = buildErrorMsg('Shpiment Term',errorMsg);
+        }
+    }
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection3.JCPSubdivision1c}"))){
+        var jcpSubdivision1 = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection3.JCPSubdivision1c}").value;
+        if(isRequiredFieldEmpty(jcpSubdivision1)){
+            isError = true;
+            errorMsg = buildErrorMsg('JCP Sub-division1',errorMsg);
+        }
+    }
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.accAdd1info.billToPageBlockSectionItem1.billTo}"))){
+        var billTo = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.accAdd1info.billToPageBlockSectionItem1.billTo}").value;
+        if(isRequiredFieldEmpty(billTo)){
+            isError = true;
+            errorMsg = buildErrorMsg('Bill To',errorMsg);
+        }
+    }
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.accAdd1info.shipToPageBlockSectionItem1.shipTo}"))){
+        var shipTo = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.accAdd1info.shipToPageBlockSectionItem1.shipTo}").value;
+        if(isRequiredFieldEmpty(shipTo)){
+            isError = true;
+            errorMsg = buildErrorMsg('Ship To',errorMsg);
+        }
+    }
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem1.prl_division}"))){
+        var jcpSubdivision1 = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem1.prl_division}");
+            var selectedVal = jcpSubdivision1.options[jcpSubdivision1.selectedIndex].value;
+        if(isRequiredFieldEmpty(selectedVal)){
+            isError = true;
+            errorMsg = buildErrorMsg('Division',errorMsg);
+        }
+    }
+    
+    // below commented by pawan - 22/OCT/2016
+    /*
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem2.Macy_Supplier_Code}"))){
+        var jcpSubdivision1 = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem2.Macy_Supplier_Code}").value;
+        if(!isRequiredFieldEmpty(jcpSubdivision1)){
+            if(!IsNumeric(jcpSubdivision1)){
+                errorMsg = errorMsg + "<br/>" + "<li><b>Supplier Code</b>: Supplier Code must be 5 digit numeric only</li>"
+                isError = true; 
+            }
+            //errorMsg = buildErrorMsg('Supplier Code',errorMsg);
+        }
+    }*/
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem3.Macy_Label}"))){
+        var jcpSubdivision1 = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem3.Macy_Label}");
+        var selectedVal = jcpSubdivision1.options[jcpSubdivision1.selectedIndex].value;
+        if(isRequiredFieldEmpty(selectedVal)){
+            isError = true;
+            errorMsg = buildErrorMsg('Label',errorMsg);
+        }
+    }
+    
+    // below commented by pawan - 22/OCT/2016
+    /*
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem4.macy_Manufacturer_Code}"))){
+        var jcpSubdivision1 = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem4.macy_Manufacturer_Code}").value;
+        if(!isRequiredFieldEmpty(jcpSubdivision1)){
+            if(!IsNumeric(jcpSubdivision1)){
+                errorMsg = errorMsg + "<br/>" + "<li><b>Manufacturer Code</b>: Manufacturer Code must be 5 digit numeric only</li>"
+                isError = true;
+            }
+            //errorMsg = buildErrorMsg('Manufacturer Code',errorMsg);
+        }
+    }
+    */
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem5.prl_season}"))){
+        var jcpSubdivision1 = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem5.prl_season}");
+        var selectedVal = jcpSubdivision1.options[jcpSubdivision1.selectedIndex].value;
+        if(isRequiredFieldEmpty(selectedVal)){
+            isError = true;
+            errorMsg = buildErrorMsg('Season',errorMsg);
+        }
+    }
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem7.prl_season_year}"))){
+        var jcpSubdivision1 = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem7.prl_season_year}");
+        var selectedVal = jcpSubdivision1.options[jcpSubdivision1.selectedIndex].value;
+        if(isRequiredFieldEmpty(selectedVal)){
+            isError = true;
+            errorMsg = buildErrorMsg('Season Year',errorMsg);
+        }
+    }
+    
+    if(!isIdEmpty(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem8.MMGPONumberc}"))){
+        var jcpSubdivision1 = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.thePageBlockSection2.thePageBlockSectionItem8.MMGPONumberc}").value;
+        if(isRequiredFieldEmpty(jcpSubdivision1)){
+            isError = true;
+            errorMsg = buildErrorMsg('MMG PO Number',errorMsg);
+        }
+    }
+    
+    // save or not
+    if (!isError){
+        Save1();
+    }else{
+        isError = false;    
+        j$modalDialog.html(errorMsg);
+        j$modalDialog.dialog('open');
+    }
+}
+
+function isIdEmpty(idValue){
+    if(idValue==null || idValue=='undefined' || idValue==''){
+        return true;
+    }
+    return false;
+}
+
+function buildErrorMsg(fieldName,errorMsg){
+    return errorMsg + "<br/>" + "<li><b>"+fieldName+"</b>: You must enter a value</li>"; 
+}
+
+function isRequiredFieldEmpty(fieldValue){
+    if(fieldValue==null || fieldValue=='undefined' || fieldValue==''){
+        return true;
+    }
+    return false;
+}
+
+function ReloadCkEditor(){
+    var watermark = 'PO9873423,\nPO9834923,\nPO9879238';
+    var preMMGPoValue = '{!mmgPoValue}';
+    var isMMgAlreadyExist = false;
+    //preMMGPoValue = preMMGPoValue.replace(/,/g, ',\n');
+    //alert("Test:"+preMMGPoValue);
+    if(preMMGPoValue!= null && preMMGPoValue!= 'undefined' && typeof(preMMGPoValue)!='undefined' && preMMGPoValue!='' && preMMGPoValue.length>0){
+        preMMGPoValue = preMMGPoValue.replace(/,/g, ',\n');
+        isMMgAlreadyExist = true;
+    }
+
+    //init, set watermark text and class
+    if(isMMgAlreadyExist){
+        j$('textarea[id$=MMGPONumberc]').val(preMMGPoValue);
+    }else{
+        j$('textarea[id$=MMGPONumberc]').val(watermark).addClass('watermark');
+    }
+    
+    //if blur and no value inside, set watermark text and class again.
+    j$('textarea[id$=MMGPONumberc]').blur(function(){
+        if (j$(this).val().length == 0){
+            j$(this).val(watermark).addClass('watermark');
+        }
+    });
+
+    //if focus and text is watermrk, set it to empty and remove the watermark class
+    j$('textarea[id$=MMGPONumberc]').focus(function(){
+        if (j$(this).val() == watermark){
+            j$(this).val('').removeClass('watermark');
+        }
+    });
+
+    // END
+}
+j$( document ).ready(function() {
+    var preMMGPoValue1 = '{!mmgPoValue}';
+    if(preMMGPoValue1== null || preMMGPoValue1== 'undefined' || typeof(preMMGPoValue1)=='undefined' || preMMGPoValue1=='' || preMMGPoValue1.length==0){
+        ReloadCkEditor();
+    }
+    
+    var loggedInUserLocale = '{!userLocale}';
+    var isOtherLocale = false;
+    var dateFormatForOtherLocale = 'mm/dd/yy';
+    if(loggedInUserLocale!=null && typeof(loggedInUserLocale)!='undefined' && loggedInUserLocale!='en_US'){
+        dateFormatForOtherLocale = "dd/mm/yy"
+    }
+
+    //alert("loggedInUserLocale:"+loggedInUserLocale);
+    //alert("isOtherLocale"+isOtherLocale);
+    
+    /*
+        var textAreas = document.getElementsByTagName('textarea');
+
+        
+    Array.prototype.forEach.call(textAreas, function(elem) {
+        elem.placeholder = elem.placeholder.replace(/\\n/g, '\n');
+    });
+    */
+
+    j$('#datePicker').remove();
+    //alert("The paragraph was clicked.");
+    //j$( document ).on("load", function(){
+    //j$( document ).load(function(){
+    var retCodeEle = j$('[id*="retailer_code_hidden"]').get(0);
+    //alert(retCodeEle);
+    //j$(escapeStr(retCodeEle.id)).attr('disabled', 'disabled');
+    //j$(escapeStr(retCodeEle.id)).attr('style', 'visibility: hidden;');
+    if(retCodeEle!=null && retCodeEle!='undefined' && typeof(retCodeEle)!='undefined'){
+        retCodeEle.style.visibility = "hidden";
+        retCodeEle.disabled = "disabled";
+    }
+
+    
+
+    
+    //j$(jq('thePage:theForm:FullPageBlock:thePageBlockSection1:ExpectedShipDatec')).datepicker({ minDate: 1 });
+    j$(jq('thePage\\:theForm\\:FullPageBlock\\:thePageBlockSection1\\:ExpectedShipDatec')).datepicker({
+    minDate : 1,
+    //if(isOtherLocale){dateFormat: 'mm/dd/yy'}
+    //dateFormat: 'dd/mm/yy'
+    dateFormat: dateFormatForOtherLocale
+    /*
+    onSelect: function(dateText, inst) {
+        //Get today's date at midnight
+        var today = new Date();
+        today = Date.parse(today.getMonth()+1+'/'+today.getDate()+'/'+today.getFullYear());
+        //Get the selected date (also at midnight)
+        var selDate = Date.parse(dateText);
+
+        if(selDate < today) {
+            //If the selected date was before today, continue to show the datepicker
+            j$(jq('thePage\\:theForm\\:FullPageBlock\\:thePageBlockSection1\\:ExpectedShipDatec')).val('');
+            j$(inst).datepicker('show');
+        }
+    }
+    */
+    });
+    //});
+    
+    // disbaling element
+    j$(jq('thePage\\:theForm\\:FullPageBlock\\:thePageBlockSection1\\:retailerCodehidden')).attr('disabled','disabled');
+    j$(jq('thePage\\:theForm\\:FullPageBlock\\:thePageBlockSection2\\:thePageBlockSectionItem101\\:Retailer_Code__c')).attr('disabled','disabled');
+    j$(jq('thePage\\:theForm\\:FullPageBlock\\:thePageBlockSection2\\:thePageBlockSectionItem101\\:Retailer_Code__c_lkwgt')).remove();
+    
+    // To add '/' in image URL
+    //var imageURL =  j$(jq('thePage\\:theForm\\:FullPageBlock\\:thePageBlockSection1\\:retailerImage')).children("img").attr("src");
+    //j$(jq('thePage\\:theForm\\:FullPageBlock\\:thePageBlockSection1\\:retailerImage')).children("img").attr("src","/"+imageURL);
+});
+    
+    </script>
+    <apex:sectionheader title="{!$ObjectType.Online_Enquiry__c.label} Edit" subtitle="{!IF(ISNULL(Online_Enquiry__c.name), 'New Online Enquiry',Online_Enquiry__c.name)}"/>
+    <apex:form id="theForm">
+        <apex:pageMessages id="msgs"/>
+        <apex:pageblock mode="edit" title="{!$ObjectType.Online_Enquiry__c.label} Edit" id="FullPageBlock" >
+            <apex:pageblockbuttons >
+                <apex:actionFunction name="Save1" action="{!Save}"/>
+                <input type="button" class="btn" onclick="validate();" value="Save"/>
+                <!--<apex:commandbutton value="Save" action="{!Save}"/>-->
+                <apex:commandbutton value="Cancel" action="{!Cancel}"/>
+            </apex:pageblockbuttons>
+            <apex:outputpanel id="theOutputPanel">
+                <apex:pageblocksection title="Information" showheader="true" columns="2" id="thePageBlockSection1">
+                   <apex:inputfield value="{!onlineEnquiryOrderDetails.Retailer_Image__c}" id="retailerImage">
+                        <!--<apex:image url="{!myimageurl}"/>-->
+                    </apex:inputfield>
+                  <apex:inputfield value="{!onlineEnquiryOrderDetails.Order_Country__c}" required="true"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Enquiry_Date__c}" required="false"/>
+                    <apex:inputfield id="ExpectedShipDatec" value="{!onlineEnquiryOrderDetails.Expected_Ship_Date__c}" required="true"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Customer_PO_No__c}" required="false"/>                    
+                   <!--<apex:inputfield value="{!Online_Enquiry__c.Buyer_Code1__c}" required="false" label="Buyer Code"/>-->
+                   
+                        <!--Added By Pawan-->
+                        
+                     <apex:inputfield value="{!onlineEnquiryOrderDetails.Preferred_Currency__c}" required="true"/>
+                     <apex:inputfield value="{!onlineEnquiryOrderDetails.Export_Term__c}" required="true" id="shipmenTermc"/>
+                     <!--<apex:inputText value="{!Online_Enquiry__c.Tax__c}" required="true"/>-->
+                     <!--<apex:inputText value="{!Online_Enquiry__c.Admin_Charges__c}" required="true"/>-->
+                     <!--<apex:inputText value="{!Online_Enquiry__c.Freight_Charges__c}" required="true"/>-->
+                     <!--END -->
+                     <apex:inputText value="{!onlineEnquiryOrderDetails.Enquiry_Status__c}" disabled="true"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Retailer_Code_Hidden__c}" id="retailerCodehidden" required="true"/>                     
+                    <apex:pageblocksectionitem />                   
+                </apex:pageblocksection>
+                <apex:pageblocksection title="Retailer Data" showheader="true" columns="2" id="thePageBlockSection2" rendered="{!OR(enablePRLDivision || enableMacyDivision)}">
+                    <apex:pageblocksectionitem rendered="{!OR(enablePRLDivision || enableMacyDivision)}" id="thePageBlockSectionItem101">
+                        <apex:outputLabel value="Retailer Code" for="Retailer_Code__c" rendered="{!OR(enablePRLDivision || enableMacyDivision)}"/>
+                        <apex:inputField id="Retailer_Code__c" value="{!onlineEnquiryOrderDetails.Retailer_Code__c}" rendered="{!OR(enablePRLDivision || enableMacyDivision)}" style="disabled: disabled;"/>
+                        </apex:pageblocksectionitem>
+                        
+                    <apex:pageblocksectionitem rendered="{!OR(enablePRLDivision || enableMacyDivision)}" id="thePageBlockSectionItem1">
+                        <apex:outputLabel value="Division" for="prl_division" rendered="{!(enablePRLDivision || enableMacyDivision)}" />
+                        <apex:actionRegion id="theActionRegion">
+                        <apex:inputField id="prl_division" value="{!onlineEnquiryOrderDetails.Division__c}" required="true" rendered="{!(enablePRLDivision || enableMacyDivision)}"><apex:actionSupport event="onchange" 
+                            action="{!enableMMGPOField}" 
+                            reRender="ajaxrequest" oncomplete="ReloadCkEditor();"/> 
+                        </apex:inputField>  
+                        </apex:actionRegion>
+                    </apex:pageblocksectionitem>
+                    <apex:pageblocksectionitem rendered="{!OR(enableMacyDivision|| enablePRLDivision || enableJCPDivision)}" id="thePageBlockSectionItem2">
+                        <apex:outputLabel value="Supplier Code" for="Macy_Supplier_Code" rendered="{!OR(enableMacyDivision|| enablePRLDivision || enableJCPDivision)}"/>
+                        <apex:inputField id="Macy_Supplier_Code" value="{!onlineEnquiryOrderDetails.Supplier_Code__c}" rendered="{!OR(enableMacyDivision|| enablePRLDivision || enableJCPDivision)}"/>
+                    </apex:pageblocksectionitem>
+                    <apex:pageblocksectionitem rendered="{!enableMacyDivision}" id="thePageBlockSectionItem3">
+                        <apex:outputLabel value="Label" for="Macy_Label" rendered="{!enableMacyDivision}"/>
+                        <apex:inputField id="Macy_Label" value="{!onlineEnquiryOrderDetails.Label__c}" required="true" rendered="{!enableMacyDivision}"/>
+                    </apex:pageblocksectionitem>
+                    <apex:pageblocksectionitem rendered="{!OR(enableMacyDivision|| enablePRLDivision || enableJCPDivision)}"  id="thePageBlockSectionItem4">
+                        <apex:outputLabel value="Manufacturer Code" for="macy_Manufacturer_Code" rendered="{!OR(enableMacyDivision|| enablePRLDivision || enableJCPDivision)}"/>
+                        <apex:inputField id="macy_Manufacturer_Code" value="{!onlineEnquiryOrderDetails.Manufacturer_Code__c}" rendered="{!OR(enableMacyDivision|| enablePRLDivision || enableJCPDivision)}"/>
+                    </apex:pageblocksectionitem>
+                    <apex:pageblocksectionitem rendered="{!OR(enablePRLDivision || enableMacyDivision)}" id="thePageBlockSectionItem5">
+                        <apex:outputLabel value="Season" for="prl_season" rendered="{!OR(enablePRLDivision || enableMacyDivision)}"/>
+                        <apex:inputField id="prl_season" value="{!onlineEnquiryOrderDetails.Season__c}" required="true" rendered="{!OR(enablePRLDivision || enableMacyDivision)}"/>
+                    </apex:pageblocksectionitem>
+                    <!--<apex:pageblocksectionitem >
+                        <apex:outputLabel value="Season" for="prl_season1" rendered="{!enableMacyDivision}"/>
+                        <apex:inputField id="prl_season" value="{!Online_Enquiry__c.Season__c}" required="true" rendered="{!enablePRLDivision || !enableMacyDivision}"/>
+                    </apex:pageblocksectionitem>-->
+                    <apex:pageblocksectionitem id="thePageBlockSectionItem6" rendered="{!enableMacyDivision}">
+                        <apex:outputLabel value="MMG PO Number" for="MMGPONumberc1"/>
+                        <apex:outputPanel id="ajaxrequest">
+                        <!--<apex:inputField id="MMGPONumberc" value="{!onlineEnquiryOrderDetails.MMG_PO_Number__c}" rendered="{!enableMMGPO}" style="width:50%;height:85px;"/>-->
+                        <apex:inputField id="MMGPONumberc" value="{!onlineEnquiryOrderDetails.MMG_PO_Number1__c}" rendered="{!enableMMGPO}" style="width:50%;height:85px;"/>
+                        </apex:outputPanel>
+                    </apex:pageblocksectionitem>
+                    
+                    <apex:pageblocksectionitem rendered="{!OR(enablePRLDivision || enableMacyDivision)}" id="thePageBlockSectionItem7">
+                        <apex:outputLabel value="Season Year" for="prl_season_year" rendered="{!OR(enablePRLDivision || enableMacyDivision)}"/>
+                        <apex:inputField id="prl_season_year" value="{!onlineEnquiryOrderDetails.Season_Year__c}" required="true" rendered="{!OR(enablePRLDivision || enableMacyDivision)}"/>
+                    </apex:pageblocksectionitem>
+                    <!--
+                    <apex:pageblocksectionitem >
+                        <apex:outputLabel value="Season Year" for="prl_season_year1" rendered="{!enableMacyDivision}"/>
+                        <apex:inputField id="prl_season_year" value="{!Online_Enquiry__c.Season_Year__c}" required="true" rendered="{!enableMacyDivision}"/>
+                    </apex:pageblocksectionitem>-->
+                     <!--
+                     <apex:pageblocksectionitem >-->
+                        <!--<apex:outputLabel value="Retailer Code-Hidden" for="retailer_code_hidden" rendered="{!enablePRLDivision}"/>-->
+                        <!----
+                        <apex:inputField id="retailer_code_hidden" value="{!onlineEnquiryOrderDetails.Retailer_Code_Hidden__c}" rendered="{!enablePRLDivision}" style="disabled: disabled;"/>
+                    </apex:pageblocksectionitem>
+                      -->
+                      <apex:pageblocksectionitem id="thePageBlockSectionItemGU" rendered="{!enableGUDivision}">
+                    <!--- Retailer PO - requried -->
+                    <apex:outputLabel value="Main Smpl code/GU PO number" for="MMGPONumberc1"/>
+                       <!-- <apex:outputLabel value="MMG PO Number" for="MMGPONumberc1"/> -->
+                        <apex:outputPanel id="ajaxrequest">
+                        <!--<apex:inputField id="MMGPONumberc" value="{!Online_Enquiry__c.MMG_PO_Number__c}" rendered="{!enableMMGPO}" style="width:50%;height:85px;"/>-->
+                        <apex:inputField id="MMGPONumberc1" value="{!Online_Enquiry__c.MMG_PO_Number__c}" required="true" rendered="{!enableGUDivision}"/>           
+                        </apex:outputPanel>
+                    </apex:pageblocksectionitem>                    
+                </apex:pageblocksection>
+                 <apex:pageblocksection title="JCP Division" showheader="true" columns="2" rendered="{!enableJCPDivision}" id="thePageBlockSection3">
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.JCP_Sub_division1__c}" required="true" id="JCPSubdivision1c"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.JCP_Sub_division4__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.JCP_Sub_division2__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.JCP_Sub_division5__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.JCP_Sub_division3__c}" required="false"/>
+                    <apex:pageblocksectionitem />
+                </apex:pageblocksection>
+                <apex:pageblocksection title="Bill Ship Information" showheader="true" columns="2" id="accAdd1info">
+                    <apex:pageBlockSectionItem id="billToPageBlockSectionItem1">
+                        <apex:outputLabel value="Bill To"/>
+                        <apex:actionRegion id="theActionRegion">
+                        <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_To__c}" required="true" id="billTo">
+                            <apex:actionSupport event="onchange" action="{!PopulateBillTo}" rerender="accAdd1info"/> 
+                        </apex:inputfield>
+                    </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem id="shipToPageBlockSectionItem1">
+                    <apex:outputLabel value="Ship To"/>
+                    <apex:actionRegion id="theActionRegion2">
+                        <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_To__c}" required="true" id="shipTo">
+                            <apex:actionSupport event="onchange" action="{!PopulateShipTo}" rerender="accAdd1info"/>
+                        </apex:inputfield>
+                    </apex:actionRegion>                    
+                    </apex:pageBlockSectionItem>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Company__c}" required="false" />
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Company__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Address1__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Address1__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Address2__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Address2__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_State__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_State__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Postcode__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Postcode__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Country__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Country__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Contact__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Contact__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Tel__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Tel__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Fax__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Fax__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Bill_to_Email__c}" required="false"/>
+                    <apex:inputfield value="{!onlineEnquiryOrderDetails.Ship_to_Email__c}" required="false"/>
+                </apex:pageblocksection>
+                <apex:pageblocksection title="Customer Comment and Remark" showheader="true" columns="2">
+                    <apex:inputTextarea value="{!onlineEnquiryOrderDetails.Customer_Comments__c}" cols="75" rows="3"  required="false"/>
+                    <apex:pageblocksectionitem />
+                </apex:pageblocksection>
+            </apex:outputpanel>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

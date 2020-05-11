@@ -1,0 +1,139 @@
+<apex:page standardController="Transfer_Note__c" extensions="TransferNoteInformationPrint" sidebar="false" standardStylesheets="false" renderAs="PDF" >
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+       
+        <!-- style="align:center;padding-left: 40%;" style="align:right;padding-left: 56%;" style="position:relative" -->
+        <apex:repeat value="{!TransferNoteInformation}" var="drInfohead">
+            <table width="100%">
+                <tr >
+                    <td align="left" valign="top" >
+                        <article>
+                            <br/><br/>
+                         <apex:image url="{!$Resource.Mainetti_Logo}" width="230" height="40" />
+                            <br/><br/>
+                       <h1 style='text-align: left;color:Grey; font-size:25px;'> Carton Transfer Note </h1>
+                        </article> 
+                    </td>
+                    <td align="center" valign="top">
+                        <article>
+                             <br/>
+                             <div style='text-align: right;color:red; font-size:16px;'><b>Please Scan <br/>QR Code --></b></div> 
+                           <br/><br/><br/>
+                            <div style='text-align: right;color:red; font-size:16px;'><b>Remove before <br/> Shipping to Store</b> </div> 
+                        </article>
+                      
+                    </td>
+                    <td align="right" >
+                                               
+                        <apex:outputField value="{!drInfohead.transferNote.QR_Code__c}"  />
+                        
+                    </td>
+                </tr>
+            </table> 
+        </apex:repeat>
+        <br />
+        <!-- address start -->
+        
+        <!-- address End -->
+        
+        <apex:repeat value="{!TransferNoteInformation}" var="drInfo">
+            
+            <table border="1" cellpadding="3" cellspacing="0" width="100%" style="border-collapse:collapse; font-family:arial; font-size:13px;">
+                <tr > <th style='color:navy;text-align:center;background-color: #E6E6FA; font-size:15px;' height="20px" colspan="6" >General Information</th></tr>
+                <tr>
+                    <th style='color:purple;' height="10px">Document Date</th>
+                    <td style=' '><apex:outputField value="{!drInfo.transferNote.Document_Date__c}" /> </td>
+                    <th style='color:purple;' height="10px">Document Number</th>
+                    <td style=' '>{!drInfo.transferNote.Name}</td>        
+                </tr>
+                <tr>
+                    <th style='color:purple;' height="10px">Retailer Code</th>
+                    <td style=' '>{!drInfo.transferNote.Retailer_Code__r.Name}</td>
+                    <th style='color:purple;' height="10px">Status </th>
+                    <td style=' '>{!drInfo.transferNote.Status__c}</td>        
+                </tr>
+                <tr>
+                    <th style='color:purple;' height="10px">Remark</th>
+                    <td style='' colspan="3">{!drInfo.transferNote.Remark__c}</td> 
+                </tr>
+                
+            </table>
+            <br/>     
+            <table border="0" cellspacing="0" width="100%" >
+                <tr>
+                <td>
+                <table border="1" cellspacing="0" width="350px" >
+                    <tr>               
+                     <th style="padding:5px;font-size:14px;"> <b>From</b>:{!drInfo.transferNote.Warehouse_Name__c} </th>  
+                    </tr>
+                    <tr>
+                        <td style="padding:5px;font-size:13px;"> 
+                         {!drInfo.transferNote.Warehouse_Name__c} <br/>
+                         {!drInfo.transferNote.Warehouse_Address1__c}<br/>
+                         {!drInfo.transferNote.Warehouse_City__c} <br/>
+                         {!drInfo.transferNote.Warehouse_Country__c} <br/>
+                         
+                          <br/>
+                         
+                         Contact: {!drInfo.transferNote.Warehouse_Contact__c}<br/>  
+                         Email: {!drInfo.transferNote.Warehouse_Email__c}<br/>
+                         Tel:  {!drInfo.transferNote.Warehouse_Tel__c} <br/>
+                         Fax:  {!drInfo.transferNote.Warehouse_Fax__c} <br/>
+                    </td> 
+                    </tr>
+                </table>
+                </td>
+                <td style='border-top:none;border-bottom:none; padding: 5PX;'>    </td>
+                <td>
+                <table border="1" cellspacing="0" width="350px" >
+                    <tr> 
+                       <th style="padding:5px;font-size:14px"> <b>Ship To </b>: {!drInfo.transferNote.Customer_Warehouse_Name__c}</th>                  
+                    </tr>
+                    <tr>
+                        <td style="padding:5px;font-size:13px;">                     
+                         {!drInfo.transferNote.Customer_Warehouse__r.Name} {!drInfo.transferNote.Customer_Warehouse_Name__c}<br/> 
+                         {!drInfo.transferNote.Customer_Address__c}<br/>                         
+                         {!drInfo.transferNote.Customer_City__c}<br/>
+                         {!drInfo.transferNote.Customer_Country__c}<br/>
+                            
+                        <br/>
+                        Contact: {!drInfo.transferNote.Customer_Contact__c}<br/>  
+                        Email: {!drInfo.transferNote.Customer_Email__c}<br/>
+                        Tel:  {!drInfo.transferNote.Customer_Telephone__c} <br/>
+                        Fax:  {!drInfo.transferNote.Customer_Fax__c}
+                    </td> 
+                    </tr>
+                </table>
+                </td>
+                </tr>
+            </table> 
+               
+            
+            <br/>
+            <br/>
+            <p style='color:Navy;text-align:left;background-color: #FFFFFF; display:block; font-size:15px;'><b>Cartons Information </b>
+            <div align="right"> Total Number of Cartons : {!drInfo.transferNote.Total_Carton_Send__c}</div> 
+            </p>
+            
+            <table border="1" cellpadding="3" cellspacing="0" width="100%" style="border-collapse:collapse; font-family:arial; font-size:13px;">          
+                <tr> 
+                    <th style='color:purple;background-color: #E6E6FA;padding:8px;' height="20px"  >S.No</th>
+                    <th style='color:purple;background-color: #E6E6FA;padding:8px;' height="20px"  >Carton Number</th>                                
+                    <th style='color:purple;background-color: #E6E6FA;padding:8px;' height="20px" >Registered Date</th>                                         
+                    <th style='color:purple;background-color: #E6E6FA;padding:8px;' height="20px"  >Status</th>
+                </tr>  
+                <apex:variable value="{!1}" var="rowNum"/>        
+                <apex:repeat value="{!drInfo.cartonsList}" var="crt">
+                    
+                    <tr> 
+                        <td style='background-color: #FFFFFF;padding:8px;' height="20px"><apex:outputText value="{!FLOOR(rowNum)}"/> </td>                               
+                        <td style='background-color: #FFFFFF;padding:8px;' height="20px"><apex:outputField value="{!crt.Name}" /> </td>                               
+                        <td style='background-color: #FFFFFF;padding:8px;' height="20px"><apex:outputField value="{!crt.Registered_Date__c}" /> </td>                                                                        
+                        <td style='background-color: #FFFFFF;padding:8px;' height="20px">{!crt.Status__c}  </td>                        
+                    </tr>
+                    <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                </apex:repeat>
+            </table>    
+            
+        </apex:repeat>
+    </html>
+</apex:page>

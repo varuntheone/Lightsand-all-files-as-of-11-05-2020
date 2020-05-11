@@ -1,0 +1,49 @@
+<apex:page standardController="Mould_Action__c" extensions="MigrationActionsController" recordSetVar="mouldActions">
+	<apex:form id="pageMainForm">
+		<apex:outputPanel id="massCreateAndUpdate">
+			<c:ASI_KOR_MassCreateAndUpdate id="massCreateAndUpdateC" sObjectType="Mould_Action__c"
+				displayFields="Mould_Directory__c&req=T&read=A, remark__c&req=F"
+				whereStatement="mould_action_form__c = '{!mouldActionFormId}'"
+				pageBlockTitle="Mould Migration Actions"
+				successLink="/{!mouldActionFormId}"
+				cancelLink="/{!mouldActionFormId}"
+				mode="EDIT"
+				disableClone="true"
+				disableAddNew="true"
+				showAllRT="true"
+				firstRowForNew="false"
+				actionColWidth="70px"
+				rowActionRenderList="{!$Component.pageMainForm}"
+				pageBlockActionRenderList="{!$Component.pageMainForm}"
+				pageController="{!thisController}"
+				componentKey="massCreateAndUpdate" /> 
+		</apex:outputPanel>
+		<apex:outputPanel id="selectTablePanel">
+			<c:ASI_KOR_SFObjSelectTable id="selectTableC" sObjectType="Mould_Directory__c"
+				displayFields="mould_id__c, name, holder_company__c, factory__c, original_brand__c, engraved_logo__c, mould_type__c, mould_usability__c, mould_condition__c, cavity__c"
+				defWhereStatm="{!init_search}"
+				pageBlockTitle="Available Moulds"
+				orderByFields="name"
+				rowActionRenderList="{!$Component.massCreateAndUpdateC.mcau.pageBlock.wholeDataPanel}"
+				defNumOfRow="8"
+				pageController="{!thisController}"
+				componentKey="selectTable">
+			<!-- ============ You need to write filtering function by yourself ========= -->
+			<apex:outputPanel >
+				<apex:panelGrid columns="9" cellspacing="10px">
+					<apex:outputLabel value=" Mould ID: " style="font-weight:bold"/>
+					<apex:inputText value="{!mould_filter.Mould_ID__c}"/>
+					<apex:outputLabel value=" Mould Name: " style="font-weight:bold"/>
+					<apex:inputText value="{!mould_filter.name}"/>
+					<apex:outputLabel value=" Model: " style="font-weight:bold"/>
+					<apex:inputText value="{!mould_filter.Model__c}"/>
+					<apex:outputLabel value=" Factory Name: " style="font-weight:bold"/>
+					<apex:inputText value="{!mould_filter.Factory_Name__c}"/>															
+					<apex:commandButton action="{!FilterMoulds}" value="Search" reRender="selectTablePanel" status="statusFilter"/>
+				</apex:panelGrid>
+				<apex:actionStatus id="statusFilter" startText="Searching..." startStyle="font-weight:bold;font-size:100%;" />
+			</apex:outputPanel>
+			</c:ASI_KOR_SFObjSelectTable>
+		</apex:outputPanel>
+	</apex:form>
+</apex:page>

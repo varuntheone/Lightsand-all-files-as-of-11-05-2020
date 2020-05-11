@@ -1,0 +1,5 @@
+<apex:page standardController="Wooden_Hanger_Requisition_Form__c">
+    
+    <c:FileImageThumbnailVFComponent oppItemId="{!Wooden_Hanger_Requisition_Form__c.Id}" type="Metal Hook 五金鈎形"/>
+
+</apex:page>

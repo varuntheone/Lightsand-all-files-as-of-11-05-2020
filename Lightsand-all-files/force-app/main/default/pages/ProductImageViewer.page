@@ -1,0 +1,57 @@
+<apex:page standardController="Product__c"  sidebar="false" showHeader="false">
+<style>
+.img {
+    margin: 5px;
+    border: 1px solid #ccc;
+    float: left;
+    width: 180px;
+}
+
+.img:hover {
+    border: 1px solid #777;
+}
+
+.img img {
+    width: 100%;
+    height: auto;
+}
+
+.desc {
+    padding: 15px;
+    text-align: center;
+}
+</style>
+
+<script src="{!URLFOR($Resource.JQueryJS)}"></script>
+<script>
+    var j$ = jQuery.noConflict();
+//j$(document).ready(function() {
+        //var allModels=top.window.opener.getModelIds();
+        //console.log(allModels);
+//});
+    function clicked(attachId,recordId){
+        //selectPrdtName.siblings().each(function (){alert(j$(this).text());});
+        top.window.opener.retailerLookupPick(attachId,recordId);
+        top.window.opener.closeLookupPopup();
+        //alert('recordId--->'+recordId);
+        //alert('recordName--->'+recordName);
+    }
+</script>
+
+    <apex:form >
+        <apex:pageBlock >
+        <apex:pageBlockSection title="Product: Available Visuals">
+            <apex:pageBlockTable value="{!Product__c.Attachments}" var="Att" title="">
+                    <apex:column headerValue="Select any one visual to be added into Order Line Items" rendered="{!NOT(Att.Name=='NoImageAvailable.jpg')}">
+                        <apex:outputPanel styleClass="img">
+                            <apex:image value="/servlet/servlet.FileDownload?file={!Att.Id}" onclick="clicked('{!Att.Id}','{!Product__c.Id}');" height="40" width="50"/>
+                        </apex:outputPanel>
+                    <apex:outputPanel styleClass="desc">
+                        <h1>{!Att.Name}</h1>
+                    </apex:outputPanel>
+                </apex:column>
+            </apex:pageBlockTable>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

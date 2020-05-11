@@ -1,0 +1,247 @@
+<aura:component controller="InventoryAllocationSearchApex" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    
+    <aura:handler name="init" action="{!c.openModal}" value="{!this}"/>
+    
+    <aura:attribute name="retailerData" type="Reuse_center_Inventory_Manager__c"/>
+    <aura:attribute name="productData" type="Product__c"/>
+    <aura:attribute name="MainettiData" type="Partner__c"/>
+    <aura:attribute name="testBoolean" type="Boolean" default="false" />
+    <aura:attribute name="SourceType" type="String"/> 
+    <aura:attribute name="selectedSource" type="String" default="All"/>  
+    <aura:attribute name="selectedAllocation" type="String" default="All"/> 
+    
+    <!--declare attributes Retailer--> 
+    <aura:attribute name="selectedRetailerRecord" type="Reuse_center_Inventory_Manager__c" default="{}" description="Use,for store SELECTED sObject Record"/>
+    <aura:attribute name="listOfSearchRecords" type="List" description="Use,for store the list of search records which returns from apex class"/>
+    <aura:attribute name="SearchKeyWord" type="string"/>
+    <aura:attribute name="Message" type="String" default="Search Result.."/>
+    
+    <!--declare attributes Product--> 
+    <aura:attribute name="selectedProductRecord" type="Product__c" default="{}" description="Use,for store SELECTED sObject Record"/>
+    <aura:attribute name="listOfProductSearchRecords" type="List" description="Use,for store the list of search records which returns from apex class"/>
+    <aura:attribute name="SearchProductKeyWord" type="string"/>
+    <aura:attribute name="Message1" type="String" default="Search Result.."/>
+    
+     <!--declare attributes Mainetti--> 
+    <aura:attribute name="selectedMainettiRecord" type="Partner__c" default="{}" description="Use,for store SELECTED sObject Record"/>
+    <aura:attribute name="listOfMainettiSearchRecords" type="List" description="Use,for store the list of search records which returns from apex class"/>
+    <aura:attribute name="SearchMainettiKeyWord" type="string"/>
+    <aura:attribute name="Message3" type="String" default="Search Result.."/>
+    
+    <!--declare attributes for checkboxes--> 
+    <aura:attribute name="currWeekBoolean" type="boolean" default="false"/>
+    <aura:attribute name="shortFallBoolean" type="boolean" default="false"/>
+    
+    <!--declare events handlers-->  
+    <aura:handler name="oSearchEvent" event="c:InventoryAllocationSearchEvent" action="{!c.handleComponentEvent}"/>
+    <!--<aura:handler name="SourceDemand" event="c:SourceEvent" action="{!c.handleSourceEvent}"/>-->
+        
+    <!--Register the component level event for Allocation search communication-->
+    <aura:registerEvent name="searchCommunication" type="c:AllocationSearchCommunication"/>
+    
+    <aura:attribute name="WarehousePicklistMap" type="Map"/>
+    <aura:attribute name="ware" type="String"/>
+    
+    <!-- Modal -->
+            <div aura:id="addRetailerModal" class="MyClass" padding-top="0rem">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+                <header class="MyHeader">
+                    <h2 class="Header" align="center"><b>Inventory Allocation Search</b></h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_small" >
+                    <table class="slds-table">
+                        <tr>
+                           <!--Mainetti!-->
+                            <td>
+                                <div onmouseleave="{!c.onblur}" aura:id="searchMainettiRes" class="slds-form-element slds-lookup slds-is-close" data-select="single" style="width:180px">
+                                    <label class="slds-form-element__label" for="horizontal-input-id-01"><b>Mainetti Company</b></label>                        
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-input-has-icon slds-input-has-icon--right">
+                                            <div aura:id="lookupMainetti-pill" class="slds-pill-container slds-hide">
+                                                <lightning:pill class="pillSize" label="{!v.selectedMainettiRecord.Default_Order_to_Company__c}" name="{!v.selectedMainettiRecord.Default_Order_to_Company__c}" onremove="{!c.clearMainetti}">
+                                                    <aura:set attribute="media">
+                                                        <lightning:icon iconName="standard:account" size="x-small" alternativeText="close"/>
+                                                    </aura:set>
+                                                </lightning:pill>
+                                            </div>
+                                            <div aura:id="lookupMainettiField" class="slds-show">
+                                                <lightning:icon class="slds-input__icon slds-show" iconName="standard:search" size="x-small" alternativeText="search"/>
+                                                <span class="slds-icon_container  slds-combobox__input-entity-icon" title="record">
+                                                    <lightning:icon class="slds-icon slds-icon slds-icon_small slds-icon-text-default" iconName="standard:account" size="x-small" alternativeText="icon"/>
+                                                    <span class="slds-assistive-text"></span>
+                                                </span>
+                                                <ui:inputText  aura:id="searchMainettiValue" size="25"   updateOn="keyup" keyup="{!c.keyPressMainettiController}" class="slds-lookup__search-input slds-input leftPaddingClass" value="{!v.SearchMainettiKeyWord}" placeholder="search.." />
+                                                <input type="hidden"  id='valueHolder'  name = "" value = ""  />                                                       
+                                            </div>                                                                                            
+                                        </div>
+                                        <!--This part is for Display typehead lookup result List-->
+                                        <ul style="min-height:40px;width:180px;margin-right:68px;" class="slds-listbox slds-listbox_vertical slds-dropdown slds-lookup__menu slds" role="listbox">
+                                            <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="mySpinner"/>
+                                            <center> {!v.Message3}</center>
+                                            <aura:iteration items="{!v.listOfMainettiSearchRecords}" var="singleRec">
+                                                <c:lookupforMainettidata oMainetti="{!singleRec}" IconName="standard:account"  />
+                                            </aura:iteration>
+                                        </ul>
+                                    </div>                
+                                </div>
+                            </td>
+                            
+                            <!--Retailer!-->   
+                            <td>
+                                <div onmouseleave="{!c.onblur}" aura:id="searchRes" class="slds-form-element slds-lookup slds-is-close" data-select="single" style="width:180px">
+                                    <label class="slds-form-element__label" for="horizontal-input-id-01"><b>Retailer</b></label>                        
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-input-has-icon slds-input-has-icon--right">
+                                            <div aura:id="lookup-pill" class="slds-pill-container slds-hide" >
+                                                <lightning:pill class="pillSize" label="{!v.selectedRetailerRecord.Name}" name="{!v.selectedRetailerRecord.Name}" onremove="{!c.clear}">
+                                                    <aura:set attribute="media">
+                                                        <lightning:icon iconName="standard:account" size="x-small" alternativeText="close"/>
+                                                    </aura:set>
+                                                </lightning:pill>
+                                            </div>
+                                            <div aura:id="lookupField" class="slds-show" >
+                                                <lightning:icon class="slds-input__icon slds-show" iconName="standard:search" size="x-small" alternativeText="search"/>
+                                                <span class="slds-icon_container  slds-combobox__input-entity-icon" title="record" >
+                                                    <lightning:icon class="slds-icon slds-icon slds-icon_small slds-icon-text-default" iconName="standard:account" size="x-small" alternativeText="icon"/>
+                                                    <span class="slds-assistive-text"></span>
+                                                </span>
+                                                <ui:inputText  aura:id="searchValue" size="25"   updateOn="keyup" keyup="{!c.keyPressController}" class="slds-lookup__search-input slds-input leftPaddingClass" value="{!v.SearchKeyWord}" placeholder="search.."/>
+                                                <input type="hidden"  id='valueHolder'  name = "" value = ""  />                                                       
+                                            </div>                                                
+                                        </div>
+                                        <!--This part is for Display typehead lookup result List-->
+                                        <ul style="min-height:40px;width:180px;margin-right:68px;" class="slds-listbox slds-listbox_vertical slds-dropdown slds-lookup__menu" role="listbox">
+                                            <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="mySpinner"/>
+                                            <center> {!v.Message}</center>
+                                            <div style="width:140px">
+                                            <aura:iteration items="{!v.listOfSearchRecords}" var="singleRec">
+                                                <c:lookupforRetailerdata oRetailer="{!singleRec}" IconName="standard:account"  />
+                                            </aura:iteration>
+                                                </div>
+                                        </ul>
+                                    </div>              
+                                </div>
+                            </td>
+                            
+                            <!--Product!-->
+                            <td>
+                                <div onmouseleave="{!c.onblur}" aura:id="searchProductRes" class="slds-form-element slds-lookup slds-is-close" data-select="single" style="width:187px">
+                                    <label class="slds-form-element__label" for="horizontal-input-id-01"><b>Model</b></label>                        
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-input-has-icon slds-input-has-icon--right">
+                                            <div aura:id="lookupProduct-pill" class="slds-pill-container slds-hide">
+                                                <lightning:pill class="pillSize" label="{!v.selectedProductRecord.Name}" name="{!v.selectedProductRecord.Name}" onremove="{!c.clearProduct}">
+                                                    <aura:set attribute="media">
+                                                        <lightning:icon iconName="standard:account" size="x-small" alternativeText="close"/>
+                                                    </aura:set>
+                                                </lightning:pill>
+                                            </div>
+                                            <div aura:id="lookupProductField" class="slds-show">
+                                                <lightning:icon class="slds-input__icon slds-show" iconName="standard:search" size="x-small" alternativeText="search"/>
+                                                <span class="slds-icon_container  slds-combobox__input-entity-icon" title="record">
+                                                    <lightning:icon class="slds-icon slds-icon slds-icon_small slds-icon-text-default" iconName="standard:account" size="x-small" alternativeText="icon"/>
+                                                    <span class="slds-assistive-text"></span>
+                                                </span>
+                                                <ui:inputText  aura:id="searchProductValue" size="25"   updateOn="keyup" keyup="{!c.keyPressProductController}" class="slds-lookup__search-input slds-input leftPaddingClass" value="{!v.SearchProductKeyWord}" placeholder="search.." />
+                                                <input type="hidden"  id='valueHolder'  name = "" value = ""  />                                                       
+                                            </div>                                                                                            
+                                        </div>
+                                        <!--This part is for Display typehead lookup result List-->
+                                        <ul style="min-height:40px;width:291px;margin-right:68px;" class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid slds-lookup__menu slds" role="listbox">
+                                            <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="mySpinner"/>
+                                            <center> {!v.Message1}</center>
+                                            <aura:iteration items="{!v.listOfProductSearchRecords}" var="singleRec">
+                                                <c:lookupforProductdata oProduct="{!singleRec}" IconName="standard:account"  />
+                                            </aura:iteration>
+                                        </ul>
+                                    </div>                  
+                                </div>
+                            </td>
+                       </tr>
+                       
+                        <!--This part is for start date and End date -->
+                        <tr>
+                           <td>
+                                <div style="width:180px">
+                                    <b><lightning:input type="date" aura:id="strDate" label="Start Date" name="date" autocomplete="off" /></b>                            
+                                </div>                    
+                           </td>
+                           <td>
+                                <div style="width:180px">
+                                    <b><lightning:input type="date" aura:id="enDate" label="End Date" name="date" autocomplete="off" /></b>                            
+                               </div>                   
+                           </td>
+                           <td>
+                               <div style="width:185px">
+                                   <aura:if isTrue="{!v.SourceType == 'Supply'}">
+                                   <b><lightning:select aura:id="sourcePicklist" name="selectsource" label="Select Source" onchange="{!c.Sourceonchange}"> 
+                                       
+                                           <option value="All">All</option>
+                                           <option value="Reuse">Reuse</option>
+                                           <option value="Virgin">Virgin</option>
+                                       </lightning:select></b>
+                                        </aura:if>
+                                </div>
+                               <div style="width:187px">     
+                                   <aura:if isTrue="{!v.SourceType == 'Allocation'}">
+                                   <b><lightning:select aura:id="AllocationPicklist" name="selectallocation" label="Select Allocation" onchange="{!c.Allocationonchange}"> 
+                                           <option value="All">All</option>   
+                                           <option value="Demand">Demand</option>
+                                           <option value="Supply">Supply</option>
+                                       </lightning:select></b>
+                                       </aura:if>
+                                       
+                               </div> 
+                            </td>
+                            </tr>                                   
+                                    <td>
+                                        <br/>
+                                        <div class="slds-form-element">
+                                            <b><lightning:input name="testBoolean1" label="Only Current Week" type="checkbox" checked="{!v.currWeekBoolean}" /></b>
+                                        </div>
+                                    </td>
+                                    <aura:if isTrue="{!v.SourceType == 'Demand'}">
+                                    <td>
+                                        <br/>
+                                        <div class="slds-form-element">	
+                                                <b><lightning:input name="testBoolean2" label="ShortFall Products Only" type="checkbox" checked="{!v.shortFallBoolean}" /></b>
+                                            </div>                                        
+                                   </td>
+                                    </aura:if>
+                                     <aura:if isTrue="{!v.SourceType == 'Shipment'}">
+                                         <td></td>
+                            </aura:if>
+                        <aura:if isTrue="{!v.SourceType == 'Allocation'}">
+                                         <td></td>
+                            </aura:if>
+                                <aura:if isTrue="{!v.SourceType == 'Supply'}">
+                                    <td>
+                                <div style="width:180px">
+                                    
+                                        
+                                        <b><lightning:select aura:id="WarehousePicklist" value="{!v.ware.Name}" name="WarehousePicklist" onchange="{!c.handleWarehouse}" label="WarehousePicklist"><!--required="true"-->
+                                            <option value = "">Select Warehouse</option>
+                                            <aura:iteration items="{!v.WarehousePicklistMap}" var="itms" indexVar="key">
+                                                <option text="{!itms.key}" value="{!itms.key}" selected="{!itms.key==v.ware.Name}" />
+                                            </aura:iteration>
+                                            </lightning:select></b>
+                                   
+                                </div>
+                                        </td>
+                                    </aura:if>
+                             
+                                 
+                           <td>
+                               <br/>
+                               
+                            <button style="float:right;margin-right:10px" class="slds-button slds-button_brand" onclick="{!c.Search}">Search</button> 
+                              </td>  
+                            
+                         </table>
+                    </div>
+            </div>
+    <!--<aura:if isTrue="{!v.source == 'Demand'}">
+        abcdef
+    </aura:if>-->
+    
+</aura:component>

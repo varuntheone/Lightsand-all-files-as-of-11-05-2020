@@ -1,0 +1,16 @@
+<apex:page standardController="Transfer_Note__c" renderAs="pdf">
+    <apex:form >
+    <table >        
+        <tr>
+            <td rowspan="4">
+               <apex:outputField value="{!Transfer_Note__c.QR_Code__c}" />
+            </td>
+             <td> <b><i> <div style="font-size: 20px;font-family:Times New Roman,Times,serif;">
+               Warehouse Name : {!Transfer_Note__c.Warehouse_Name__c}<br/> 
+               Transfer Note Id    : {!Transfer_Note__c.Name} <br/>           
+              </div></i> </b>        
+            </td>
+        </tr>
+    </table> 
+</apex:form>
+</apex:page>

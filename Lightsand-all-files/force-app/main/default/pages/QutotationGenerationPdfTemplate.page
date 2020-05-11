@@ -1,0 +1,351 @@
+<apex:Page language="zh_TW" renderAs="pdf" applyBodyTag="false" controller="PDFQuotationGetDataController">
+    <head>
+        <style>
+         body { font-family: 'Arial Unicode MS'; }
+         
+         td, tr{ font-size:10px;}
+         
+          #table_inside td, th, tr{font-size:10px; border-right:1px solid #000; border-bottom:1px solid #000;}
+          
+          #highInfoId td, th, tr{font-size:10px; border-right:1px solid #000; border-bottom:1px solid #000;}
+      </style>
+    </head>
+    <body>
+        <span id="j_id0:j_id5">
+         &nbsp;
+         
+            <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
+                <tbody>
+                    <tr>
+                        <td style="width:40%">
+                            <h3 style="color:#aaa;font-style:italic;">
+                                <span>
+                                    <img alt="" src="{!$Resource.Mainetti_Logo}" style="opacity: 0.9; width: 250px; height: 50px;"/>
+                                </span>
+                            </h3>
+                        </td>
+                        <td>&nbsp;</td>
+                        <td style="width:30%">
+                            <span style="font-size:24px;">
+                                <strong>
+                     QUOTATION</strong>
+                            </span>
+                        </td>
+                        <td>&nbsp;</td>
+                        <td style="width:30%">
+                            <div>
+                                <span style="font-size:10px;">
+                                    <strong>Mainetti Company: 
+                                        <span style="background-color: rgb(238, 238, 238);">{!onlineEnqForPDF.Order_Country__c}{!partnerAddress}</span>
+                                    </strong>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <td style="width:35%; font-size:10px;background: #DCDCDC;">
+                            <span>
+                                <strong>Quotation No</strong>
+                            </span>
+                        </td>
+                        <td style="width:35%; font-size:10px;background: #DCDCDC;">
+                            <span>
+                                <strong>Supplier/Manufacturer Internal PO No</strong>
+                            </span>
+                        </td>
+                        <td style="width:30%; font-size:10px;background: #DCDCDC;border-right:1px #FFF;">
+                            <span>
+                                <strong>Quotation Date</strong>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:35%;font-size:10px; border-bottom:0px #FFF;">
+                            <span>{!onlineEnqForPDF.Name}&nbsp;{!quoteVersionNumber}</span>
+                        </td>
+                        <td style="width:35%;font-size:10px; border-bottom:0px #FFF;">
+                            <span>{!onlineEnqForPDF.Customer_PO_No__c}&nbsp;</span>
+                        </td>
+                        <td style="width:30%;font-size:10px;border-right:1px #FFF; border-bottom:1px #FFF;">
+                            <apex:outputText value="{0,date, MMMM d,  yyyy}">
+                                <apex:param value="{!Today}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <br/>
+            <table  id="addressTableId" cellpadding="0" cellspacing="0" style="width:100%;  border:0px solid #000;">
+                <tbody>
+                    <tr>
+                        <td style="width:48%;">
+                            <table cellpadding="2" cellspacing="0" style="width:100%;border:1px solid #000;">
+                                <tr>
+                                    <td style="width:100%;width:100%;background: #DCDCDC;border-bottom:0.5px solid #fff;">
+                                        <strong>Bill To:&nbsp;</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border-top:1px solid #000;">{!onlineEnqForPDF.Bill_to_Company__c}
+                                        <br/>{!onlineEnqForPDF.Bill_to_Address1__c}
+                                        <br/>{!onlineEnqForPDF.Bill_to_Address2__c}
+                                        <br/>{!onlineEnqForPDF.Bill_to_State__c}
+                                        <br/>{!onlineEnqForPDF.Bill_to_Postcode__c}
+                                        <br/>{!onlineEnqForPDF.Bill_to_Country__c}
+                                        <br/>Contact:&nbsp;{!onlineEnqForPDF.Bill_to_Contact__c}
+                                        <br/>Tel:&nbsp;{!onlineEnqForPDF.Bill_to_Tel__c}
+                                        <br/>Fax:&nbsp;{!onlineEnqForPDF.Bill_to_Fax__c}
+                                        <br/>Email:&nbsp;{!onlineEnqForPDF.Bill_to_Email__c}
+                    
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="width:4%;">
+                            <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border:0px solid #000;">
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="width:48%;">
+                            <table cellpadding="2" cellspacing="0" style="width:100%;border:1px solid #000;">
+                                <tr>
+                                    <td style="width:100%;background: #DCDCDC;border-bottom:0.5px solid #fff;">
+                                        <strong>Ship To:</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border-top:1px solid #000;">{!onlineEnqForPDF.Ship_to_Company__c}
+                                        <br/>{!onlineEnqForPDF.Ship_to_Address1__c}
+                                        <br/>{!onlineEnqForPDF.Ship_to_Address2__c}
+                                        <br/>{!onlineEnqForPDF.Ship_to_State__c}
+                                        <br/>{!onlineEnqForPDF.Ship_to_Postcode__c}
+                                        <br/>{!onlineEnqForPDF.Ship_to_Country__c}
+                                        <br/>Contact:&nbsp;{!onlineEnqForPDF.Ship_to_Contact__c}
+                                        <br/>Tel:&nbsp;{!onlineEnqForPDF.Ship_to_Tel__c}
+                                        <br/>Fax:&nbsp;{!onlineEnqForPDF.Ship_to_Fax__c}
+                                        <br/>Email:&nbsp;{!onlineEnqForPDF.Ship_to_Email__c}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+         &nbsp;
+         
+            <table style="width:100%; border:1px solid #000;" cellpadding="2" cellspacing="0">
+                <tbody>
+                    <tr>
+                        <td colspan="3" style="width:100%;font-size:10px;background: #DCDCDC; color:black; font-weight:bold;">Retailer Data</td>
+                    </tr>
+                    <tr>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-right:1px solid #000;vertical-align: text-top;">
+                            <strong>&nbsp;&nbsp;Retailer:&nbsp;&nbsp;</strong>
+                            <span>{!retailerCodeName}</span>
+                        </td>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-right:1px solid #000;vertical-align: text-top;">
+                            <strong>Division:&nbsp;&nbsp;</strong>
+                            <span>{!division}</span>
+                        </td>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;vertical-align: text-top;">
+                            <strong>Label:&nbsp;&nbsp;</strong>{!label}
+                            <span></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-bottom:1px solid #000;border-right:1px solid #000;vertical-align: text-top;">
+                            <strong>&nbsp;&nbsp;Season:&nbsp;&nbsp;</strong>
+                            <span>{!season}-{!seasonYear}</span>
+                        </td>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-bottom:1px solid #000;border-right:1px solid #000;vertical-align: text-top;">
+                            <strong>Supplier Code:&nbsp;&nbsp;</strong>
+                            <span>{!supplierCode}</span>
+                        </td>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-bottom:1px solid #000;vertical-align: text-top;">
+                            <strong>Manufacturer Code:&nbsp;&nbsp;</strong>{!manufaturerCode}
+                            <span></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="width:100%;font-size:10px;background: #DCDCDC; border-top:0.5px solid #000;border:1px; color:black; font-weight:bold;">Order Details</td>
+                    </tr>
+                    <tr>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-right:1px solid #000;vertical-align: text-top;">
+                            <strong>&nbsp;&nbsp;Payment Terms:&nbsp;&nbsp;</strong>
+                            <span>{!paymentTerm}</span>
+                        </td>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-right:1px solid #000;vertical-align: text-top;">
+                            <strong>Shipment Term:&nbsp;&nbsp;</strong>
+                            <span>{!exportTerm}</span>
+                        </td>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;vertical-align: text-top;">
+                            <strong>Expected Shipped Date:&nbsp;&nbsp;</strong>
+                            <apex:outputText value="{0,date, d MMMM yyyy}">
+                                <apex:param value="{!expectedShipDate}"/>
+                            </apex:outputText>
+                            <span></span>
+                        </td>
+                    </tr>
+                    
+                    <apex:outputText rendered="{!showPromisedDate}">
+                    <tr>
+                        <td style="width:33%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-right:1px solid #000;vertical-align: text-top;">
+                            <strong>New Promised Completion Date:&nbsp;&nbsp;</strong>
+                            <apex:outputText value="{0,date, d MMMM yyyy}">
+                                <apex:param value="{!newPromisedDeliveryDate}"/>
+                            </apex:outputText>
+                            <span></span>
+                        </td>
+                        <td colspan="2" style="width:66%;font-size:10px;text-align:left;border-top:0.5px solid #000;border-right:1px solid #000;vertical-align: text-top;">
+                            <strong>New Promised Completion Date Remark:&nbsp;&nbsp;<br/></strong>
+                            <span><apex:outputText value="{!newPromisedDeliveryDateRemark}" escape="false"></apex:outputText></span>
+                        </td>
+                    </tr>
+                    </apex:outputText>
+                </tbody>
+            </table>
+            <p style="width:100%;font-size:10px;text-align:right;border:0px;vertical-align:text-top;">Currency:({!lCurrency})</p>
+            <table id="table_inside" cellpadding="2" cellspacing="0" style="width:100%;border-left:1px solid #000;border-top:1px solid #000;border-bottom:1px solid #000; font-size:10px;">
+                <tbody style="">
+                    <tr style="background: #DCDCDC; color:black; font-weight:bold;" bgcolor="grey">
+                        <th>Model</th>
+                        <apex:outputText rendered="{!isProdImageToBeDisplayed}">
+                            <th>Visual</th>
+                        </apex:outputText>
+                        <th>Color</th>
+                        <th>Product Description</th>
+                        <th>Product Type</th>
+                        <th>Product Family</th>
+                        <th align="right">Quantity (pcs)</th>
+                        <th>Model Remark</th>
+                        <th align="right">Price (100pcs)</th>
+                        <th align="right">Amount</th>
+                    </tr>
+                    <apex:repeat value="{!detailsList}" var="eachDetail">
+                        <tr>
+                            <td>{!eachDetail.model}</td>
+                            <apex:outputText rendered="{!isProdImageToBeDisplayed}">
+                                <td>
+                                    <apex:image url="/servlet/servlet.FileDownload?file={!eachDetail.productImage}"  height="40" width="50"/>
+                                </td>
+                            </apex:outputText>
+                            <td>{!eachDetail.color}</td>
+                            <td>{!eachDetail.descreption}</td>
+                            <td>{!eachDetail.productType}</td>
+                            <td>{!eachDetail.productFamily}</td>
+                            <td align="right">{!eachDetail.qty}</td>
+                            <td>{!eachDetail.modelRemark}</td>
+                            <td align="right">{!eachDetail.price100pcs}</td>
+                            <td align="right">{!eachDetail.salesValueInLocalCurrency}</td>
+                        </tr>
+                    </apex:repeat>
+                    <apex:repeat value="{!enquiryChargesList}" var="eachCharges">
+                        <tr>
+                            <td colspan="{!colspanCount}" align="right" style="border-top: 0;">{!eachCharges.miscCharges} &nbsp;-&nbsp; {!eachCharges.description} </td>
+                            <td align="right">{!eachCharges.afterTax}</td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <td colspan="{!colspanCount}" align="right" style="border-bottom: 0;">SUB TOTAL&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                        <td align="right">{!total}</td>
+                    </tr>
+                    <apex:outputText rendered="{!showTax}">
+                        <tr>
+                            <td colspan="{!colspanCount}" align="right" style="border-bottom: 0;border-top: 0;">TAX &nbsp;@&nbsp;[{!taxPercentage}]%&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td align="right">{!totalTax}</td>
+                        </tr>
+                    </apex:outputText>
+                    <tr style="background: #DCDCDC; color:black; font-weight:bold;" bgcolor="grey">
+                        <td colspan="{!colspanCount}" align="right" style="border-bottom: 0px; border-top: 0px; border-right:0px;">TOTAL {!lCurrency}&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                        <td align="right" style="border-bottom: 0px;">{!finalTotal}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <br/>
+            <apex:outputText rendered="{!showMmgPONumber}">
+                <table style="width:100%;" cellpadding="2" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td style="width:15%;font-family: Arial Unicode MS;font-size:10px;font-weight:bold;text-align:left;vertical-align: text-top;">MMG PO Number:&nbsp;</td>
+                            <td style="width:85%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">
+                                <pre>{!mmgPONumber}</pre>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </apex:outputText>
+            <apex:outputText rendered="{!showCustomerComment}">
+                <table style="width:100%;" cellpadding="2" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td style="width:15%;font-family: Arial Unicode MS;font-size:10px;font-weight:bold;text-align:left;vertical-align: text-top;">Customer Comment:&nbsp;</td>
+                            <td style="width:85%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">
+                                <apex:outputText value="{!customerComment}" escape="false"></apex:outputText>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </apex:outputText>
+            <apex:outputText rendered="{!showRemarks}">
+                <table style="width:100%;" cellpadding="2" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td style="width:8%;font-family: Arial Unicode MS;font-size:10px;font-weight:bold;text-align:left;vertical-align: text-top;">Remarks:&nbsp;</td>
+                            <td style="width:92%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">
+                                <apex:outputText value="{!salesRepRemarks}" escape="false"></apex:outputText>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p></p>
+                <br/>
+            </apex:outputText>
+            <table style="width:100%;" cellpadding="2" cellspacing="0">
+                <tbody>
+                    <tr>
+                        <td style="width:100%;font-family: Arial Unicode MS;font-size:10px;font-weight:bold;text-align:left;vertical-align: text-top;">Any questions/Comments on the quote, please contact your local Sales person below:</td>
+                    </tr>
+                    <tr>
+                        <td style="width:100%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">Account Manager:&nbsp;&nbsp;{!salesPerson}&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width:100%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">Account Manager Contact Number:&nbsp;&nbsp;{!salesPersonContactNumber}&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width:100%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">Account Manager Email Address:&nbsp;&nbsp;{!salesPersonEmail}&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <br/>
+            <table cellpadding="2" cellspacing="0" style="width:100%;{!IF(showCustomerServicePersonDetails,'display:block','display:none')}   ">
+                <tbody>
+                    <!--<tr>
+                        <td style="width:100%;font-family: Arial Unicode MS;font-size:10px;font-weight:bold;text-align:left;vertical-align: text-top;">Customer Service person details below:</td>
+                    </tr>-->
+                    <tr>
+                        <td style="width:100%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">Customer Service Name:&nbsp;&nbsp;{!customerServicePersonName}&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width:100%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">Customer Service Contact Number:&nbsp;&nbsp;{!customerServicePersonNumber}&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width:100%;font-size:10px;font-weight:normal;text-align:left;vertical-align: text-top;">Customer Service Email Address:&nbsp;&nbsp;{!customerServicePersonEmail}&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p></p>
+            <br/>
+        </span>
+    </body>
+</apex:page>

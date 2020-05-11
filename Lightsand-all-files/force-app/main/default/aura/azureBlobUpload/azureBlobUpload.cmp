@@ -1,0 +1,23 @@
+<aura:component implements="flexipage:availableForAllPageTypes" 
+                access="global">
+
+    <aura:attribute name="vfHost" type="String" 
+        default="mainetti--lightsand.lightning.force.com"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <lightning:button variant="base" label="Open Vf" title="Base action" onclick="{! c.handleClick }"/>
+    <!--<iframe aura:id="vfFrame" src="{!'https://' + v.vfHost + '/apex/azureVFLightInt'}" />-->
+    
+     <!--<aura:registerEvent name="inventoryRefreshEvent" type="c:inventoryRefreshEvent" />
+    <aura:handler event="c:inventoryRefreshEvent" action="{!c.init}"/>
+    
+   <br/><br/>
+    <aura:registerEvent name="inventoryRefreshEvent" type="c:inventoryRefreshEvent" />
+    <aura:attribute name="str" type="String" default="Hello"/>
+    <aura:handler event="c:inventoryRefreshEvent" action="{!c.init}"/>
+    <div>{!v.str}</div>
+    <aura:attribute name="str" type="String" default="Hello World Ligtning!!!"/>
+  	<div>{!v.str}</div>
+    <br/><br/>
+	<aura:registerEvent name="inventoryRefreshEvent" type="c:inventoryRefreshEvent" />
+	<ui:button label="fireEvent" press="{!c.fireevent}" />-->
+</aura:component>

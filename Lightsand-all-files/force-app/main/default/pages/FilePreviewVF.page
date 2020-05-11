@@ -1,0 +1,16 @@
+<apex:page showHeader="false" sidebar="false">
+    
+    <apex:outputPanel rendered="{! If($CurrentPage.parameters.type =='file',true,false) }">
+        <embed src="/_swf/196007/sfc/flex/DocViewer.swf" flashvars="shepherd_prefix=/sfc/servlet.shepherd&v={!$CurrentPage.parameters.contentversionId}&mode=chatter_bubble&in_tests=false" width="100%" height="750px" align="middle" id="renditionLarge" quality="high" bgcolor="#f3f3f3" name="renditionLarge" allowscriptaccess="always" allowfullscreen="true" pluginspage="http://www.adobe.com/go/getflashplayer" wmode="opaque" type="application/x-shockwave-flash"/>
+    </apex:outputPanel>
+    
+    <apex:outputPanel rendered="{! If($CurrentPage.parameters.type =='attachment',true,false) }" >        
+        <table style="width:100%">
+            <tr>
+                <td style="text-align:center;"><img src="/servlet/servlet.FileDownload?file={!$CurrentPage.parameters.contentversionId}" style="height: auto;max-width: 100%;max-height: 600px;"/></td>
+            </tr>
+        </table>
+    </apex:outputPanel>
+    
+    
+</apex:page>

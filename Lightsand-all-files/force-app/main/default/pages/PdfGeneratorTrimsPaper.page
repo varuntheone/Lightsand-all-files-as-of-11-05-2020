@@ -1,0 +1,477 @@
+<apex:page language="zh_TW" renderAs="pdf" applyBodyTag="false" controller="PDFProdConGetDataController">
+    <head>
+        <style>
+         body { font-family: 'Arial Unicode MS'; }
+         td, tr{ font-size:9px;}
+         th { font-size:14px;}
+         
+          #table_inside td, th, tr{font-size:10px; border-right:1px solid #000; border-bottom:1px solid #000;}
+          #highInfoId td, th, tr{font-size:10px; border-right:1px solid #000; border-bottom:1px solid #000;}
+          #highInfoId  th {background-color: #f2f2f2;}
+    @page {
+        @top-right {
+          content: "Page " counter(page) " of " counter(pages);
+              font-weight: lighter;
+              font-size:8pt;
+            }
+         @bottom-center {
+                    content: element(header);
+                    font-weight: lighter;
+              font-size:8pt;
+                }
+       
+        }
+        div.header {
+                font-weight: lighter;
+                  font-size:8pt;
+                text-align: center;
+                position: running(header);
+            }
+      </style>
+    </head>
+   <body>
+        
+              <span id="j_id0:j_id5">
+                
+         
+             
+           
+            <table id="highInfoId" cellpadding="4" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="3" style="width:100%;border-right:0px solid #000;">
+                            <strong>Production Configurator - Trims-Paper</strong>&nbsp;
+                        </th>
+                    </tr>
+                    <tr>
+                        <td rowspan ='2' style="width:40%; text-align:left;">
+                        <img alt="" src="{!$Resource.Mainetti_Logo}" style="  width: 250px; height: 50px;"/>
+                     
+                          </td>
+                          <td rowspan ='2' style="width:40%; text-align:left;vertical-align: text-top;">
+                        <strong>Customer Name:</strong><br></br>&nbsp;<span style="font-size:20pt;font-weight: bold;">{!ProdConForPDF.Customer_Name__c}</span>
+                     
+                          </td>
+                         <td style="width:20%; text-align:left;border-right:0px solid #000;">
+                            <strong>Salesforce Number:</strong>&nbsp;{!ProdConForPDF.Name}
+                          </td>                         
+                    </tr>
+                    <tr>
+                    <td style="width:20%; text-align:right;border-right:0px solid #000;">
+                     <p id="highheader"><strong>Date:</strong>&nbsp;
+                     <span style="background-color: rgb(238, 238, 238);">
+                                <apex:outputText value="{0,date, MMMM d,  yyyy}">
+                                    <apex:param value="{!ProdConForPDF.Created_Date__c}"/>
+                                </apex:outputText>
+                            </span>
+                            </p>
+                          </td>  
+                    </tr>
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:100%;border-right:0px solid #000;">
+                            <strong></strong>&nbsp;
+                        </th>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Quotation__c}"/>&nbsp;Quotation
+                     
+                          </td>
+                          <td rowspan="1" style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Sample__c}"/>&nbsp;Sample
+                          </td>
+                           <td rowspan="1" style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Sample Quantity:&nbsp;                     
+                          </td> 
+                          <td rowspan="1" style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                          {!ProdConForPDF.Sample_Quantity__c}                  
+                          </td> 
+                          
+                    </tr>
+                    
+                    <tr>
+                        <td style="width:25%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Artwork__c}"/>&nbsp;Artwork                     
+                          </td>
+                          <td style="width:25%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Production__c}"/>&nbsp;Production
+                          </td>
+                           <td style="width:25%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                        Production Quantity:&nbsp;                      
+                          </td> 
+                          <td style="width:25%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                           {!ProdConForPDF.Production_Quantity__c}                 
+                          </td> 
+                          
+                    </tr>
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:100%;border-right:0px solid #000;">
+                            <strong>Dimension</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Overall Dimension (cm):&nbsp;                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Product_Reference__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Variable Data(s):&nbsp;              
+                          </td>
+                           <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Description__c}          
+                          </td>
+                           
+                          
+                    </tr>
+                    <tr>
+                    <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                         Finished Dimension (cm):&nbsp;                                      
+                          </td>
+                    <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Product_Reference__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                                     
+                          </td>
+                           <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                                     
+                          </td>
+                    </tr>
+                    
+                    
+                </tbody>
+            </table>
+            
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:80%;border-right:0px solid #000;">
+                            <strong>Front</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                   <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Front # of Color:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Front_num_of_Color__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Front Pantone:          
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_Pantone__c}                
+                          </td>
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Front CMYK:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_CMYK__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Front Finishing Others:          
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Back_CMYK__c}                
+                          </td>
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Front Coating:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_Pantone__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Front Finishing:          
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Back_Pantone__c}                
+                          </td>                                                    
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Front Material:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Print_Method__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Front Weight:          
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Remark__c}                
+                          </td>                                                    
+                    </tr>
+                    
+                </tbody>
+            </table>
+      
+
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:80%;border-right:0px solid #000;">
+                            <strong>Back</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                   <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Back # of Color:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Front_num_of_Color__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Back Pantone:          
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_Pantone__c}                
+                          </td>
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Back CMYK:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_CMYK__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Back Finishing Others:          
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Back_CMYK__c}                
+                          </td>
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Back Coating:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_Pantone__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Back Finishing:          
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Back_Pantone__c}                
+                          </td>                                                    
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Back Material:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Print_Method__c}                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Back Weight:          
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Remark__c}                
+                          </td>                                                    
+                    </tr>
+                    
+                </tbody>
+            </table>
+             <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:80%;border-right:0px solid #000;">
+                            <strong>Security/ Special Function</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                   <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        PFL Security:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Front_num_of_Color__c}                                      
+                          </td>
+                         
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            Security/ Special Function - Others:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_CMYK__c}                                      
+                         </td>
+                          
+                    </tr>
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:80%;border-right:0px solid #000;">
+                            <strong>Accessories Eyelet</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                   <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Accessories Eyelet Color:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Front_num_of_Color__c}                                      
+                          </td>
+                         <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Accessories Eyelet Others:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Front_num_of_Color__c}                                      
+                          </td>
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           Accessories Eyelet Diameter (mm):                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_CMYK__c}                                      
+                         </td>
+                          
+                    </tr>
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:80%;border-right:0px solid #000;">
+                            <strong>Accessories String</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                   <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Accessories String Length (mm):                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Front_num_of_Color__c}                                      
+                          </td>
+                         <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Accessories Knot to Hole Length(mm):                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Front_num_of_Color__c}                                      
+                          </td>
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           Accessories String Color:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_CMYK__c}                                      
+                         </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                          Accessories String Material:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_CMYK__c}                                      
+                         </td>
+                    </tr>
+                    <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           Accessories String Others:                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                           {!ProdConForPDF.Front_CMYK__c}                                      
+                         </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                                                             
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                                                                
+                         </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:80%;border-right:0px solid #000;">
+                            <strong>Accessories</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                   <tr>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Accessories Others(mm):                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                       {!ProdConForPDF.Front_num_of_Color__c}                                      
+                          </td>
+                         <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                                                           
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                                                         
+                          </td>
+                          
+                          
+                    </tr>
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="2" style="width:100%;border-right:0px solid #000;">
+                            <strong>Others Information</strong> 
+                        </th>
+                        
+                    </tr>
+                    <tr style="height:100px">
+                        <td style="width:50%; text-align:left;vertical-align: text-top;">
+                        Packing Requirement:&nbsp;{!ProdConForPDF.Packing_Requirement__c}          
+                          </td>                   
+                        <td style="width:50%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                        Remark:&nbsp;{!ProdConForPDF.Remark__c}           
+                          </td>
+                        
+                          
+                          
+                    </tr>
+                    
+                </tbody>
+            </table>
+     
+         &nbsp;
+         
+           
+        </span>
+    </body>
+</apex:page>

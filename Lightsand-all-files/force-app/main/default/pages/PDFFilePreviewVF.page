@@ -1,0 +1,3 @@
+<apex:page controller="PDFFilePreviewController" showHeader="false" sidebar="false">
+   <iframe src="data:application/pdf;base64,{!pdfData}" height="600px" style="width:100%;" id="frame" frameborder="0"></iframe>    
+</apex:page>

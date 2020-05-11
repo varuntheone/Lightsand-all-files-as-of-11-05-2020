@@ -1,0 +1,28 @@
+<apex:page standardController="Carton_Details__c" extensions="SingleCartonPrint" renderAs="pdf" applyBodyTag="false" applyHtmlTag="false" showHeader="false">
+    <html>
+    <head>
+        <style>
+            @page {  
+             size: A4 landscape; /* ISO/JIS A4 (210mm�297mm) */  
+             margin: 5mm; 
+          } 
+    @page:first {  
+             size: A4 landscape; /* ISO/JIS A4 (210mm�297mm) */ 
+             margin: 5mm; 
+             margin-top: 3mm; 
+
+          }  
+        </style>
+        </head>
+        <apex:form >
+         <table border="0" cellpadding="0" cellspacing="40"  style="width:100%;font-size:xx-large;font-family: fantasy;">        
+                 <tr><td colspan="2" style="text-align: center;"><br/><br/><br/><br/></td></tr>                                   
+                        <tr>
+                            <td colspan="2" style="text-align: center;">                                
+                                <apex:outputField value="{!Carton_Details__c.QR_Code__c}" /> 
+                            </td>
+                        </tr>
+                     </table>  
+            </apex:form>
+    </html>
+</apex:page>

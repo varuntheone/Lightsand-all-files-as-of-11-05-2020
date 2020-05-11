@@ -1,0 +1,44 @@
+<aura:component controller="AddRemoveCartonfromTransferNote" implements="force:hasRecordId,force:lightningQuickActionWithoutHeader,force:hasSObjectName" >
+    
+    <aura:attribute name="transferNote" type="Transfer_Note__c" default="{ 'sobjectType': 'Transfer_Note__c','Name': '','Total_Carton_Send__c': 0,'Status__c':''}"/>
+    <aura:attribute name="nwPicklist" type="String[]"/> 
+    <aura:attribute name="recordId" type="String" />   
+    <aura:attribute name="warningMessage" type="String" default="" />  
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="status" type="String" default=""/>
+    
+    <aura:if isTrue="{!equals(v.status, 'Yes')}">
+        <h1 style="font-size: 20px;text-align: center;" class="slds-text slds-size--1-of-1">Update All Cartons Status</h1>
+        <hr style="margin: 1rem 0;"/>
+        <div class="slds-col--padded-large slds-large-size--1-of-1 slds-medium-size--1-of-1 slds-small-size--1-of-1 slds-x-small-size--1-of-1 slds-m-bottom--medium">                                                               
+            <div class="slds-form-element slds-is-required">  </div>
+            <label class="slds-form-element__label" for="picklist">Status</label>
+            <ui:inputSelect aura:id="picklistId" class="slds-input" > <!-- change="{!c.onSelectChange}" -->
+                <aura:iteration items="{!v.nwPicklist}" var="t"> 
+                    <ui:inputSelectOption text="{!t}" /> 
+                </aura:iteration>  
+            </ui:inputSelect>                                                             
+            
+        </div>
+        <h1 style="color:Red" align="center">{!v.warningMessage}</h1>
+        <div class="slds-grid slds-grid--align-center slds-m-top--medium">        
+            <button class="slds-button slds-button--brand" onclick="{!c.updaterecordpicklist}">Update</button>
+            <button class="slds-button slds-button_destructive" onclick="{!c.closePopUp}">Cancel</button>        
+        </div>
+        <aura:set attribute="else"> 
+            <aura:if isTrue="{!equals(v.status, 'No')}">
+                <div class="slds-modal__header">
+                    <h2 class="slds-text-heading--medium">Operation Not Allowed</h2>
+                </div>
+                <br></br>
+                <ui:outputText value="This operation is not allowed." />
+                <br></br><br></br>
+                <center>
+                    <button class="slds-button slds-button_destructive" onclick="{!c.closePopUp}">Cancel</button>
+                </center>
+            </aura:if>
+        </aura:set>
+    </aura:if>
+</aura:component>

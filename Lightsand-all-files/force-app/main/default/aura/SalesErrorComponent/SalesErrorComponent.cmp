@@ -1,0 +1,134 @@
+<aura:component controller="SalesErrorController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="errorColumns" type="List"/>
+    <aura:attribute name="errorValues" type="Sales_Transaction_Stage__c[]"/>
+    <aura:attribute name="batchId" type="ID"/>
+    
+    <aura:attribute name="page" type="integer" description="stores page Number"/>
+    
+    <!--declare attributes for checkboxes--> 
+    <aura:attribute name="remarks" type="boolean" default="false"/> -->
+    <aura:attribute name="missingData" type="boolean" default="false"/>
+    <aura:attribute name="validationFailed" type="boolean" default="false"/>
+    <aura:attribute name="warning" type="boolean" default="false"/>
+    <aura:attribute name="calculationFailed" type="boolean" default="false"/>
+    <aura:attribute name="dateMismatch" type="boolean" default="false"/>
+    
+    
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="recordId" type="String"/>
+    
+    <aura:attribute name="allData" type="List"/>
+    <aura:attribute name="currentPageNumber" type="Integer" default="1"/>
+    <aura:attribute name="pageSize" type="Integer" default="10"/>
+    <aura:attribute name="totalPages" type="Integer" default="0"/>
+    <aura:attribute name="pageList" type="List"/>
+    
+    
+    <lightning:layout multipleRows="true" horizontalAlign="center">
+        <lightning:card>
+            <lightning:layoutItem class="searchBox" padding="around-small" size="4">
+                <table align = "center">
+                    <tr>
+                        <div style="height:50px">                           
+                            <td>
+                                <div style="width:150px" >
+                                    <lightning:input name="testBoolean1" label="Missing Data" type="checkbox" checked="{!v.missingData}" />
+                                </div>
+                            </td>
+                            <td>
+                                <div style="width:150px" >
+                                    <lightning:input name="testBoolean1" label="Validation Failed" type="checkbox" checked="{!v.validationFailed}" />
+                                </div>
+                            </td>
+                            <td>
+                                <div style="width:150px" >
+                                    <lightning:input name="testBoolean1" label="Warning" type="checkbox" checked="{!v.warning}" />
+                                </div>
+                            </td>
+                            <td>
+                                <div style="width:150px" >
+                                    <lightning:input name="testBoolean1" label="Calculation Failed" type="checkbox" checked="{!v.calculationFailed}" />
+                                </div>
+                            </td>
+                             <td>
+                                <div style="width:150px" >
+                                    <lightning:input name="testBoolean1" label="Date Mismatch" type="checkbox" checked="{!v.dateMismatch}" />
+                                </div>
+                            </td>
+                             <td>
+                                <div style="width:150px" >
+                                    <lightning:input name="testBoolean1" label="Remarks" type="checkbox" checked="{!v.remarks}" />
+                                </div>
+                            </td>
+                            
+                            
+                            <td ><lightning:button  variant="brand" label="Search" aura:id="" onclick="{!c.handleSalesSearchClick}"  /></td>
+                            <!--<td>&nbsp;</td>
+                    <td>&nbsp;</td>-->
+                        </div>
+                    </tr>
+                </table>
+            </lightning:layoutItem>
+        </lightning:card>
+    </lightning:layout>
+    &nbsp;
+    <lightning:card title="{! 'Current Page ' + v.currentPageNumber}" >
+        <lightning:icon class="missingField" size="small"/>&nbsp;Missing data
+        <lightning:icon class="validationFailed" size="small"/>&nbsp;Validation failed
+        <lightning:icon class="warning" size="small"/>&nbsp;Warning
+        <lightning:icon class="calculationFail" size="small"/>&nbsp;Calculation failed
+        <lightning:icon class="dateMismatch" size="small"/>&nbsp;Date mismatch 
+        <lightning:layout multipleRows="true" horizontalAlign="center">
+            <lightning:layoutItem padding="around-small" size="12">
+                <lightning:datatable class="tableHeader"
+                                     data="{!v.data }"
+                                     columns="{!v.errorColumns}"
+                                     keyField="id"
+                                     hideCheckboxColumn="true"
+                                     min-column-width="30px"
+                                     onrowaction="{! c.handleRowAction }"/>
+                <!--<div class="slds-align_absolute-center" >             
+                    <lightning:button disabled="{!v.page == 1}" variant="brand" label="Previous Page" onclick="{! c.navigate }" />             
+           <lightning:button disabled="{!v.page == v.pages}" aura:id="previousPage" variant="brand" label="Next Page" onclick="{! c.navigate }" />
+                </div>-->
+            </lightning:layoutItem>
+            <lightning:layoutItem padding="around-small" flexibility="auto">
+                <lightning:button label="First" iconName="utility:left" iconPosition="left"
+                                  onclick="{!c.onFirst}" disabled="{! v.currentPageNumber == 1}"/>
+                <lightning:button iconName="utility:chevronleft" iconPosition="left"
+                                  onclick="{!c.onPrev}" disabled="{! v.currentPageNumber == 1}"/>
+                
+                <span class="slds-p-horizontal_x-small">
+                    <a onclick="{!c.processMe}" name="1" 
+                       class="{! (v.currentPageNumber == 1) ? 'selected' : ''}">1</a>
+                </span>
+                <span class="slds-p-horizontal_xxx-small">
+                    <a>...</a>
+                </span>
+                
+                <aura:iteration items="{!v.pageList}" var="item">
+                    <span class="slds-p-horizontal_x-small">
+                        <a onclick="{!c.processMe}" name="{!item}"
+                           class="{! (v.currentPageNumber == item) ? 'selected' : ''}">{!item}</a>
+                    </span>
+                </aura:iteration>
+                
+                <span class="slds-p-horizontal_xxx-small">
+                    <a>...</a>
+                </span>
+                <span class="slds-p-horizontal_x-small">
+                    <a onclick="{!c.processMe}" name="{!v.totalPages}"
+                       class="{! (v.currentPageNumber == v.totalPages) ? 'selected' : ''}">{!v.totalPages}</a>
+                </span>
+                
+                <lightning:button iconName="utility:chevronright" iconPosition="right" 
+                                  disabled="{! v.currentPageNumber == v.totalPages}" onclick="{!c.onNext}"/>
+                <lightning:button label="Last" iconName="utility:right" iconPosition="right" 
+                                  disabled="{! v.currentPageNumber == v.totalPages}" onclick="{!c.onLast}"/>
+            </lightning:layoutItem>
+        </lightning:layout>
+    </lightning:card>
+</aura:component>

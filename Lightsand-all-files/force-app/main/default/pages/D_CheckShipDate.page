@@ -1,0 +1,30 @@
+<apex:page standardController="Online_Enquiry__c" extensions="D_CheckShipDateControllerEx">
+  <apex:form id="pageMainForm">
+<apex:pageBlock title="Check Ship Date" mode="edit">
+      <apex:pageBlockButtons location="top">
+        <apex:commandButton value="Save" action="{!save}" />
+        <apex:commandButton value="Cancel" action="{!cancel}" />
+      </apex:pageBlockButtons>
+      <apex:pageBlockSection columns="1" showHeader="true" title="">
+        <apex:outputText label="Enquiry Date : " value="{0,date, MMMM d,  yyyy}">
+            <apex:param value="{!onlineEnquiry.Enquiry_Date__c}"/>
+        </apex:outputText>
+        <apex:outputText label="Expected Shipped Date : " value="{0,date, MMMM d,  yyyy}">
+            <apex:param value="{!onlineEnquiry.Expected_Ship_Date__c}"/>
+        </apex:outputText>
+        <!--<apex:outputText label="Enquiry Date : " value="{!onlineEnquiry.Enquiry_Date__c}"/>-->
+        <!--<apex:outputText label="Expected Shipped Date : " value="{!onlineEnquiry.Expected_Ship_Date__c}"/>-->
+        <apex:outputText label="Lead Time : " value="{!LeadTimeByPriceBookProduct}" />
+        <apex:outputText label="Promised Delivery Date : " value="{0,date, MMMM d,  yyyy}">
+            <apex:param value="{!onlineEnquiry.Promised_Delivery_date__c}"/>
+        </apex:outputText>
+        <!--<apex:inputField label="Promised Delivery Date : " value="{!onlineEnquiry.Promised_Delivery_date__c}" />-->
+        <apex:inputField label="New Promised Delivery Date : " value="{!onlineEnquiry.New_Promised_Delivery_Date__c}" required="true"/>
+        </apex:pageBlockSection>
+      <apex:pageBlockButtons location="bottom">
+        <apex:commandButton value="Save" action="{!save}" />
+        <apex:commandButton value="Cancel" action="{!cancel}" />
+      </apex:pageBlockButtons>
+    </apex:pageBlock>
+  </apex:form>
+</apex:page>

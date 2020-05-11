@@ -1,0 +1,38 @@
+<apex:page standardController="Design_Log_Form__c"  extensions="designLogTechnicalPersonEmailController" sidebar="false">
+    <script type="text/javascript">
+        function selectAllCheckboxes(obj,receivedInputID){
+            var inputCheckBox = document.getElementsByTagName("input");
+            for(var i=0; i<inputCheckBox.length; i++){
+                if(inputCheckBox[i].id.indexOf(receivedInputID)!=-1){
+                    inputCheckBox[i].checked = obj.checked;
+                }
+            }
+        }
+    function CloseAndRefresh(){
+       window.top.location.href="/lightning/r/Design_Log_Form__c/{!$CurrentPage.parameters.id}/view";       
+    }
+    </script>
+    <apex:form >
+        <apex:pageBlock >  
+            <apex:pageMessages />
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Send Email to Selected Technical Users" disabled="{!disableButton}" action="{!processSelected}" oncomplete="javascript:CloseAndRefresh();" rerender="table"/>
+                
+            </apex:pageBlockButtons> 
+            <apex:pageblockSection title="All Technical Persons" collapsible="false" columns="1"> 
+                <apex:pageBlockTable value="{!wrapUserList}" var="usrWrap" id="table" title="All Technical Persons">
+                    <apex:column >
+                        <apex:facet name="header">
+                            <apex:inputCheckbox onclick="selectAllCheckboxes(this,'inputId')"/>
+                        </apex:facet>
+                        <apex:inputCheckbox value="{!usrWrap.selected}" id="inputId"/>
+                    </apex:column>
+                    <apex:column value="{!usrWrap.user.FirstName}" />
+                    <apex:column value="{!usrWrap.user.LastName}" />
+                    <apex:column value="{!usrWrap.user.Email}" />
+                    <apex:column value="{!usrWrap.user.Mainetti_Company__c}" />                    
+                </apex:pageBlockTable>
+             </apex:pageblockSection>
+        </apex:pageBlock>
+    </apex:form> 
+</apex:page>

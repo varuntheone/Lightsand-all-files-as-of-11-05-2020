@@ -1,0 +1,23 @@
+<apex:page standardController="Mould_Action_Form__c" extensions="MouldActionFormEditController">
+<apex:sectionHeader title="Mould Action Form Edit" subtitle="{!Mould_Action_Form__c.name}"/>
+<apex:pageMessages />
+<apex:form >
+<apex:pageBlock >
+<apex:pageBlockButtons >
+<apex:commandButton value="Save" action="{!save}"/>
+<apex:commandButton value="Save & New" action="{!saveNew}"/>
+<apex:commandButton value="Cancel" action="{!cancel}"/>
+</apex:pageBlockButtons>
+<apex:pageBlockSection title="{!subtitle}" collapsible="false">
+<apex:repeat value="{!$objectType.Mould_Action_Form__c.fieldSets.Edit_Section}" var="af">
+<apex:inputField value="{!Mould_Action_Form__c[af.fieldPath]}" required="{!OR(af.required, af.dbrequired)}"/>
+</apex:repeat>
+</apex:pageBlockSection>
+<apex:pageBlockSection title="Mould Action Detail" collapsible="false">
+<apex:repeat value="{!$objectType.Mould_Action__c.fieldSets.Edit_Section}" var="ma">
+<apex:inputField value="{!Mould_Action[ma.fieldPath]}" required="{!OR(ma.required, ma.dbrequired)}"/>
+</apex:repeat>
+</apex:pageBlockSection>
+</apex:pageBlock>
+</apex:form>
+</apex:page>

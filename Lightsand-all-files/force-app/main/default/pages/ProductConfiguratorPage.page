@@ -1,0 +1,42 @@
+<apex:page standardController="Product_Configurator__c" extensions="ProductConfiguratorExtension" action="{!initialize}">
+    
+    <style>
+        .pbSubheader {
+        background-color: #8a9ebe !Important;
+        border-style: solid !Important;
+        font-weight: bold !Important;
+        font-size: 91% !Important;
+        padding: 2px 2px 2px 5px !Important;
+        margin-top: 15px !Important;
+        overflow: hidden !Important;
+        margin-bottom: 2px !Important;
+        }
+    </style>
+    
+    <apex:form >
+        
+        <apex:messages />
+            
+       <apex:pageBlock tabStyle="Product_Configurator__c">
+           <apex:pageBlockButtons >
+               <apex:commandButton value="Save" action="{!save}"  />
+               <apex:commandButton value="Cancel" action="{!cancel}"  />
+           </apex:pageBlockButtons>
+            
+            <apex:repeat value="{!sectionsList}" var="eachSection">
+                <apex:pageBlockSection title="{!eachSection}" collapsible="false"  rendered="{!IF(type=='New',true,false)}">
+                    <apex:repeat value="{!fieldsMap[eachSection]}" var="eachField">                    
+                        <apex:inputField value="{!prodConfidObj[eachField]}" rendered="{!NOT(IF(CONTAINS(imageFormulaFields, eachField),true,false))}"/>
+                        <apex:inputField value="{!pdObj[eachField]}" rendered="{!IF(CONTAINS(imageFormulaFields, eachField),true,false)}"/>
+                    </apex:repeat>            
+                </apex:pageBlockSection>                
+                
+                <apex:pageBlockSection columns="2" title="{!eachSection}" collapsible="false"  rendered="{!IF(type!='New',true,false)}">
+                    <apex:repeat value="{!fieldsMap[eachSection]}" var="eachField">       
+                        <apex:inputField value="{!prodConfidObj[eachField]}"/>
+                    </apex:repeat>            
+                </apex:pageBlockSection>
+             </apex:repeat>            
+        </apex:pageBlock>        
+    </apex:form>
+</apex:page>

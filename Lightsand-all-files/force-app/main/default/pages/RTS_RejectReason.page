@@ -1,0 +1,24 @@
+<apex:page controller="RTS_OrderStatusDisplayPageController" docType="html-5.0">
+    <apex:form id="form">
+
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!saveRejectReason}" />
+                <apex:commandButton value="Cancel" action="{!cancelSubStatus}" />
+            </apex:pageBlockButtons>
+            <table style="width:100%;">
+                <tr>
+                    <td width = "30%"> </td>
+                    <td width = "10%">
+                        <apex:outputLabel ><h1>Reason for rejecting</h1></apex:outputLabel>
+                    </td>
+                    <td width = "10%">
+                        <apex:inputTextArea value="{!rejectReason}"/>
+                    </td>
+                    <td width = "50%"> </td>
+                </tr>
+            </table>
+        </apex:pageBlock>
+    </apex:form>
+    
+</apex:page>

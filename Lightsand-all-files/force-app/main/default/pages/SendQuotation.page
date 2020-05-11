@@ -1,0 +1,38 @@
+<apex:page standardController="Product_Configurator__c" extensions="ProductConfiguratorQuotation" lightningStylesheets="true">
+
+    <!-- A simple function for changing the font. -->
+
+    <apex:form enctype="multipart/form-data">
+        <apex:pageMessages />
+        <apex:pageBlock title="Send Quotation">
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!upload}" value="Send" />
+                <apex:commandButton action="{!cancel}" value="Close" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Item 1" for="sectionName"/>
+                    <apex:selectList value="{!selectedSubSectionName1}" multiselect="false" size="1"  styleclass="CustomSectionName" >
+                        <apex:selectOptions value="{!subsectionList}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Item 2" for="sectionName"/>
+                    <apex:selectList value="{!selectedSubSectionName2}" multiselect="false" size="1"  styleclass="CustomSectionName" >
+                        <apex:selectOptions value="{!subsectionList}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Item 3" for="sectionName"/>
+                    <apex:selectList value="{!selectedSubSectionName3}" multiselect="false" size="1" styleclass="CustomSectionName" >
+                        <apex:selectOptions value="{!subsectionList}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+           </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,266 @@
+<apex:component id="mcau" controller="ASI_KOR_MassCreateAndUpdateController" allowDML="true">
+	<apex:attribute name="pageController" description="The parent page controller" type="ASI_KOR_PageInterface" required="false" assignTo="{!pageController}"/>
+	<apex:attribute name="componentKey" description="The key to identify this component" type="String" required="false" assignTo="{!componentKey}"/>
+	<apex:attribute name="sObjectType" description="The object to be edited in this page"  type="String" required="true" assignTo="{!sObjTypeStr}" />
+	<apex:attribute name="displayFields" description="The list of fields to display in table. Format: field1, field2__c" type="String" required="false" assignTo="{!displayFieldsStr}"/>
+	<apex:attribute name="whereStatement" description="The where statement when selecting records from {sObjTypeStr} object" type="String" required="false"  assignTo="{!whereStatm}"/>
+	<apex:attribute name="includeRecordTypes" description="list of record type enabled in the page" type="String" required="false" assignTo="{!includeRecordTypes}" />
+	<apex:attribute name="fieldToURLParam" description="Default field values from url parameters. Format: Field1__c => param1" type="String" required="false" assignTo="{!fieldToURLParamStr}"/>
+	<apex:attribute name="pageBlockTitle" description="The title of pageBlock" type="String" required="false" assignTo="{!pageBlockTitleStr}"/>
+	<apex:attribute name="successLink" description="The link to redirect after successfully saved" type="String" required="true" assignTo="{!successLink}" />
+	<apex:attribute name="cancelLink" description="The link to redirect when clicking cancel" type="String" required="true" assignTo="{!cancelLink}" />
+	<apex:attribute name="mode" description="EDIT, NEW, BOTH" type="String" required="false" default="BOTH" assignTo="{!mode}" />
+	<apex:attribute name="disableClone" description="Whether disable clone button" type="Boolean" required="false" default="false"/>
+	<apex:attribute name="disableAddNew" description="Whether disable add new button" type="Boolean" required="false" default="false"/>
+	<apex:attribute name="showAllRT" description="Whether show all record types in one page or use drop down list to switch" type="Boolean" default="true" required="false" assignTo="{!showAllRT}"/>
+	<apex:attribute name="rowActionRenderList" description="List of render items when selecting object" type="String" default="emptyPanel" required="false"/>
+	<apex:attribute name="pageBlockActionRenderList" description="List of render items when clicking page block buttons" type="String" default="wholeDataPanel" required="false"/>
+	<apex:attribute name="rowRemoveStatus" description="The status component ID when removing row" type="String" default="headerStatusLoading" required="false"/>
+	<apex:attribute name="pageBlockActionStatus" description="The status component ID for page block buttons" type="String" default="headerStatusLoading" required="false"/>
+	<apex:attribute name="firstRowForNew" description="Whether append the new row before first row" type="Boolean" default="true" required="false" assignTo="{!isUseFirstRowForNew}"/>
+	<apex:attribute name="altSObjectTypeName" description="Alternative name of this sojbect used by custom setting. Use it if object name and record type name is too long" type="String" required="false" assignTo="{!altSObjectTypeName}"/>
+	<apex:attribute name="actionColWidth" description="Action column width string" default="150px" type="String" required="false"/>
+	
+	<style type="text/css">
+		.customErrorMsg {
+			color: #D74C3B;
+		}
+	</style>
+	
+	<script type="text/javascript">
+		function startSubmitAction() {
+			if (isSubmitting)
+				return false;
+			isSubmitting = true;
+			return true;
+		}
+		
+		function endSubmitAction() {
+			if (!isDelaying) {
+				isDelaying = true;
+				setTimeout(function() {isSubmitting=false;isDelaying=false;}, 200);
+			}
+		}
+	
+		function displayLoadingRow(statusElement) {
+			if (startSubmitAction()) {
+				var sectionTable = searchClosestParentByTagName(statusElement, 'TABLE');
+				var sectionTableRows = sectionTable.rows;
+				var theTable = searchFirstAppearChildByClassName(sectionTableRows, 'mainDataTable', 4);
+				if (theTable && theTable.tagName == 'TABLE') {
+					var loadingRow = null;
+					if ({!isUseFirstRowForNew} == true)
+						loadingRow = theTable.insertRow(1);
+					else
+						loadingRow = theTable.insertRow();
+					loadingRow.innerHTML = '<td colspan="50" style="height:21px;text-align:center;vertical-align:middle;">Loading ...</td>';
+					return true;
+				}
+			}
+			return false
+		}
+		
+		function removeRow(elementInRow) {
+			if (startSubmitAction()) {
+				var theRow = searchClosestParentByTagName(elementInRow, 'TR');
+				if (theRow) {
+					theRow.style.display = 'none';
+					return true;
+				}
+			}
+			return false;
+		}
+	
+		function checkRequiredFieldsAndSave() {
+			removeAllRequiredFieldErrors();
+			var allInputFields = document.getElementsByTagName("input");
+			var allSelectFields = document.getElementsByTagName("select");
+			var allFields = concatTwoElements(allInputFields, allSelectFields);
+			var errorFound = false;
+			for (var index in allFields) {
+				var inputField = allFields[index];
+				if (inputField.className && inputField.className == "required"
+					&& hasEmptyValue(inputField)) {
+					var parentDiv = inputField.parentNode;
+					while (parentDiv.tagName != "DIV")
+						parentDiv = parentDiv.parentNode;
+					var divChildNodes = parentDiv.childNodes;
+					for (var childNodeIndex in divChildNodes) {
+						var childNode = divChildNodes[childNodeIndex];
+						if (childNode.className && childNode.className == "customErrorMsg") {
+							errorFound = true;
+							childNode.innerHTML = "<strong>Error: </strong>You must enter a value"
+						}
+					}
+				}
+			}
+			if (errorFound) {
+				return false;
+			} else {
+				return commitAll();
+			}
+		}
+		
+		function removeAllRequiredFieldErrors() {
+			var allErrorMsg = getElementsByClassName('customErrorMsg');
+			for (var index in allErrorMsg) {
+				allErrorMsg[index].innerHTML = "";
+			}
+		}
+		
+		function concatTwoElements(ele1, ele2) {
+			result = [];
+			for (var eleIndex in ele1) {
+				result.push(ele1[eleIndex]);
+			}
+			for (var eleIndex in ele2) {
+				result.push(ele2[eleIndex]);
+			}
+			return result;
+		}
+		
+		function hasEmptyValue(field) {
+			if (field.tagName == "INPUT") {
+				return (field.value == null || field.value == "");
+			} else if (field.tagName == "SELECT") {
+				if (field.options) {
+					var selectValue = field.options[field.selectedIndex].value;
+					return (selectValue == null || selectValue == "");
+				}
+			}
+		}
+		
+		if (!document.getElementsByClassName) {
+			document.getElementsByClassName = function(theClassName) {
+				var result = [];
+				var allEle = allElementsByTagName('*');
+				for (var allEleIndex in allEle) {
+					var theEle = allEle[allEleIndex];
+					if (theEle.className && theEle.className == theClassName)
+						result.push(theEle);
+				}
+				return result;
+			}
+		}
+		
+		function searchClosestParentByTagName(ele, theTagName) {
+			if (!ele || !theTagName)
+				return null;
+			var result = ele;
+			var theTagNameUpperCase = theTagName.toUpperCase();
+			while (result != null && result.tagName != theTagNameUpperCase) {
+				result = result.parentNode;
+			}
+			return result;
+		}
+		
+		function searchFirstAppearChildByClassName(nodes, theClassName, maxSearchLevel) {
+			if (nodes && nodes.length > 0 && theClassName && maxSearchLevel && maxSearchLevel > 0) {
+				for (var nodeIndex in nodes) {
+					var node = nodes[nodeIndex];
+					if (node.className && (' ' + node.className + ' ').replace(/[\n\t]/g, " ").indexOf(' ' + theClassName + ' ') > -1)
+						return node;
+					var childResult = searchFirstAppearChildByClassName(node.childNodes, theClassName, maxSearchLevel - 1);
+					if (childResult) return childResult;
+				}
+			}
+			return null;
+		}
+		
+		var isClicking = false;
+		var isSubmitting = false;
+		var isDelaying = false;
+	</script>
+	
+	<apex:inputHidden value="{!dummyVar}" id="dummyHidden"/>
+	<apex:pageBlock id="pageBlock" title="{!pageBlockTitleStr}">
+		<apex:pageBlockButtons id="buttonArea" location="both">
+	        <apex:commandButton id="saveAllBtn" value="Save All" onclick="checkRequiredFieldsAndSave()" reRender="saveAllBtn"/>
+	        <apex:commandButton action="{!URLFOR(cancelLink)}" value="Cancel" immediate="true"/>
+	        <apex:repeat id="pbBtnRepeat" value="{!pageBlockActionBtnList}" var="btn">
+	       		<input type="button" class="btn" onclick="triggerPBAction('{!btn.id}');return false;" value="{!btn.label}"/>
+	        </apex:repeat>
+        </apex:pageBlockButtons>
+		<apex:actionFunction name="triggerPBAction" action="{!triggerPageBlockAction}" rerender="{!pageBlockActionRenderList}" status="{!pageBlockActionStatus}">
+	        <apex:param name="PARAM_PB_BTN_ID" value=""/>
+	    </apex:actionFunction>
+		<apex:outputPanel id="headerPanel">
+            <apex:pageMessages />
+            <apex:actionFunction name="refresh" action="{!refresh}" rerender="wholeDataPanel" status="headerStatusLoading"/>
+            <apex:actionFunction name="commitAll" action="{!commitAll}" status="headerStatusLoading"/>
+            <apex:outputPanel id="rtSelect" rendered="{!NOT(showAllRT) && (numOfRecordType > 1)}">
+	            <apex:outputLabel value="Record Type: "/>
+	            <apex:selectList value="{!selectedRecordType}" required="true" multiselect="false" size="1" onchange="refresh()">
+	            	<apex:selectOptions value="{!recordTypeOptionList}" />
+	           	</apex:selectList>
+	           	<br/>
+           	</apex:outputPanel>
+           	<br/>
+           	<apex:actionStatus id="headerStatusLoading" startText="Loading..." startStyle="font-weight:bold;font-size:110%;"/>
+           	<br/>
+        </apex:outputPanel>
+		<apex:outputPanel id="wholeDataPanel">
+			<apex:repeat id="repeatRT" value="{!theRecordTypeElementList}" var="RTEle" >
+				<apex:pageBlockSection id="pBlockSection" title="{!RTEle.myRecordType.Name}" columns="1" rendered="{!showAllRT || RTEle.myRecordType.DeveloperName == selectedRecordType}" >
+					<apex:actionStatus id="newRowStatus" onstart="displayLoadingRow(this);" />
+					<apex:outputPanel id="tablePanel">
+						<apex:pageBlockTable value="{!RTEle.myDisplayRecordList}" var="tableRow" rules="cols" styleClass="mainDataTable">
+							<apex:column width="{!actionColWidth}">
+								<apex:facet name="header">
+									<apex:outputPanel id="addNewPanel" rendered="{!mode != MODE_EDIT && NOT(disableAddNew)}">
+										<apex:outputLink value="#" style="text-decoration:underline;font-weight:normal;">Add New</apex:outputLink>
+										<apex:actionSupport event="onclick" action="{!addNewRow}" reRender="tablePanel" status="newRowStatus" oncomplete="endSubmitAction();">
+											<apex:param name="{!PARAM_RTID}" value="{!RTEle.myRecordType.DeveloperName}"/>
+										</apex:actionSupport>
+									</apex:outputPanel>
+								</apex:facet>
+								<apex:outputPanel id="cloneActionPanel" rendered="{!NOT(disableClone)}">
+									<apex:commandLink action="{!cloneRow}" value="Clone" reRender="tablePanel,{!BLANKVALUE(rowActionRenderList, 'emptyPanel')}" status="newRowStatus"
+										oncomplete="endSubmitAction()">
+										<apex:param name="{!PARAM_RTID}" value="{!RTEle.myRecordType.DeveloperName}"/>
+										<apex:param name="{!PARAM_TRID}" value="{!tableRow.id}"/>
+									</apex:commandLink>
+								</apex:outputPanel>
+								<apex:outputPanel id="editActionPanel" rendered="{!NOT(tableRow.isEdit)}">
+									<apex:outputText value=" | " rendered="{!NOT(disableClone)}"/>
+									<apex:commandLink action="{!enableForEdit}" value="Edit" reRender="tablePanel,{!BLANKVALUE(rowActionRenderList, 'emptyPanel')}">
+										<apex:param name="{!PARAM_RTID}" value="{!RTEle.myRecordType.DeveloperName}"/>
+										<apex:param name="{!PARAM_TRID}" value="{!tableRow.id}"/>
+									</apex:commandLink>
+								</apex:outputPanel>
+								<apex:outputPanel id="removeNewActionPanel" rendered="{!tableRow.isNew}">
+									<apex:outputText value=" | " rendered="{!NOT(disableClone)}"/>
+									<apex:commandLink action="{!removeNew}" value="Remove" reRender="tablePanel,{!BLANKVALUE(rowActionRenderList, 'emptyPanel')}" onclick="/*var result = removeRow(this); if (!result) return false;*/" status="{!rowRemoveStatus}"
+										oncomplete="/*endSubmitAction();*/">
+										<apex:param name="{!PARAM_RTID}" value="{!RTEle.myRecordType.DeveloperName}"/>
+										<apex:param name="{!PARAM_TRID}" value="{!tableRow.id}"/>
+									</apex:commandLink>
+								</apex:outputPanel>
+							</apex:column>
+							<apex:repeat id="showColsRepeat" value="{!RTEle.myDisplayFieldList}" var="displayField">
+								<apex:column headerValue="{!displayField.label}" width="{!displayField.colWidth}">
+									<apex:variable id="allowEditVar" var="allowEdit" value="{!tableRow.isEdit && (displayField.readonlyMode == null || (NOT(displayField.readonlyMode == 'a') && NOT(displayField.readonlyMode == 'n' && tableRow.isNew) && NOT(displayField.readonlyMode == 'o' && NOT(tableRow.isNew))))}"/>
+									<apex:outputField value="{!tableRow.mySObj[displayField.name]}" rendered="{!NOT(allowEdit)}"/>
+									<apex:actionSupport event="ondblclick" action="{!enableForEdit}" reRender="tablePanel" rendered="{!NOT(allowEdit)}">
+										<apex:param name="{!PARAM_RTID}" value="{!RTEle.myRecordType.DeveloperName}"/>
+										<apex:param name="{!PARAM_TRID}" value="{!tableRow.id}"/>
+									</apex:actionSupport>
+									<!-- Due to unknown reason, the following outputPanel cannot use allowEdit as rendered value. Otherwise, it has bug. -->
+									<apex:outputPanel id="inputFieldPanel" rendered="{!tableRow.isEdit && (displayField.readonlyMode == null || (NOT(displayField.readonlyMode == 'a') && NOT(displayField.readonlyMode == 'n' && tableRow.isNew) && NOT(displayField.readonlyMode == 'o' && NOT(tableRow.isNew))))}">
+										<div class='{!IF(displayField.isRequired, "requiredInput", "none")}'>
+											<div class='{!IF(displayField.isRequired, "requiredBlock", "none")}'></div>
+											<apex:inputField value="{!tableRow.mySObj[displayField.name]}" required="false" styleClass="{!IF(displayField.isRequired, "required", "none")}"/>
+											<div class="customErrorMsg"></div>
+										</div>
+									</apex:outputPanel>
+								</apex:column>
+							</apex:repeat>
+						</apex:pageBlockTable>
+					</apex:outputPanel>
+				</apex:pageBlockSection>
+			</apex:repeat>
+		</apex:outputPanel>
+	</apex:pageBlock>
+	<apex:outputPanel id="emptyPanel"></apex:outputPanel>
+	<apex:actionStatus id="dummyStatus"/>
+</apex:component>

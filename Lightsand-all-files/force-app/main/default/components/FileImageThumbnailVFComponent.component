@@ -1,0 +1,74 @@
+<apex:component controller="FileImageThumnailVFComponentContoroller">
+    <apex:includeLightning />
+    
+     <div id="lightning" />
+
+
+    <style type="text/css">
+       img { cursor: pointer; }
+    </style>
+
+    <apex:attribute name="oppItemId" description="Attribute on the component." type="String" required="required" assignTo="{!opportunityItemId}"/>
+    <apex:attribute name="type" description="Attribute on the component." type="String" required="required" assignTo="{!componentType}"/>
+    
+    <script>    
+        function previewFile(contentVersionId,fileType,type){
+            
+            if(fileType == 'PDF'){
+                var win = window.open('/apex/PDFFilePreviewVF?id='+contentVersionId, '_blank');
+                win.focus();
+            }else{
+                var win = window.open('/apex/FilePreviewVF?contentversionId='+contentVersionId+'&type='+type, '_blank');
+                win.focus();
+            }
+                        
+            /**var isLightningView = (typeof sforce != 'undefined') && sforce && (!!sforce.one);
+           if(isLightningView){
+               
+            --- $Lightning.use("c:FilePreviewLightningComponentAPP", function() {
+                   $Lightning.createComponent("c:FilePreviewLightningComponent",
+                                              {},
+                                              "lightning",
+                                              function(cmp) {
+                                                  // do some stuff
+                                              });
+               });---
+               
+               if(fileType == 'PDF'){
+                   var win = window.open('/apex/PDFFilePreviewVF?id='+contentVersionId, '_blank');
+                   win.focus();
+               }else{
+                   var win = window.open('/apex/FilePreviewVF?contentversionId='+contentVersionId+'&type='+type, '_blank');
+                   win.focus();
+               }
+               
+           }else{
+               var win = window.open('/'+contentVersionId);
+               win.focus();
+           }**/
+            
+        }        
+    </script>
+
+     {!Files}
+    
+    <!--<apex:repeat value="{!Opportunity_Item_Master__c.Attachments}" var="eachAttachment">
+        <img src="/servlet/servlet.FileDownload?file={!eachAttachment.Id}" title="image" style="height: auto;max-width: 240px;max-height: 180px;" onclick="previewFile('{!eachAttachment.Id}','attachment');"/>
+    </apex:repeat>-->
+  
+    
+   
+    
+    <!-- Code snippet to show the files thumbnails-->
+    <apex:outputPanel layout="block" style="overflow-y: scroll;width:100%;height:180px;">
+        <apex:repeat value="{!contentversionList}" var="eachContentVersion">                    
+            <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId={!eachContentVersion.Id}&amp;operationContext=CHATTER&amp;contentId={!eachContentVersion.contentBodyId}" class="thumbnailImg medium" alt="JPG" onclick="previewFile('{!eachContentVersion.Id}','{!eachContentVersion.FileType}','file');" />
+            
+          <!--  <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&versionId=068p0000000zjNf&operationContext=CHATTER&contentId=05Tp0000003wWNb" alt="Page 1 of 1" class="pageImg"/>-->
+      
+          
+        
+        </apex:repeat>
+    </apex:OutputPanel>
+    
+</apex:component>

@@ -1,0 +1,54 @@
+.THIS.slds-page-header{
+    background-color:#78071e;
+    color: white;
+    border-radius: 20px;
+}
+.THIS .leftPaddingClass {
+    padding-left: 2rem;
+}
+.THIS .pillSize{
+    width:100%;
+}
+.THIS .errorMissingSelected{
+    background-color:white;
+    color : red;
+}
+
+.THIS .slds-datepicker__year tr>td:first-child {
+    padding-left:-15px !important;
+        
+}
+.THIS .slds-datepicker__month .slds-day{
+    margin-top:-8px !important;
+    margin-bottom:-10px !important;
+    margin-right:-6px !important;
+}
+.THIS .slds-datepicker__year {
+    margin-top:-8px !important;
+    margin-bottom:-20px !important;
+    height:-20;
+    size:10;    
+}
+.THIS.slds-modal__container {
+    padding:0rem;
+    height:70%;
+}
+.THIS.MyClass{
+   
+     padding-left: 18rem;
+     padding-right: 18rem;
+    padding-bottom: -5rem
+}
+.THIS .MyHeader{
+   border-top-left-radius:10px;
+    border-top-right-radius:10px;
+    height:30px;
+    background-color:#78071e;
+}
+.THIS .Header{
+    font-size:20px;
+    color:white;
+}
+.THIS .slds-pill-container slds-hide{
+    height:10px;
+}

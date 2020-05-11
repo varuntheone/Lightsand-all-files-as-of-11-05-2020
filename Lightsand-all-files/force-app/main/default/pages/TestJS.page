@@ -1,0 +1,123 @@
+<apex:page standardcontroller="Online_Enquiry__c" extensions="OnlineEnquiryOrderFormExtension" id="thePage"><apex:messages />
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css"/>
+    <script src="{!URLFOR($Resource.JQueryJS)}"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    
+    <script>
+    var j$ = jQuery.noConflict();
+    var newWin = null;
+    var clickedId = '';
+    var clickedHiddenId = '';
+    function openLookupPopup(htmlId, lookupHiddenId) {
+            clickedId=htmlId;
+            clickedHiddenId=lookupHiddenId;
+        //alert('clickedId--->'+clickedId);
+        //alert('clickedHiddenId--->'+clickedHiddenId);
+        //alert('is Disabled:'+document.getElementById(clickedId).disabled);
+        if(document.getElementById(clickedId).disabled){
+            return false;
+        }
+            var url = "/CustomerPortal/ListOfRetailerCodeForUser";
+                newWin = window.open(url, 'Popup', 'height=500,width=1080,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no');
+             if (window.focus) {
+                    newWin.focus();
+            }
+            return false;
+        }
+    function closeLookupPopup() {
+
+            if (null != newWin) {
+                newWin.close();
+            }
+            // populateNumber();     
+        }
+    
+    function retailerLookupPick(recordId,recordName){
+        //alert('called from parent recordId--->'+recordId);
+        //alert('called from parent recordName--->'+recordName);
+        //alert('clickedId--->'+clickedId);
+        //alert('clickedHiddenId--->'+clickedHiddenId);
+        document.getElementById(clickedId).value=recordName;
+        document.getElementById(clickedHiddenId).value=recordId;
+        //Added new Code on 24-Aug 2015 Start
+        //document.getElementById(clickedId).select();
+        //j$('input[id="'+clickedId+'"]').select();
+        //Added new Code on 24-Aug 2015 End
+}
+function jq( myid ) {
+    return "#" + myid.replace( /(:|\.|\[|\]|,)/g, "\\$1" );
+}
+function escapeStr(str) 
+{
+    //if (str)
+    //  return str.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');      
+    var find = ':';
+    var re = new RegExp(find, 'g');
+    str = str.replace(re, '\\\\:');
+    str = '#'+str;
+    return str;
+}
+
+var j$modalDialog = j$('<div></div>')
+       .dialog({
+            autoOpen: false,
+            title: 'Form Validation Error',
+            resizable: false,
+            width: 400,
+            height: 400,
+            autoResize: true,
+            modal: true,
+            draggable: false
+});
+ 
+
+
+function validate()
+{ 
+    var idValue = document.getElementById("{!$Component.thePage.theForm.FullPageBlock.id34}").value;
+    alert(document.getElementById("{!$Component.thePage.theForm.FullPageBlock.id34}").value);
+    if(idValue==null || idValue=='undefined' || idValue==''){
+        alert('Empty');
+        j$modalDialog.html('<li>Pawan1</li>');
+        j$modalDialog.dialog('open');
+    }
+    if (false){
+        Save();
+    }else{
+        // something else
+        alert('else');
+    }
+}
+        
+j$( document ).ready(function() {
+    //alert("The paragraph was clicked.");
+    //j$( document ).on("load", function(){
+    //j$( document ).load(function(){
+    var retCodeEle = j$('[id*="retailer_code_hidden"]').get(0);
+    //alert(retCodeEle);
+    //j$(escapeStr(retCodeEle.id)).attr('disabled', 'disabled');
+    //j$(escapeStr(retCodeEle.id)).attr('style', 'visibility: hidden;');
+    if(retCodeEle!=null && retCodeEle!='undefined' && typeof(retCodeEle)!='undefined'){
+        retCodeEle.style.visibility = "hidden";
+        retCodeEle.disabled = "disabled";
+    }
+    //});
+});
+    
+    </script>
+    <apex:sectionheader id="theSectionHeader" title="{!$ObjectType.Online_Enquiry__c.label} Edit" subtitle="{!IF(ISNULL(Online_Enquiry__c.name), 'New Online Enquiry',Online_Enquiry__c.name)}"/>
+    <apex:form id="theForm">
+        <apex:pageMessages id="msgs"/>
+        <apex:pageblock mode="edit" title="{!$ObjectType.Online_Enquiry__c.label} Edit" id="FullPageBlock" >
+            <apex:pageblockbuttons >
+                <apex:actionFunction name="Save" action="{!Save}" rerender="FullPageBlock"  status="loadingStatus"/>
+                <input type="button" class="btn" onclick="validate();" value="Save"/>
+                <!--<apex:commandbutton value="Save" action="{!Save}"/>-->
+                <apex:commandbutton value="Cancel" action="{!Cancel}"/>
+            </apex:pageblockbuttons>
+            <apex:outputpanel id="theOutputPanel">
+                    <apex:inputfield id="id34" value="{!Online_Enquiry__c.Customer_PO_No__c}" required="false"/>                    
+            </apex:outputpanel>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

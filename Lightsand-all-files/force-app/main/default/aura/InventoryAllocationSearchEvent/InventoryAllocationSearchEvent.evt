@@ -1,0 +1,7 @@
+<aura:event type="COMPONENT" description="by this event we are pass the selected sObject(lookup list record) in the parent component">
+    <aura:attribute name="recordRetailerByEvent" type="sObject"/>
+    <aura:attribute name="recordRtsByEvent" type="sObject"/>
+    <aura:attribute name="recordProductByEvent" type="sObject"/>
+    <aura:attribute name="recordMainettiByEvent" type="sObject"/>
+    <aura:attribute name="rowIndex" type="integer" />
+</aura:event>

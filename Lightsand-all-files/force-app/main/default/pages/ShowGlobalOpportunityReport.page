@@ -1,0 +1,5 @@
+<apex:page standardController="Opportunity__c">
+
+  <apex:iframe src="/00Op0000000fuXN"/>  
+
+</apex:page>

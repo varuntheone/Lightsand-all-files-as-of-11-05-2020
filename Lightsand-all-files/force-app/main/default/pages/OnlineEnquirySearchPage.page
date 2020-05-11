@@ -1,0 +1,215 @@
+<apex:page standardController="Online_Enquiry__c" extensions="EnquirySearchFrontControllerPagination">
+    
+    <!-- For Floating Header Start -->
+ <script src="{!URLFOR($Resource.JQueryJS)}"></script>
+ <script src="{!URLFOR($Resource.FloatingHeaders)}"></script>
+ <script>
+ 
+ window.onload = new function() { checkCondition(); };
+           /* function checkCondition()
+            {
+            alert('loaded');
+              var allids = document.querySelectorAll("[id]");
+              alert('1-->'+allids.length);
+                for (var i = 0, len = allids.length; i < len; i++) {
+                    var ele = allids[i];
+                    if (ele.id.indexOf("testTxt2") > -1) {
+                            alert(ele.value);
+                           ele.value="";
+                           break;
+                    }    
+                }
+             }*/
+ </script>
+  <style>
+        .tableContainer
+        {
+            height:290px; 
+            width: 100%;
+           
+        }       
+        .floatingStyle 
+        { 
+            position:relative; 
+        } 
+  div.color {
+  
+  border-color:#000000;
+  }
+    </style>
+    <style type="text/css">
+.bPageBlock .pbBody { background-color:#000000; }
+</style>
+     <script>
+    $(document).ready(function() {
+        $('.floatingHeaderTable').vfFloatingHeaders();
+        //alert({!formattedQueryResultList==null});
+        if({!formattedQueryResultList==null}){
+            var allids = document.querySelectorAll("[id]");
+                  //alert('New 1-->'+allids.length);
+                    for (var i = 0, len = allids.length; i < len; i++) {
+                        var ele = allids[i];
+                        if (ele.id.indexOf("testTxt2") > -1) {
+                    //            alert(ele.value);
+                               ele.value="";
+                              break;
+                        }   
+                        
+                    }
+          }      
+    });
+    </script>
+    <!-- For Floating Header End -->
+    <apex:outputPanel styleClass="tableContainer" layout="block" style="height:500px;border-color:black;">
+        <apex:pageBlock >
+            <apex:form >
+                <apex:pageblocksection title="Order Search" showheader="true" columns="4">
+                    <apex:inputText id="testTxt3" value="{!onlineEnquiry.Name}" rendered="true"/>
+                    <apex:inputfield id="testTxt2" value="{! onlineEnquiry.Enquiry_Date__c}" rendered="true">
+                    
+                    </apex:inputfield>
+                    <apex:inputfield id="testTxt1" value="{! onlineEnquiry.Ship_to_Country__c}" rendered="true"/>
+                   <apex:inputfield id="testTxt4" value="{! onlineEnquiry.Customer_PO_No__c}" rendered="true"/>                  
+                    <apex:inputfield id="testTxt5" value="{! onlineEnquiry.Order_Country__c}" rendered="true"/>
+                     <apex:inputfield id="testTxt6" value="{! onlineEnquiry.Expected_Ship_Date__c}" rendered="true"/>
+                     <apex:inputfield id="testTxt7" value="{! onlineEnquiry.Enquiry_Status__c}" rendered="true"/>
+                     <apex:inputfield id="testTxt8" value="{! onlineDetail.TempModel__c}" rendered="true" label="Model"/>
+                     <apex:inputfield id="testTxt9" value="{! onlineDetail.Color__c}" rendered="true"/>
+                     <apex:inputText id="testTxt10" value="{! onlineDetail.Product_Type__c}" rendered="true" label="Product Type"/>
+                     <apex:inputText id="testTxt11" value="{! onlineDetail.Product_Family__c}" rendered="true" label="Product Family"/>
+                    <br/>
+                    <apex:commandButton value="Search" action="{! search}"/>
+                    <apex:pageblocksectionitem />                   
+                </apex:pageblocksection>
+            </apex:form>
+        </apex:pageBlock>
+        <apex:pageBlock title="Orders" onkeydown="" onmousedown="">
+            <div style="float:left">
+                <apex:pageBlockButtons location="top" style="align:left;float:left;">
+                    <apex:outputPanel id="myButtons" style="align:left;float:left;">
+                        <apex:form style="align:left;float:left;">
+                        <apex:commandButton action="{!Beginning}" title="Beginning" value="<<" disabled="{!disablePrevious}" reRender="myPanel,myButtons"/>
+                        <apex:commandButton action="{!Previous}" title="Previous" value="<" disabled="{!disablePrevious}" reRender="myPanel,myButtons"/>        
+                        <apex:commandButton action="{!Next}" title="Next" value=">" disabled="{!disableNext}" reRender="myPanel,myButtons"/>
+                        <apex:commandButton action="{!End}" title="End" value=">>" disabled="{!disableNext}" reRender="myPanel,myButtons"/>        
+                        <apex:outputPanel rendered="{!formattedQueryResultList!=null}" styleClass="errorMsg">
+                        <apex:outputPanel rendered="{!formattedQueryResultList.size>0}" styleClass="errorMsg">
+                            <!--Displaying Records({!counter+1}-{!totalRecordsInCurrentPage} of {!total_size})-->
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    </apex:form>
+                    </apex:outputPanel>
+                </apex:pageBlockButtons>
+            </div>
+            <apex:form >
+  <apex:outputPanel id="myPanel" style="">
+      <div style="overflow:none; width:1200px; height:300px;">
+            <apex:outputPanel styleClass="tableContainer" layout="block">
+                <apex:pageBlockTable value="{!formattedQueryResultList}" var="OnlineEnquiry123">
+                    <apex:column headerValue="Enquiry Id" style="">
+                        <apex:outputLink value="/{!OnlineEnquiry123.Id}" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {!OnlineEnquiry123.Name}
+                        </apex:outputLink>
+                        <!--<apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {!OnlineEnquiry123.Name}
+                        </apex:OutputText>-->
+                    </apex:column>
+                    <apex:column headerValue="Enquiry Date" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {!OnlineEnquiry123.EnquiryDate}
+                        </apex:OutputText>
+                    </apex:column>
+                    <apex:column headerValue="Order to Country" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.OrderCountry}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Bill To Factory" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.BillToFactory}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Ship to Factory" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.ShipToFactory}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Ship to Country" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.ShipToCountry}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Expected Ship Date" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.ExpectedShipDate}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Enquiry Status" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.EnquiryStatus}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Customer PO Number" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.CustomerPONumber}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Retailer Code" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.RetailerCode}
+                        </apex:OutputText>
+                    </apex:column>
+                    <!-- <apex:column headerValue="Mainetti Company" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.MainettiCompany}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Sales Representative" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.SalesRepresentative}
+                        </apex:OutputText>
+                    </apex:column>-->
+                    <apex:column headerValue="Model" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.Model}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Color" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.Color}
+                        </apex:OutputText>
+                    </apex:column>
+                    <!-- <apex:column headerValue="Product Type" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.ProductType}
+                        </apex:OutputText>
+                    </apex:column>
+                    <apex:column headerValue="Product Family" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.ProductFamily}
+                        </apex:OutputText>
+                    </apex:column>-->
+                     <apex:column headerValue="Product Description" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.ProductDescreption}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Qty" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.Qty}
+                        </apex:OutputText>
+                    </apex:column>
+                     <apex:column headerValue="Model Remark" style="">
+                        <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">
+                            {! OnlineEnquiry123.ModelRemark}
+                        </apex:OutputText>
+                    </apex:column>
+                     </apex:pageBlockTable>
+                  </apex:outputPanel>
+          
+      </div>
+      </apex:outputPanel>
+ </apex:form>
+        </apex:pageBlock>
+    </apex:outputPanel>
+</apex:page>

@@ -1,0 +1,6 @@
+public interface ASI_KOR_MassCreateAndUpdateAbstract extends ASI_KOR_PageInterface {
+	
+	List<ASI_KOR_MassCreateAndUpdateController.PageBlockActionBtn> mcau_initPageBlockActionButtonList();
+	PageReference mcau_triggerPageBlockAction(ASI_KOR_MassCreateAndUpdateController controller, String actionKey);
+	void mcau_triggerActionForSObject(ASI_KOR_MassCreateAndUpdateController controller, String actionKey, sObject sObj);
+}

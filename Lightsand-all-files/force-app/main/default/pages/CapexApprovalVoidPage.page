@@ -1,0 +1,4 @@
+<apex:page standardController="Capex__c" extensions="CapexApprovalVoidController" action="{!initPage}" showHeader="true" sidebar="false" showChat="false">
+	<apex:pageMessages />
+	<apex:outputLink value="/{!myCapexId}">Back to record</apex:outputLink>
+</apex:page>

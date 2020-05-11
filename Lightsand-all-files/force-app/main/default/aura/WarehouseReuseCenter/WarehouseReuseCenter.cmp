@@ -1,0 +1,196 @@
+<aura:component controller="WarehouseReuseCenterClass" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+     <aura:attribute name="warehouseData" type="Data_Upload_Transaction__c"/>
+    <aura:attribute name="retailerData" type="Reuse_center_Inventory_Manager__c"/>
+    <aura:method name="rerenderList" action="{! c.doInit}" />
+    <aura:attribute name="noEmptyRecord" type="boolean" default="false"/>
+    
+    <!--declare attributes Warehouse--> 
+    <aura:attribute name="selectedRetailerRecord" type="Reuse_center_Inventory_Manager__c" default="{}" description="Use,for store SELECTED sObject Record"/>
+    <aura:attribute name="listOfSearchRecords" type="List" description="Use,for store the list of search records which returns from apex class"/>
+    <aura:attribute name="SearchKeyWord" type="string"/>
+    <aura:attribute name="Message" type="String" default="Search Result.."/>
+    
+    <!--declare attributes User-->
+    <aura:attribute name="selectedUserRecord" type="List" description="Use,for store SELECTED sObject Record"/>
+    <aura:attribute name="SearchUserKeyWord" type="string"/>
+    <aura:attribute name="listOfUserSearchRecords" type="List" description="Use,for store the list of search records which returns from apex class"/>
+    
+    
+    <!--declare events handlers-->  
+    <aura:handler name="oRetailerdataEvent" event="c:selectedRetailerdataEvent" action="{!c.handleComponentEvent}"/>
+    
+    <!-- Page Header -->
+    <div class="slds-page-header" role="banner">
+        <div class="slds-grid">
+            <div class="slds-col slds-has-flexi-truncate">
+                <!-- HEADING AREA -->
+                <h1 class="slds-page-header__title slds-truncate" title="Inventory Transaction Master">Warehouse Manager Details</h1>
+                <!-- / HEADING AREA -->
+            </div>
+            <div class="slds-col slds-no-flex slds-grid slds-align-top">
+                <button class="slds-button slds-button_destructive" name = "addRetailerModal" onclick="{!c.addWarehouse}">Add Warehouse</button>
+                <button class="slds-button slds-button_destructive" name = "addRetailerModal" onclick="{!c.addUser}">Add User</button>
+                <button class="slds-button slds-button_destructive" name = "addRetailerModal" onclick="{!c.deleteRetailer}">Delete Warehouse</button>
+            </div>
+        </div>
+    </div>
+    <!-- Page Header -->
+    
+    
+    <lightning:layout multipleRows="True" horizontalAlign="center">
+        <lightning:layoutItem padding="around-small" size="6">
+            <div align="center">
+                <lightning:card title="Assign Managers" class="Mycolor">
+                    <aura:if isTrue="{!v.noEmptyRecord}">
+                        <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+                            <col width="30px"></col>
+                            <col width="80px"></col>
+                            <col width="80px"></col>
+                            <col width="30px"></col>
+                            <thead class="row">
+                                <tr>
+                                    <th scope="col"><div align = "center" class="slds-truncate" title="select">Select</div></th>
+                                    <th scope="col"><div align = "center" class="slds-truncate" title="Warehouse">Warehouse</div></th>
+                                    <th scope="col"><div align = "center" class="slds-truncate" title="User">User</div></th>
+                                    <th scope="col"><div align = "center" class="slds-truncate" title="Action">Action</div></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.retailerData}" var="data">
+                                    <tr>
+                                        <aura:if isTrue="{!data.Warehouse_name_holder__c != ''}">
+                                            <td>
+                                                <div align="center" class="slds-truncate">
+                                                    <input id="radioId" type="radio" name="radioName" value="{!data.Warehouse_name_holder__c}" onclick="{!c.onRadioChange}"/>
+                                                </div>
+                                            </td>
+                                            <aura:set attribute="else">
+                                                <td><div align="center" class="slds-truncate"></div></td>
+                                            </aura:set>
+                                        </aura:if>
+                                        <td><div align="center" class="slds-truncate" style="color:black">{!data.Warehouse_name_holder__c}&nbsp;</div></td>
+                                        <td><div align="center" class="slds-truncate" style="color:black">{!data.User_name_holder__c}&nbsp;</div></td>
+                                        <td>
+                                            <div align="right">
+                                                <lightning:button title="Remove User" value="{!data.Warehouse__c}" name="{!data.User_name_holder__c}" iconName="utility:delete" variant="bare-inverse" class="slds-m-left_xx-small" onclick="{!c.handleRemoveUserClick}"/>
+                                            </div>
+                                        </td>                                    
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                        <aura:set attribute="else">
+                            <td><div align="center" class="slds-truncate">No users allocated</div></td>
+                        </aura:set>
+                    </aura:if>
+                </lightning:card>
+            </div>
+        </lightning:layoutItem>
+    </lightning:layout>   
+    <!-- Modal PopUp -->
+    <div>
+        <section aura:id="addRetailerModal" role="dialog" tabindex="-1"  aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" class="slds-modal">
+            <div class="slds-modal__container">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                    <h1 id="customerdata" class="slds-text-heading_medium slds-hyphenate">Add Warehouse</h1>
+                </header>
+                <div  align='center' class="errorMissingSelected" id="errorMissingSelected"/>
+                <div class="slds-modal__content slds-p-around_medium" id="customerBody" >
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                        <tr>
+                            <td>
+                                <div onmouseleave="{!c.onblur}" aura:id="searchRes" class="slds-form-element slds-lookup slds-is-close" data-select="single" style="width:250px">
+                                    <label class="slds-form-element__label" for="horizontal-input-id-01">Warehouse</label>                        
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-input-has-icon slds-input-has-icon--right">
+                                            <div aura:id="lookup-pill" class="slds-pill-container slds-hide">
+                                                 <lightning:pill class="pillSize" label="{!v.selectedRetailerRecord.Warehouse__c}" name="{!v.selectedRetailerRecord.Warehouse__c}" onremove="{!c.clear}"> 
+                                                   <aura:set attribute="media">
+                                                        <lightning:icon iconName="standard:account" size="x-small" alternativeText="close"/>
+                                                    </aura:set>
+                                                </lightning:pill>
+                                            </div>
+                                            <input type="hidden" id="errorMapFields" value=""/>                                                    
+                                            <div aura:id="lookupField" class="slds-show">
+                                                <lightning:icon class="slds-input__icon slds-show" iconName="standard:search" size="x-small" alternativeText="search"/>
+                                                <span class="slds-icon_container  slds-combobox__input-entity-icon" title="record">
+                                                    <lightning:icon class="slds-icon slds-icon slds-icon_small slds-icon-text-default" iconName="standard:account" size="x-small" alternativeText="icon"/>
+                                                    <span class="slds-assistive-text"></span>
+                                                </span>
+                                                <ui:inputText  aura:id="searchValue" size="25"   updateOn="keyup" keyup="{!c.keyPressController}" class="slds-lookup__search-input slds-input leftPaddingClass" value="{!v.SearchKeyWord}" placeholder="search.." />
+                                                <input type="hidden"  id='valueHolder'  name = "" value = ""  />                                                       
+                                            </div>                                                
+                                        </div>
+                                        <!--This part is for Display typehead lookup result List-->
+                                        <ul style="min-height:40px;width:291px;margin-right:68px;" class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid slds-lookup__menu slds" role="listbox">
+                                            <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="mySpinner"/>
+                                            <center> {!v.Message}</center>
+                                            <aura:iteration items="{!v.listOfSearchRecords}" var="singleRec">
+                                                <c:CustomLookupForWarehousedata oRetailer="{!singleRec}" IconName="standard:account"  />
+                                                
+                                            </aura:iteration>
+                                        </ul>
+                                    </div>
+                                               
+                                </div>
+                            </td>
+                            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>                            
+                            <td>
+                                <div onmouseleave="{!c.onblur}" aura:id="searchUserRes" class="slds-form-element slds-lookup slds-is-close" data-select="single" style="width:250px">
+                                    <label class="slds-form-element__label" for="horizontal-input-id-01">User</label>                        
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-input-has-icon slds-input-has-icon--right">
+                                            
+                                            <div aura:id="lookupUserField" class="slds-show">
+                                                <lightning:icon class="slds-input__icon slds-show" iconName="standard:search" size="x-small" alternativeText="search"/>
+                                                <span class="slds-icon_container  slds-combobox__input-entity-icon" title="record">
+                                                    <lightning:icon class="slds-icon slds-icon slds-icon_small slds-icon-text-default" iconName="standard:account" size="x-small" alternativeText="icon"/>
+                                                    <span class="slds-assistive-text"></span>
+                                                </span>
+                                                <ui:inputText  aura:id="searchUserValue" size="25"   updateOn="keyup" keyup="{!c.keyPressUserController}" class="slds-lookup__search-input slds-input leftPaddingClass" value="{!v.SearchUserKeyWord}" placeholder="search.." />
+                                                <input type="hidden"  id='valueHolder'  name = "" value = ""  />                                                       
+                                            </div>                                                
+                                        </div>
+                                        <!--This part is for Display typehead lookup result List-->
+                                        <ul style="min-height:40px;width:291px;margin-right:68px;" class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid slds-lookup__menu slds" role="listbox">
+                                            <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="mySpinner"/>
+                                            <center> {!v.Message}</center>
+                                            <aura:iteration items="{!v.listOfUserSearchRecords}" var="singleRec">
+                                                <c:customLookupforUserdata oUser="{!singleRec}" rowIndex="{!index}" IconName="standard:account"  />
+                                            </aura:iteration>
+                                        </ul>
+                                    </div>
+                                    </div>
+                            </td>
+                        </tr>
+                        <br/>
+                        <tbody>
+                            <tr>
+                                <!--<div aura:id="msg" class="hide">-->
+                                <aura:iteration items="{!v.selectedUserRecord}" var="user"> 
+                                    <div aura:id="lookupUser-pill" class="slds-pill-container" style="width:250px">
+                                        <lightning:pill class="pillSize" label="{!user.Name}" name="{!user.Id}" onremove="{!c.clearUser}">
+                                            <aura:set attribute="media">
+                                                <lightning:icon iconName="standard:account" size="x-small" alternativeText="close"/>
+                                            </aura:set>
+                                        </lightning:pill>
+                                    </div>
+                                </aura:iteration> 
+                                <!--</div>-->
+                            </tr>
+                        </tbody>
+                        <br/>
+                    </table>
+                    <br/>
+                    <button style="float:right;" class="slds-button slds-button_brand" onclick="{!c.Save}">Save</button>
+                </div>                
+            </div>
+        </section>
+        <div aura:id="addRetailerModalBackdrop" class="slds-backdrop"></div>
+    </div>
+    <!-- Modal PopUp --> 
+</aura:component>

@@ -1,0 +1,501 @@
+<apex:page language="zh_TW" renderAs="pdf" applyBodyTag="false" controller="PDFWHNGetDataController">
+    <head>
+        <style>
+         body { font-family: 'Arial Unicode MS'; }
+         td, tr{ font-size:12px;}
+         th { font-size:14px;}
+         
+          #table_inside td, th, tr{font-size:10px; border-right:1px solid #000; border-bottom:1px solid #000;}
+          #highInfoId td, th, tr{font-size:10px; border-right:1px solid #000; border-bottom:1px solid #000;}
+          #highInfoId  th {background-color: #f2f2f2;}
+    @page {
+        @top-right {
+          content: "Page " counter(page) " of " counter(pages);
+              font-weight: lighter;
+              font-size:8pt;
+            }
+         @bottom-center {
+                    content: element(header);
+                    font-weight: lighter;
+              font-size:8pt;
+                }
+       
+        }
+        div.header {
+                font-weight: lighter;
+                  font-size:8pt;
+                text-align: center;
+                position: running(header);
+            }
+      </style>
+    </head>
+    <body>
+    <div class="header">{!WHNForPDF.Name}</div>
+              <span id="j_id0:j_id5">
+                 <h3 style="color:#aaa;font-style:italic;">
+                    <span>
+                    <img alt="" src="{!$Resource.Mainetti_Logo}" style="opacity: 0.9; width: 250px; height: 50px;"/>
+                    </span>
+                 </h3>
+         
+            <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-bottom:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <td style="width:60%;font-size:16px;text-align:left;">
+                     <strong>板單號:</strong>&nbsp;{!WHNForPDF.Name}
+                          </td>
+                         <td style="width:40%;font-size:16px;text-align:right;">
+                    <strong>板單建立日期:</strong>&nbsp;
+                     <span style="background-color: rgb(238, 238, 238);">
+                                <apex:outputText value="{0,date, MMMM d,  yyyy}">
+                                    <apex:param value="{!WHNForPDF.Generation_Date__c}"/>
+                                </apex:outputText>
+                            </span>
+                          </td>                         
+                    </tr>
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th colspan="2" style="width:100%;border-right:0px solid #000;">
+                            <strong>客戶資料</strong>&nbsp;
+                        </th>
+                     </tr>
+                     <tr>
+                            <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>客戶名字:</strong>&nbsp;{!WHNForPDF.Customer_Information__c}
+                        </td>
+                        
+                        <td style="width:50%;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            <strong>聯絡人:</strong>&nbsp;{!WHNForPDF.Contact_Person__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;">
+                            <strong>國家:</strong>&nbsp;{!WHNForPDF.Country__c}
+                        </td>
+                        
+                        <td style="width:50%;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            <strong>聯絡人電話:</strong>&nbsp;{!WHNForPDF.Contact__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>預測目標:</strong>&nbsp;{!WHNForPDF.Projection__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <br/>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th colspan="1" style="width:50%;border-top:1px solid #000;">
+                            <strong>型號</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:50%;border-right:0px solid #000;border-top:1px solid #000;">
+                            <strong>木身部份</strong>&nbsp;
+                        </th>
+                     </tr>
+                     <tr>
+                            <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>型號:</strong>&nbsp;{!WHNForPDF.Model__c}
+                        </td>                        
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>材質:</strong>&nbsp;{!WHNForPDF.Wood_Type__c}
+                        </td>
+                        
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>長 (cm):</strong>&nbsp;{!WHNForPDF.Length__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>規格:</strong>&nbsp;{!WHNForPDF.wood_spec__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>厚 (mm):</strong>&nbsp;{!WHNForPDF.Width__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>單價:</strong>&nbsp;{!WHNForPDF.Unit_Price__c}
+                        </td>
+                    </tr>
+                    <tr>
+                    <td rowspan="3" style="width:25%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Remark_Model__c}
+                        </td>
+                        
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>利用率:</strong>&nbsp;{!WHNForPDF.Utilization_rate__c}
+                        </td>
+                    </tr>
+                    <tr>
+                    
+                    <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>可生産支数/立方:</strong>&nbsp;{!WHNForPDF.Produce__c}
+                        </td>
+                    </tr>
+                    <tr>
+                    
+                    <td style="width:25%;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Wood_Body_Remark__c}
+                        </td>
+                    </tr>
+                       
+                        
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th colspan="1" style="width:50%;border-top:1px solid #000;">
+                            <strong>型號相片</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:50%;border-right:0px solid #000;border-top:1px solid #000;">
+                            <strong>木身部份相片</strong>&nbsp;
+                        </th>
+                     </tr>
+                     <tr style="height:300px;">
+                          <td rowspan="1" style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>相片:</strong>&nbsp;
+                            <br></br>
+                            <apex:repeat var="cv" value="{!contentversionListModel}">                                                        
+                            <img alt="" src="/sfc/servlet.shepherd/version/download/{!cv.id}" style="  width: 150px; "/>
+                            </apex:repeat>
+                        </td>                     
+                        <td rowspan="1" style="width:50%;border-bottom:0px solid #000;border-right:0px solid #000;vertical-align: text-top;">
+                            <strong>相片:</strong>&nbsp;
+                            <br></br>
+                            <apex:repeat var="cv" value="{!contentversionListWoodBody}">                                                        
+                            <img alt="" src="/sfc/servlet.shepherd/version/download/{!cv.id}" style="  width: 150px; "/>
+                            </apex:repeat>
+                        </td>
+                        
+                    </tr>
+                    
+                        
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;page-break-after: always;">
+                <tbody>
+                    <tr>
+                        <th colspan="1" style="width:50%;">
+                            <strong>五金鈎形</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:50%;border-right:0px solid #000;">
+                            <strong>五金夾片</strong>&nbsp;
+                        </th>
+                     </tr>
+                     <tr>
+                            <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>鈎形:</strong>&nbsp;{!WHNForPDF.Hook__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>夾片:</strong>&nbsp;{!WHNForPDF.Clips__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>電鍍:</strong>&nbsp;{!WHNForPDF.Metal_Plating__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>電鍍:</strong>&nbsp;{!WHNForPDF.Clips_Metal_Plating__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>生産損耗:</strong>&nbsp;{!WHNForPDF.Production_Loss__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>鐵線款式:</strong>&nbsp;{!WHNForPDF.Clip_Type__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>其他:</strong>&nbsp;{!WHNForPDF.Metal_Other__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>生産損耗:</strong>&nbsp;{!WHNForPDF.Clip_Production_Loss__c}
+                        </td>
+                    </tr>
+                    <tr>
+                    <td rowspan="2" style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Metal_Remark__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>其他資料:</strong>&nbsp;{!WHNForPDF.Clips_Spec__c}
+                        </td>
+                        
+                    </tr>
+                    <tr>
+                    
+                        <td style="width:50%;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Metal_Clips_Remark__c}
+                        </td>
+                        
+                    </tr>
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th colspan="1" style="width:50%;">
+                            <strong>五金鈎形相片</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:50%;border-right:0px solid #000;">
+                            <strong>五金夾片相片</strong>&nbsp;
+                        </th>
+                     </tr>
+                     
+                    <tr style="height:300px;">
+                    <td rowspan="1" style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>相片:</strong>&nbsp;
+                            <br></br>
+                            <apex:repeat var="cv" value="{!contentversionListMetalHook}">                                                        
+                            <img alt="" src="/sfc/servlet.shepherd/version/download/{!cv.id}" style="  width: 150px; "/>
+                            </apex:repeat>
+                        </td>
+                        <td rowspan="1" style="width:50%;border-bottom:0px solid #000;border-right:0px solid #000;vertical-align: text-top;">
+                            <strong>相片:</strong>&nbsp;
+                            <br></br>
+                            <apex:repeat var="cv" value="{!contentversionListMetalClip}">                                                        
+                            <img alt="" src="/sfc/servlet.shepherd/version/download/{!cv.id}" style="  width: 150px; "/>
+                            </apex:repeat>
+                        </td>                        
+                    </tr>                   
+                </tbody>
+            </table>
+
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th colspan="1" style="width:50%;">
+                            <strong>油漆部份</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:50%;border-right:0px solid #000;">
+                            <strong>配件</strong>&nbsp;
+                        </th>
+                     </tr>
+                     <tr>
+                            <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>系列:</strong>&nbsp;{!WHNForPDF.Collection__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>打凹:</strong>&nbsp;{!WHNForPDF.Notches__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>流程:</strong>&nbsp;{!WHNForPDF.Process__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>防滑 (膊位):</strong>&nbsp;{!WHNForPDF.Anti_slip__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>光亮度:</strong>&nbsp;{!WHNForPDF.Shininess__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>木桿 / 五金下支:</strong>&nbsp;{!WHNForPDF.Wood_Metal_Metal_Bar__c  }
+                        </td>
+                    </tr>
+                    <tr>
+                    <td  rowspan="2" style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Lacquer_Remark__c}
+                        </td>
+                        <td style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>其他(如木桿加膠條):</strong>&nbsp;{!WHNForPDF.Others_Spec__c}
+                        </td>
+                    </tr>
+                    <tr>
+                    
+                        <td style="width:50%;border-bottom:0px solid #000;border-right:0px solid #000;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Others_Remark__c}
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;page-break-after: always;">
+                <tbody>
+                    <tr>
+                        <th colspan="1" style="width:50%;vertical-align: text-top;">
+                            <strong>油漆部份相片</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:50%;border-right:0px solid #000;vertical-align: text-top;">
+                            <strong>配件相片</strong>&nbsp;
+                        </th>
+                     </tr>
+                     
+                    <tr style="height:300px;">
+                    <td rowspan="1" style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>相片:</strong>&nbsp;
+                            <br></br>
+                            <apex:repeat var="cv" value="{!contentversionListLacquer}">                                                        
+                            <img alt="" src="/sfc/servlet.shepherd/version/download/{!cv.id}" style="  width: 150px; "/>
+                            </apex:repeat>
+                        </td>
+                        <td rowspan="1" style="width:50%;border-bottom:0px solid #000;border-right:0px solid #000;vertical-align: text-top;">
+                            <strong>相片:</strong>&nbsp;
+                            <br></br>
+                            <apex:repeat var="cv" value="{!contentversionListAccessory}">                                                        
+                            <img alt="" src="/sfc/servlet.shepherd/version/download/{!cv.id}" style="  width: 150px; "/>
+                            </apex:repeat>
+                           
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th colspan="1" style="width:40%;">
+                            <strong>包裝</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:40%;">
+                            <strong>Logo印字</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:20%;border-right:0px solid #000;">
+                            <strong>Stamp 印</strong>&nbsp;
+                        </th>
+                        
+                     </tr>
+                     <tr>
+                     <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>每箱數量:</strong>&nbsp;{!WHNForPDF.Box_Qty__c}
+                        </td>
+                            <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>印字內容:</strong>&nbsp;{!WHNForPDF.Logo__c}
+                        </td>
+                        <td style="width:20%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>MAINETTI 印:</strong>&nbsp;
+                            <apex:outputField value="{!WHNForPDF.Mainetti_Stamp__c}"/>
+                        </td>
+                        
+                    </tr>
+                    <tr>
+                        <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>外箱尺寸(mm):</strong>&nbsp;{!WHNForPDF.Carton_box_size__c}
+                        </td>
+                        <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>印字方式:</strong>&nbsp;{!WHNForPDF.Loog__c}
+                        </td>
+                        <td style="width:20%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>中國製造印:</strong>&nbsp;
+                            <apex:outputField value="{!WHNForPDF.Made_in_China__c}"/>
+                            
+                        </td>
+                        
+                    </tr>
+                    <tr>
+                        <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>GW(kg):</strong>&nbsp;{!WHNForPDF.NW_GW_kg__c}
+                        </td>
+                        <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>颜色:</strong>&nbsp;{!WHNForPDF.Logo_color__c}
+                        </td>
+                       <td style="width:20%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>FSC 印:</strong>&nbsp;<apex:outputField value="{!WHNForPDF.FSC__c}"/>
+                        </td>
+                        
+                    </tr>
+                    <tr>
+                        <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>膠袋:</strong>&nbsp;{!WHNForPDF.Plastic_Bag__c}
+                        </td>   
+                        <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>其他資料:</strong>&nbsp;{!WHNForPDF.Logo_Others__c}
+                        </td>        
+                        <td rowspan="3" style="width:20%;border-bottom:0px solid #000;border-right:0px solid #000;vertical-align: text-top;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Mainetti_Stamp_Remark__c}
+                        </td>
+                        
+                    </tr>
+                    <tr>
+                    <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Remark_Packing__c}
+                        </td>
+                    <td style="width:40%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>備註:</strong>&nbsp;{!WHNForPDF.Logo_Remark__c}
+                        </td>
+                        
+                        
+                    </tr>
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:80%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th colspan="1" style="width:50%;">
+                            <strong>包裝相片</strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:50%;border-right:0px solid #000;">
+                            <strong>Logo印字相片</strong>&nbsp;
+                        </th>
+                        
+                        
+                     </tr>
+                    <tr style="height:300px;">
+                    <td rowspan="1" style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;">
+                            <strong>相片:</strong>&nbsp;
+                            <br></br>
+                            <apex:repeat var="cv" value="{!contentversionListPacking}">                                                        
+                            <img alt="" src="/sfc/servlet.shepherd/version/download/{!cv.id}" style="  width: 150px; "/>
+                            </apex:repeat>
+                        </td>
+                    <td rowspan="1" style="width:50%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>相片:</strong>&nbsp;
+                            <br></br>
+                            <apex:repeat var="cv" value="{!contentversionListLogo}">                                                        
+                            <img alt="" src="/sfc/servlet.shepherd/version/download/{!cv.id}" style="  width: 150px; "/>
+                            </apex:repeat>
+                        </td>
+                        
+                    </tr>
+                </tbody>
+            </table>
+            
+            <br/>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:50%;  border:1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th colspan="2" style="width:100%;border-right:0px solid #000;">
+                            <strong>備註</strong>&nbsp;
+                        </th>
+                     </tr>
+                     <tr>
+                            <td style="width:100%;border-bottom:1px solid #626469;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>IC備註:</strong>&nbsp;{!WHNForPDF.Remark_IC__c}
+                        </td>
+                    </tr>
+                    <tr>
+                            <td style="width:100%;border-bottom:1px solid #626469;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>香港備註:</strong>&nbsp;{!WHNForPDF.Remark__c}
+                        </td>
+                    </tr>
+                    <tr>
+                            <td style="width:100%;border-bottom:0px solid #000;vertical-align: text-top;border-right:0px solid #000;">
+                            <strong>木廠備註:</strong>&nbsp;{!WHNForPDF.Wood_factory_Remark__c}
+                        </td>
+                    </tr>                                       
+                </tbody>
+            </table>
+         &nbsp;
+         
+           
+        </span>
+    </body>
+</apex:page>

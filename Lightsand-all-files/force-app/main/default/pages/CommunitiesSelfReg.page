@@ -1,0 +1,543 @@
+<apex:page id="communitiesSelfRegPage" showHeader="true" controller="CommunitiesSelfRegController" title="{!$Label.site.user_registration}">
+    <!--<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css" />-->
+    <apex:stylesheet value="{!URLFOR($Resource.JqueryUiCssZip, 'JqueryUiCssZip/jqueryui.css')}"/>
+    <script src="{!URLFOR($Resource.JQueryJS)}"></script>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js" />-->
+        <script src="{!URLFOR($Resource.JQueryUI)}"/>
+    <script>
+        var j$ = jQuery.noConflict();
+
+        // model to show error  
+        var j$modalDialog = j$('<div style="height:auto;"></div>')
+            .dialog({
+                autoOpen: false,
+                title: 'Signup Validation Error',
+                resizable: false,
+                width: 600,
+                autoResize: true,
+                modal: true,
+                draggable: false
+            });
+
+        j$('document').ready(function() {
+            j$('.brandQuaternaryFgr').text("© 2016 Mainetti. All rights reserved.");
+            j$('ul li').not('li:first').remove();
+            var errTbl = j$('.messageTable').html();
+            /*
+            if ((errTbl != null) && (errTbl.length > 1) && (errTbl.indexOf('Your request cannot be processed at this time. The site administrator has been alerted.') != -1)) {
+                j$('.message').html('<div id="processingDiv" align="center">Your Request is Processing...Please wait...</div>');
+            }*/
+        });
+
+        function jq(myid) {
+            return "#" + myid.replace(/(:|\.|\[|\]|,)/g, "\\$1");
+        }
+
+        function IsNumeric(input) {
+            var RE = /^-{0,1}\d*\.{0,1}\d+$/;
+            return (RE.test(input));
+        }
+
+        function isIdEmpty(idValue) {
+            if (idValue == null || idValue == 'undefined' || idValue == '') {
+                return true;
+            }
+            return false;
+        }
+
+        function buildErrorMsg(fieldName, errorMsg) {
+            return errorMsg + "<br/>" + "<li><b>" + fieldName + "</b>: You must enter a value</li>";
+        }
+
+        function isRequiredFieldEmpty(fieldValue) {
+            if (fieldValue == null || fieldValue == 'undefined' || fieldValue == '') {
+                return true;
+            }
+            return false;
+        }
+
+        function validateSupplierCode(supplierId) {
+            //var supplierCode = document.getElementById(supplierId).value;
+            var supplierCode = supplierId.value;
+            if (supplierCode != null && supplierCode != 'undefined' && supplierCode.length > 0) {
+                if (!IsNumeric(supplierCode)) {
+                    alert('Supplier Code must be numeric only.');
+                    supplierId.focus();
+                    return false;
+                }
+
+                if (supplierCode.length < 5 || supplierCode.length > 5) {
+                    alert('Supplier Code must be of 5 digit.');
+                    supplierId.focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validateManufacturerCode(manuFacturerId) {
+            //var manfCode = document.getElementById(manuFacturerId).value;
+            var manfCode = manuFacturerId.value;
+            if (manfCode != null && manfCode != 'undefined' && manfCode.length > 0) {
+                if (!IsNumeric(manfCode)) {
+                    alert('Manufacturer Code must be numeric only.');
+                    manuFacturerId.focus();
+                    return false;
+                }
+
+                if (manfCode.length < 5 || manfCode.length > 5) {
+                    alert('Manufacturer Code must be of 5 digit.');
+                    manuFacturerId.focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validate() {
+            //getRemoteUser();
+            var isError = false;
+            var errorMsg = 'Your registration was not successfully processed. Please follow the highlighted warning for the correction!';
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem1.companyName}"))) {
+                var expectedShipDateValue = document.getElementById("{!$Component.communitiesSelfRegPage:theForm:thePageBlock:thePageBlockSection1:thePageBlockSectionItem1:companyName}").value;
+                if (isRequiredFieldEmpty(expectedShipDateValue)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Company Name', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem2.firstName}"))) {
+                var shipmentTerm = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem2.firstName}").value;
+                if (isRequiredFieldEmpty(shipmentTerm)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('First Name', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem3.lastName}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem3.lastName}").value;
+                if (isRequiredFieldEmpty(jcpSubdivision1)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Last Name', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem4.title}"))) {
+                var billTo = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem4.title}").value;
+                if (isRequiredFieldEmpty(billTo)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Title', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem5.fax}"))) {
+                var fax = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem5.fax}").value;
+                if (isRequiredFieldEmpty(fax)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Fax', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem6.telephone}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem6.telephone}").value;
+                if (isRequiredFieldEmpty(jcpSubdivision1)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Telephone', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem7.communityNickName}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem7.communityNickName}").value;
+                if (isRequiredFieldEmpty(jcpSubdivision1)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Nickname', errorMsg);
+                    //errorMsg = buildErrorMsg('Supplier Code',errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem8.email}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem8.email}").value;
+                if (isRequiredFieldEmpty(jcpSubdivision1)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Email', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem9.password}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem9.password}").value;
+                if (isRequiredFieldEmpty(jcpSubdivision1)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Password', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem10.confirmPassword}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem10.confirmPassword}").value;
+                if (isRequiredFieldEmpty(jcpSubdivision1)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Confirm Password', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem11.orderToCompany}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem11.orderToCompany}");
+                var selectedVal = jcpSubdivision1.options[jcpSubdivision1.selectedIndex].value;
+                if (isRequiredFieldEmpty(selectedVal)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Order To Company', errorMsg);
+                }
+            }
+
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem12.preferredCurrency}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem12.preferredCurrency}");
+                var selectedVal = jcpSubdivision1.options[jcpSubdivision1.selectedIndex].value;
+                if (isRequiredFieldEmpty(selectedVal)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Preferred Currency', errorMsg);
+                }
+            }
+
+            /*
+            if (!isIdEmpty(document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem13.RelatedRetailers}"))) {
+                var jcpSubdivision1 = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem13.RelatedRetailers}").value;
+                if (isRequiredFieldEmpty(jcpSubdivision1)) {
+                    isError = true;
+                    errorMsg = buildErrorMsg('Related Retailers', errorMsg);
+                }
+            }
+            */
+
+            // save or not
+            if (!isError) {
+                Save1();
+            } else {
+                isError = false;
+                j$modalDialog.html(errorMsg);
+                j$modalDialog.dialog('open');
+            }
+        }
+        
+        function getRemoteUser() {
+        var email = document.getElementById("{!$Component.communitiesSelfRegPage.theForm.thePageBlock.thePageBlockSection1.thePageBlockSectionItem8.email}").value;
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.CommunitiesSelfRegController.getUserByEmail}',
+            email, 
+            function(result, event){
+                if (event.status){
+                    var j$modalDialogUser = j$('<div></div>')
+                        .dialog({
+                        autoOpen: false,
+                        title: 'Duplicate User',
+                        resizable: false,
+                        width: 600,
+                        height: 150,
+                        autoResize: true,
+                        modal: true,
+                        draggable: false
+                    });
+                    j$modalDialogUser.html("The entered email has been registered before, duplicate email was not allowed. If you have forgotten your password, please click on the forgot password link in the login form.");
+                    j$modalDialogUser.dialog('open');
+                } else if (event.type === 'exception') {
+                    console.log(event.message + "<br/>" + event.where + "<br/>");
+                } else {
+                    console.log(event.message);
+                }
+            }, 
+            {escape: true}
+            );
+        }
+    </script>
+    <apex:define name="body">
+        <center>
+            <apex:outputPanel id="othersTablePanelFields">
+                <table border="0" style="width:100%;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+                    <tbody>
+                        <tr>
+                            <td style="width:100%;font-weight: bold;text-align:center;font-size: 15px;">
+                                Welcome to Mainetti Customer Portal.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/>
+            </apex:outputPanel>
+            <apex:outputPanel id="othersTablePanelFields3">
+                <table border="0" style="width:100%;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+                    <tbody>
+                        <tr>
+                            <td style="width:100%;font-weight: bold;text-align:center;">
+                                New Customer Registration Form
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/>
+            </apex:outputPanel>
+            <apex:outputPanel id="othersTablePanelFields2">
+                <table border="0" style="width:100%;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+                    <tbody>
+                        <tr>
+                            <td style="width:100%;font-weight: bold;text-align:center;">
+                                Thank you for registering with Mainetti. Please complete new customer registration form below and our local sales representative will contact you for the final validation process.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/>
+            </apex:outputPanel>
+            <center>
+                <apex:form id="theForm" forceSSL="true">
+                    <!--<apex:actionPoller action="{!checkUserExist}" interval="5" rendered="{!isErrorExists}" />-->
+                    <apex:pageMessages id="error" />
+                    <apex:panelGrid columns="1" style="margin-top:1em;font-face:tahoma;width:650px" id="thePanelGrid">
+                        <apex:pageBlock id="thePageBlock">
+                            <apex:pageBlockSection columns="1" id="thePageBlockSection1">
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem1">
+                                    <apex:outputLabel value="Company Name" for="companyName" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <!--<apex:inputField required="true" id="companyName" value="{!userNew.companyName}" label="Company Name" />-->
+                                            <apex:inputField required="true" id="companyName" value="{!userNew.Company_Name__c}" label="Company Name" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem2">
+                                    <apex:outputLabel value="First Name" for="firstName" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="firstName" value="{!userNew.firstName}" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem3">
+                                    <apex:outputLabel value="Last Name" for="lastName" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="lastName" value="{!userNew.lastName}" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem4">
+                                    <apex:outputLabel value="Post/Title" for="title" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="title" value="{!userNew.title}" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem5">
+                                    <apex:outputLabel value="Fax" for="fax" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="fax" value="{!userNew.fax}" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem6">
+                                    <apex:outputLabel value="Telephone" for="telephone" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="telephone" value="{!userNew.Phone}" label="Telephone" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem7">
+                                    <apex:outputLabel value="{!$Label.site.community_nickname}" for="communityNickname" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="communityNickname" value="{!userNew.communityNickname}" label="{!$Label.site.community_nickname}" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem8">
+                                    <apex:outputLabel value="{!$Label.site.email}" for="email" style="float:left;text-align:left;" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <div style="width:35%;float:left;position: relative;">
+                                            <apex:inputField required="true" id="email" value="{!userNew.email}" label="{!$Label.site.email}" onblur="getRemoteUser();"/></div><div  style="width:60%;position: relative;float:left;">&nbsp;&nbsp;<img src="/s.gif" alt="Help" class="helpIcon" title="This email address will be your future Login ID" /></div>
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem9">
+                                    <apex:outputLabel value="{!$Label.site.password}" for="password" style="float:left;text-align:left;" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <div style="">
+                                            <apex:inputSecret required="true" id="password" value="{!password}" label="{!$Label.site.password}"/>&nbsp;&nbsp;<img src="/s.gif" alt="Help" class="helpIcon" title="8 characters long with at least One Letter & One Number" />
+                                            </div>
+                                            
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem10">
+                                    <apex:outputLabel value="{!$Label.site.confirm_password}" for="confirmPassword" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputSecret required="true" id="confirmPassword" value="{!confirmPassword}" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem11">
+                                    <apex:outputLabel value="Order To Company" for="orderToCompany" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="orderToCompany" value="{!userNew.Order_to_Company__c}" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <!--<apex:outputLabel value="Manitti Company" for="manattiCompany" />
+                           <apex:inputField required="true" id="manattiCompany" value="{!userNew.Mainetti_Company__c}"/>-->
+                                <!-- <apex:outputLabel value="Buyer Code" for="buyerCode" />
+                           <apex:inputField required="true" id="buyerCode" value="{!userNew.Buyer_Code__c}" label="Buyer Code"/>-->
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem12">
+                                    <apex:outputLabel value="Preferred Currency" for="preferredCurrency" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="preferredCurrency" value="{!userNew.Preferred_Currency__c}" />
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <!--
+                           <apex:outputLabel value="Preferred Currency" for="preferredCurrency2" />
+                           <apex:selectList size="1" >
+                               <apex:selectOptions value="{!DefaultCurrency}"/>
+                           </apex:selectList>-->
+                           
+                           <!-- commented by pawan 05 SEP 2016
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem13">
+                                    <apex:outputLabel value="Related Retailer" for="RelatedRetailers" style="float:left" />
+                                    <apex:outputPanel >
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:inputField required="true" id="RelatedRetailers" value="{!userNew.Related_Retailer__c}" style="float:left">&nbsp;&nbsp;<img src="/s.gif" alt="Help" class="helpIcon" title="{!$ObjectType.User.fields.Related_Retailer__c.InlineHelpText}" /></apex:inputField>
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem14">
+                                    <apex:outputLabel value="Supplier Code" for="SupplierCode1" style="float:left" />
+                                    <apex:outputPanel >
+                                        <apex:inputField id="SupplierCode" value="{!userNew.Supplier_Code__c}" onblur="return validateSupplierCode('{!$Component.SupplierCode}');">&nbsp;&nbsp;<img src="/s.gif" alt="Help" class="helpIcon" title="{!$ObjectType.User.fields.Supplier_Code__c.InlineHelpText}" /></apex:inputField>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem15">
+                                    <apex:outputLabel value="Manufacturer Code" for="ManufcturerCode" style="float:left;text-align:left;" />
+                                    <apex:outputPanel >
+                                        <apex:inputField id="ManufcturerCode" value="{!userNew.Manufacturer_Code__c}" onblur="return validateManufacturerCode('{!$Component.ManufcturerCode}');">&nbsp;&nbsp;<img src="/s.gif" alt="Help" class="helpIcon" title="{!$ObjectType.User.fields.Manufacturer_Code__c.InlineHelpText}" /></apex:inputField>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                                -->
+            
+                                <!--
+                                <apex:pageBlockSectionItem id="thePageBlockSectionItem16">
+                                <apex:actionRegion >
+                                <apex:panelGrid columns="4" id="abcd"  style="width:470px;">
+                                <apex:outputLabel value="Related Retailer" for="RelatedReatiler11" style="width:100px;float:left;text-align:left;font-weight: bold;" />
+                                    <apex:selectList id="sel1" value="{!leftselected}" multiselect="true" size="5" style="width:150px;">
+                                        <apex:selectOptions value="{!unselectedvalues}" />
+                                    </apex:selectList>
+                                        <apex:panelGroup >
+                                            <br/>
+                                            <apex:image value="{!$Resource.multiselected}">
+                                                <apex:actionSupport event="onclick" action="{!selectclick}" rerender="abcd"/>
+                                            </apex:image>
+                                            <br/><br/>
+                                            <apex:image value="{!$Resource.multiunselected}">
+                                                <apex:actionSupport event="onclick" action="{!unselectclick}" rerender="abcd"/>
+                                            </apex:image>
+                                        </apex:panelGroup>
+                                    <apex:selectList id="sel2" value="{!rightselected}" multiselect="true" size="5" style="width:150px;">
+                                        <apex:selectOptions value="{!SelectedValues}" />
+                                    </apex:selectList>
+                                </apex:panelGrid>
+                                </apex:actionRegion>
+                                </apex:pageBlockSectionItem>
+                            -->
+                            
+                            <apex:outputPanel id="rows">
+                                <apex:actionRegion >
+                                    <apex:pageBlockSection title="Related Retailer Information" columns="1">
+                                    <apex:pageBlockSectionItem >
+                                      <apex:commandButton value="Add Retailer" action="{!addRow}" rerender="rows"/>
+                                    </apex:pageBlockSectionItem>
+                                    <apex:pageMessages id="error" />
+                                    <apex:pageBlockTable value="{!rows}" var="row">
+                                    
+                                    <!--
+                                     <apex:variable value="{!0}" var="cnt"/>
+                                      <apex:column headervalue="Action">
+                                          <apex:commandButton value="Remove" action="{!removeRow}" reRender="rows">
+                                              <apex:param name="index" value="{!cnt}"/>
+                                          </apex:commandButton> 
+                                          <apex:variable var="cnt" value="{!cnt+1}"/>              
+                                      </apex:column>-->
+                                    
+                                     <apex:variable value="{!0}" var="cnt"/>
+                                      <apex:column headervalue="Action">
+                                          <apex:commandlink value="Remove" action="{!removeRow}" reRender="rows">
+                                              <apex:param name="index" value="{!cnt}"/>
+                                          </apex:commandlink> 
+                                          <apex:variable var="cnt" value="{!cnt+1}"/>              
+                                      </apex:column>
+                                      
+                                      <apex:column headerValue="Retailer Code">
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                        <apex:selectList id="sel1" value="{!row.val1}" size="1" style="width:150px;" required="true">
+                                            <apex:selectOptions value="{!reatilersOptions}"/>
+                                        </apex:selectList>
+                                        <!-- <apex:inputText value="{!row.val1}" />-->
+                                        </div>
+                                      </apex:column>
+                                      <apex:column headerValue="Manufacturer / Factory Code">
+                                        <apex:inputText value="{!row.val2}"/>
+                                        <!-- <apex:inputText value="{!row.val2}"  onblur="return validateManufacturerCode(this);"/>-->
+                                      </apex:column>
+                                      <apex:column headerValue="Supplier Code">
+                                        <apex:inputText value="{!row.val3}"/>
+                                        <!--<apex:inputText value="{!row.val3}" onblur="return validateSupplierCode(this);"/>-->
+                                      </apex:column>
+                                    </apex:pageBlockTable>
+                                  </apex:pageBlockSection>
+                                </apex:actionRegion>
+                            </apex:outputPanel> 
+                            </apex:pageBlockSection>
+                            
+                            <apex:pageblockbuttons location="bottom">
+                                <apex:actionFunction name="Save1" action="{!registerUser}" />
+                                <input type="button" class="btn" onclick="validate();" value="Submit" style="float:center" />
+                                <!--<apex:commandButton action="{!registerUser}" value="{!$Label.site.submit}" id="submit" style="float:center"/>-->
+                            </apex:pageblockbuttons>
+                        </apex:pageBlock>
+                    </apex:panelGrid>
+                    <br/>
+                </apex:form>
+            </center>
+            <apex:outputPanel id="othersTablePanelFields4">
+                <table border="0" style="width:100%;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+                    <tbody>
+                        <tr>
+                            <td style="width:100%;font-weight: bold;text-align:center;">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/>
+            </apex:outputPanel>
+        </center>
+        <br/>
+    </apex:define>
+</apex:page>

@@ -1,0 +1,346 @@
+<apex:page controller="SearchFrontControllerWithPagination" sidebar="false">
+
+  <!-- For Floating Header Start -->
+ <script src="{!URLFOR($Resource.JQueryJS)}"></script>
+ <script src="{!URLFOR($Resource.FloatingHeaders)}"></script>
+  <style>
+        .tableContainer
+        {
+            height:290px; 
+            width: 100%;
+           
+        }       
+        .floatingStyle 
+        { 
+            position:relative; 
+        } 
+  div.color {
+  
+  border-color:#000000;
+  }
+    </style>
+    <style type="text/css">
+.bPageBlock .pbBody { background-color:#000000; }
+</style>
+
+<SCRIPT language="Javascript">
+     
+      function isNumberKey(evt)
+      {
+         var charCode = (evt.which) ? evt.which : event.keyCode
+         if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+         return true;
+      }
+     
+   </SCRIPT>
+    <script>
+    $(document).ready(function() {
+        $('.floatingHeaderTable').vfFloatingHeaders();
+    });
+    </script>
+  <!-- For Floating Header End -->  
+<apex:outputPanel styleClass="tableContainer" layout="block" style="height:1000px;border-color:black;">
+  <!-- <img src="{!URLFOR($Resource.MouldImage)}" border="0" style=" height: 32px;width: 32px;"/>-->
+<apex:pageBlock >
+  <apex:form >
+   
+ <table border="0" style="width:1000px;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+<tbody>
+<tr>
+<!--<td >
+<label for="{!fieldName1}" style="font-weight: bold;">Mould Name</label>
+</td>
+
+<td>
+<apex:inputText id="testTxt1" value="{! fieldName1}" rendered="true"/>
+</td>-->
+<td>
+<label for="{!fieldName3}" style="font-weight: bold;">Model</label>
+</td>
+<td>
+<apex:inputText id="testTxt3" value="{! fieldName3}" rendered="true"/>
+</td>
+<td>
+<label for="{!fieldName2}" style="font-weight: bold;">Mould Id</label>
+</td>
+<td>
+<apex:inputText id="testTxt2" value="{! fieldName2}" rendered="true"/>
+<!--<input id="{!fieldName2}" type="text" value="{!fieldName2}" size="20" name="{!fieldName2}" maxlength="80"></input>-->
+</td>
+<!--<td>
+<label for="{!fieldName3}" style="font-weight: bold;">Model</label>
+</td>
+<td>
+<apex:inputText id="testTxt3" value="{! fieldName3}" rendered="true"/>
+</td>-->
+<td >
+<label for="{!fieldName1}" style="font-weight: bold;">Mould Name</label>
+</td>
+
+<td>
+<apex:inputText id="testTxt1" value="{! fieldName1}" rendered="true"/>
+</td>
+<td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/>
+</tr>
+
+<tr>
+<td >
+<label for="{!fieldName4}" style="font-weight: bold;">Cavity</label>
+</td>
+
+<td>
+<apex:inputText id="testTxt4" value="{! fieldName4}" rendered="true" onkeypress="return isNumberKey(event)"/>
+<!--<input id="{!fieldName4}" type="text" value="" size="20" name="{!fieldName4}" maxlength="80"></input>-->
+</td>
+<td>
+<label for="{!fieldName5}" style="font-weight: bold;">Original Brand</label>
+</td>
+<td>
+<!--<apex:selectList value="{!fieldName5}" multiselect="false" size="1">
+   <apex:selectOptions value="{!originalBrand}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt5" value="{! fieldName5}" rendered="true"/>
+<!--<input id="{!fieldName5}" type="text" value="" size="20" name="{!fieldName5}" maxlength="80"></input>-->
+</td>
+
+<td>
+<label for="{!fieldName6}" style="font-weight: bold;">Engraved Logo</label>
+</td>
+<td>
+ <!--<apex:selectList value="{!fieldName6}" multiselect="false" size="1">
+   <apex:selectOptions value="{!engravedlogo}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt6" value="{! fieldName6}" rendered="true"/>
+<!--<input id="{!fieldName6}" type="text" value="" size="20" name="{!fieldName9}" maxlength="80"></input>-->
+</td>
+
+<td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/>
+</tr>
+
+<tr>
+<td>
+<label for="{!fieldName7}" style="font-weight: bold;">Country</label>
+</td>
+<td>
+<!-- <apex:selectList value="{!fieldName7}" multiselect="false" size="1">
+   <apex:selectOptions value="{!country}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt7" value="{! fieldName7}" rendered="true"/>
+<!--<input id="{!fieldName7}" type="text" value="" size="20" name="{!fieldName7}" maxlength="80"></input>-->
+</td>
+<td>
+<label for="{!fieldName8}" style="font-weight: bold;">Factory</label>
+</td>
+<td>
+ <!--<apex:selectList value="{!fieldName8}" multiselect="false" size="1">
+   <apex:selectOptions value="{!factory}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt8" value="{! fieldName8}" rendered="true"/>
+<!--<input id="{!fieldName6}" type="text" value="" size="20" name="{!fieldName6}" maxlength="80"></input>-->
+</td>
+<td >
+<label for="{!fieldName9}" style="font-weight: bold;">Holder Company</label>
+</td>
+
+<td>
+ <!--<apex:selectList value="{!fieldName9}" multiselect="false" size="1">
+   <apex:selectOptions value="{!holderCompany}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt9" value="{! fieldName9}" rendered="true"/>
+<!--<input id="{!fieldName9}" type="text" value="" size="20" name="{!fieldName9}" maxlength="80"></input>-->
+</td>
+
+
+<td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/>
+</tr>
+<tr>
+<td>
+<label for="{!fieldName10}" style="font-weight: bold;">Owner Company</label>
+</td>
+<td>
+<!--<apex:selectList value="{!fieldName10}" multiselect="false" size="1">
+   <apex:selectOptions value="{!ownerCompany}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt10" value="{! fieldName10}" rendered="true"/>
+<!--<input id="{!fieldName10}" type="text" value="" size="20" name="{!fieldName10}" maxlength="80"></input>-->
+</td>
+<td>
+<label for="{!fieldName11}" style="font-weight: bold;">Mould Usability</label>
+</td>
+<td>
+<!--<apex:selectList value="{!fieldName11}" multiselect="false" size="1">
+   <apex:selectOptions value="{!mouldUsablity}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt11" value="{! fieldName11}" rendered="true"/>
+<!--<input id="{!fieldName11}" type="text" value="" size="20" name="{!fieldName11}" maxlength="80"></input>-->
+</td>
+<td >
+<label for="{!fieldName12}" style="font-weight: bold;">Mould Condition</label>
+</td>
+
+<td>
+<!--<apex:selectList value="{!fieldName12}" multiselect="false" size="1">
+   <apex:selectOptions value="{!mouldCondition}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt12" value="{! fieldName12}" rendered="true"/>
+<!--<input id="{!fieldName12}" type="text" value="" size="20" name="{!fieldName12}" maxlength="80"></input>-->
+</td>
+
+
+<td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/>
+</tr>
+<tr>
+<td>
+<label for="{!fieldName13}" style="font-weight: bold;">Mould Type</label>
+</td>
+<td>
+<!--<apex:selectList value="{!fieldName13}" multiselect="false" size="1">
+   <apex:selectOptions value="{!mouldType}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt13" value="{! fieldName13}" rendered="true"/>
+<!--<input id="{!fieldName13}" type="text" value="" size="20" name="{!fieldName13}" maxlength="80"></input>-->
+</td>
+<td>
+<label for="{!fieldName14}" style="font-weight: bold;">Product Type</label>
+</td>
+<td>
+<!--<apex:selectList value="{!fieldName14}" multiselect="false" size="1">
+   <apex:selectOptions value="{!productType}" />
+  </apex:selectList>-->
+<apex:inputText id="testTxt14" value="{! fieldName14}" rendered="true"/>
+<!--<input id="{!fieldName14}" type="text" value="" size="20" name="{!fieldName14}" maxlength="80"></input>-->
+</td>
+<td >
+<label for="{!fieldName15}" style="font-weight: bold;">Ref Project No</label>
+</td>
+
+<td>
+<apex:inputText id="testTxt15" value="{! fieldName15}" rendered="true"/>
+<!--<input id="{!fieldName15}" type="text" value="" size="20" name="{!fieldName15}" maxlength="80"></input>-->
+</td>
+
+
+<td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/>
+</tr>
+<tr>
+<td>
+<apex:commandButton value="Search" action="{! search}"/>
+</td>
+<!--<td>-->
+<apex:outputText value="{!errorMessage}" styleClass="errorMsg" rendered="{!LEN(errorMessage)>0}"/>
+<!--</td>-->
+</tr>
+</tbody>
+</table>
+  
+     <!--<apex:commandButton value="Search" action="{! search}"/>-->
+     <!--<apex:outputText value="{!errorMessage}" styleClass="errorMsg" rendered="{!LEN(errorMessage)>0}"/>-->
+ 
+  </apex:form>
+   </apex:pageBlock>
+   
+   <body oncopy="return false" oncut="return false" onpaste="return false" onselectstart="return false;">
+   <!-- This below pageBlock is redered/displayed in above mentioned pageBlock because of render attribute, since this is referring to above pageBlock name.-->
+ <apex:pageBlock title="Moulds" onkeydown="" onmousedown="">
+ <div style="float:left">
+  <apex:pageBlockButtons location="top" style="align:left;float:left;">
+   <apex:outputPanel id="myButtons" style="align:left;float:left;">
+    <apex:form style="align:left;float:left;">
+        <apex:commandButton action="{!Beginning}" title="Beginning" value="<<" disabled="{!disablePrevious}" reRender="myPanel,myButtons"/>
+        <apex:commandButton action="{!Previous}" title="Previous" value="<" disabled="{!disablePrevious}" reRender="myPanel,myButtons"/>        
+        <apex:commandButton action="{!Next}" title="Next" value=">" disabled="{!disableNext}" reRender="myPanel,myButtons"/>
+        <apex:commandButton action="{!End}" title="End" value=">>" disabled="{!disableNext}" reRender="myPanel,myButtons"/>        
+        <apex:outputPanel rendered="{!searchResList!=null}" styleClass="errorMsg">
+        <apex:outputPanel rendered="{!searchResList.size>0}" styleClass="errorMsg">
+       Displaying Records({!counter+1}-{!totalRecordsInCurrentPage} of {!total_size})
+         </apex:outputPanel>
+       </apex:outputPanel>
+   </apex:form>
+   </apex:outputPanel>
+   </apex:pageBlockButtons>
+ </div>
+ <apex:form >
+  <apex:outputPanel id="myPanel" style="">
+  <div style="overflow:none; width:1200px; height:500px;">
+   <apex:outputPanel styleClass="tableContainer" layout="block">
+<apex:pageBlockTable value="{!searchResList}" var="Mould">
+            
+  <!--<apex:column headerValue="Mould Status">
+                                    <apex:inputText value="{! Mould.status}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;"/>
+                                </apex:column>-->
+                                <apex:column headerValue="Mould Id" style="">
+<!--                                   <apex:inputText value="{! Mould.id}" disabled="true" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;width:90%;"/>-->
+<!--                                   <apex:OutputText value="{! Mould.id}"style="border: none; border-color: transparent;background-color:transparent;"/>-->
+                                                                   <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.id}</apex:OutputText>
+                                </apex:column>
+                                 <apex:column headerValue="Mould Name" style="">
+<!--                                    <apex:inputText value="{! Mould.Name}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.Name}</apex:OutputText>
+                                </apex:column>
+                                  <apex:column headerValue="Model">
+                                    <!--<apex:inputText value="{! Mould.model}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.model}</apex:OutputText>
+                                </apex:column>
+                              
+                                <apex:column headerValue="Cavity">
+                                    <!--<apex:inputText value="{! Mould.cavity}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;width:90%;"/>-->
+                                    <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.cavity}</apex:OutputText>
+                                </apex:column>
+                              
+                                <apex:column headerValue="Original Brand">
+                                    <!--<apex:inputText value="{! Mould.originalBrand}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                    <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.originalBrand}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Engraved Logo">
+                                    <!--<apex:inputText value="{! Mould.engravedLogo}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                    <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.engravedLogo}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Country">
+                                   <!-- <apex:inputText value="{! Mould.country}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                   <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.country}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Factory">
+                                    <!--<apex:inputText value="{! Mould.factory}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                     <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.factory}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Holder Company">
+                                    <!--<apex:inputText value="{! Mould.holderCompany}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                     <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.holderCompany}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Owner Company">
+                                    <!--<apex:inputText value="{! Mould.ownerCompany}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                     <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.ownerCompany}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Mould Usability">
+                                    <!--<apex:inputText value="{! Mould.mouldUsability}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                     <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.mouldUsability}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Mould Condition">
+                                    <!--<apex:inputText value="{! Mould.mouldCondition}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                     <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.mouldCondition}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Mould Type">
+                                    <!--<apex:inputText value="{! Mould.mouldType}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                     <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.mouldType}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Product Type">
+                                    <!--<apex:inputText value="{! Mould.productType}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                     <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.productType}</apex:OutputText>
+                                </apex:column>
+                                <apex:column headerValue="Ref Project No.">
+                                    <!--<apex:inputText value="{! Mould.refProjectNo}" disabled="true" accesskey="" style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;"/>-->
+                                     <apex:OutputText style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! Mould.refProjectNo}</apex:OutputText>
+                                </apex:column>
+    
+ </apex:pageBlockTable>
+  </apex:outputPanel>
+ </div>
+ </apex:outputPanel>
+ </apex:form>
+ </apex:pageBlock>
+  </body>
+
+  </apex:outputPanel>
+</apex:page>

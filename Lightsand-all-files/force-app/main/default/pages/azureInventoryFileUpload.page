@@ -1,0 +1,571 @@
+<apex:page title="Inventory Data File Upload" standardController="Inventory_Transaction_Master__c" extensions="inventoryAzureFileUploadController" lightningStyleSheets="true" >
+    
+    <apex:includeScript value="{!$Resource.AzureCommon}"/>
+    <apex:includeScript value="{!$Resource.AzureBlob}"/>
+    <apex:includeScript value="{!$Resource.papaparse}"/>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"/>
+    <apex:remoteObjects >
+        <apex:remoteObjectModel name="Inventory_Transaction_Master__c" fields="Id" jsShorthand="invTransMaster"/>
+    </apex:remoteObjects>
+    <script type="text/javascript">
+    var blobService;
+    var speedSummary;
+    var finishedOrError = false;
+    var containerName;
+    
+    function uploadFileToAzure(){
+        getContainerInfo(); 
+        document.getElementById("closeAzure").style.display = 'none';
+        document.getElementById("uploadStatus").innerHTML = 'Azure File Upload In Progress';
+        updateTransMaster('tempFile','5 - Azure File Upload In Progress');       
+        getCsvFileContent('{!Inventory_Transaction_Master__c.Id}');
+    }
+    /************************************/
+    //This function get the details of the container
+    // this is called when the page is loaded.
+    /************************************/
+    function getContainerInfo() {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.inventoryAzureFileUploadController.storageDetails}',
+            function(result, event) {
+                if (event.status) {
+                    initBlobService(result);
+                    createContainer();
+                } else if (event.type === 'exception') {        
+                    console.log(event.message);
+                } else {
+                    console.log(event.message);
+                }
+            }, {
+                escape: true
+            }
+        );
+    }
+    
+    /************************************/
+    //This function will initialise the Azure Service.
+    /************************************/    
+    function initBlobService(storage) {
+        
+        if (AzureStorage) {
+            blobUri = 'https://' + storage.storageName + '.blob.core.windows.net';
+            blobService = AzureStorage.createBlobService(storage.storageName, storage.storageKey);
+            containerName = storage.containerName;
+        } else {
+            alert('Azure service not found');
+        }
+    }    
+    function createContainer() {        
+        if (!blobService)
+            return;               
+        blobService.createContainerIfNotExists(containerName, function(error, result){
+            if (error) {
+                console.log(error);
+            } else { }
+        });
+    }
+    /************************************/
+    //This function is used for the update the batch status once
+    // the file is uploaded into Azure and the file path is store.
+    /***********************************/
+    function updateTransMaster(fileName,batchStatus) {        
+        var batchId = '{!Inventory_Transaction_Master__c.Id}';
+        var invTransMaster = new SObjectModel.invTransMaster();
+        var inventoryFileLink = '/apex/inventoryFileDownload?Id='+batchId;         
+        invTransMaster.update([batchId],{upload_file_name__c:fileName,Azure_File_Link__c:inventoryFileLink,Batch_Status__c:batchStatus},function(error, records) {
+            if (error) {
+                document.getElementById("uploadStatus").innerHTML = 'Failure to Update Record Status...';                
+            } 
+        });
+    }    
+    /*Getting the CSV File Content for Azure upload */
+    function getCsvFileContent(batchId){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.inventoryAzureFileUploadController.getCsvFileContent}',batchId,
+            function(result, event) {
+                if (event.status) {
+                    creatCsvFileAndUploadToAzure(result);                    
+                } else if (event.type === 'exception') {        
+                    console.log(event.message);
+                } else {
+                    console.log(event.message);
+                }
+            }, {
+                escape: true
+            }
+        );
+    }
+    /*Getting teh content from ContentVersion and creating and
+    /* javascript file object and uploading it to Azure*/
+    function creatCsvFileAndUploadToAzure(csvWrapper){
+        
+        var recordtype = '{!Inventory_Transaction_Master__c.Record_Type__c}';        
+        if (recordtype == "Inventory") {
+            InventoryFile(csvWrapper);
+        }else if(recordtype == "Sales"){
+            SalesFile(csvWrapper);
+        }
+        
+        /*var file = new File([csvWrapper.csvFileContent], csvWrapper.fileName, {type: "text/plain"});        
+        Papa.parse(file,{
+            header: true,
+            beforeFirstChunk: function( chunk ) {
+                var rows = chunk.split( /\r\n|\r|\n/ );
+                var headings = rows[0].split( ',' );
+                headings[0] = returnColumnHeader(headings[0]);
+                headings[1] = returnColumnHeader(headings[1]);
+                headings[2] = returnColumnHeader(headings[2]);
+                headings[3] = returnColumnHeader(headings[3]);
+                headings[4] = returnColumnHeader(headings[4]);
+                headings[5] = returnColumnHeader(headings[5]);
+                headings[6] = returnColumnHeader(headings[6]);
+                headings[7] = returnColumnHeader(headings[7]);
+                headings[8] = returnColumnHeader(headings[8]);
+                headings[9] = returnColumnHeader(headings[9]);
+                rows[0] = headings.join();
+                return rows.join( '\n' );
+            },
+            complete: function(results) {
+                var myJson = JSON.stringify(results.data);
+                //console.log('myjson:'+myJson);
+                var csv = Papa.unparse(myJson);
+                //console.log('csv:'+csv);
+                var file = new File([csv], csvWrapper.fileName, {type: "text/plain"});
+                uploadFile(file);
+            }
+        });*/
+        
+        //uploading to Azure.
+        //uploadFile(file); 
+    }
+    
+    function InventoryFile(csvWrapper) {
+        var file = new File([csvWrapper.csvFileContent], csvWrapper.fileName, {type: "text/plain"});    
+        var fileContent = atob(csvWrapper.csvFileContent);
+        var fileData = new File([fileContent], csvWrapper.fileName, {type: "text/plain"});
+        Papa.parse(fileData,{
+            header: true,
+            beforeFirstChunk: function( chunk ) {
+                var rows = chunk.split( /\r\n|\r|\n/ );
+                var headings = rows[0].split( ',' );
+                headings[0] = returnColumnHeader(headings[0]);
+                headings[1] = returnColumnHeader(headings[1]);
+                headings[2] = returnColumnHeader(headings[2]);
+                headings[3] = returnColumnHeader(headings[3]);
+                headings[4] = returnColumnHeader(headings[4]);
+                headings[5] = returnColumnHeader(headings[5]);
+                headings[6] = returnColumnHeader(headings[6]);
+                headings[7] = returnColumnHeader(headings[7]);
+                headings[8] = returnColumnHeader(headings[8]);
+                headings[9] = returnColumnHeader(headings[9]);
+                rows[0] = headings.join();
+                return rows.join( '\n' );
+            },
+            complete: function(results) {
+                var myJson = JSON.stringify(results.data);
+                //console.log('myjson:'+myJson);
+                var csv = Papa.unparse(myJson);
+                //console.log('csv:'+csv);
+                var file = new File([csv], csvWrapper.fileName, {type: "text/plain"});
+                uploadFile(file);
+            }
+        });
+    }
+    
+    function SalesFile(csvWrapper) {
+        var file = new File([csvWrapper.csvFileContent], csvWrapper.fileName, {type: "text/plain"});   
+        console.log('csvWrapper:'+csvWrapper.csvFileContent);
+        //var fileContent = decodeURIComponent(csvWrapper.csvFileContent);
+        // atob() to decode base64.
+        var fileContent = atob(csvWrapper.csvFileContent);
+        var fileData = new File([fileContent], csvWrapper.fileName, {type: "text/plain"}); 
+        //console.log('fileContent:'+fileContent);
+        Papa.parse(fileData,{
+            header: true,
+            beforeFirstChunk: function( chunk ) {
+                var rows = chunk.split( /\r\n|\r|\n/ );
+                var headings = rows[0].split( ',' );
+                headings[0] = returnSalesHeader(headings[0]);
+                headings[1] = returnSalesHeader(headings[1]);
+                headings[2] = returnSalesHeader(headings[2]);
+                headings[3] = returnSalesHeader(headings[3]);
+                headings[4] = returnSalesHeader(headings[4]);
+                headings[5] = returnSalesHeader(headings[5]);
+                headings[6] = returnSalesHeader(headings[6]);
+                headings[7] = returnSalesHeader(headings[7]);
+                headings[8] = returnSalesHeader(headings[8]);
+                headings[9] = returnSalesHeader(headings[9]);
+                headings[10] = returnSalesHeader(headings[10]);
+                headings[11] = returnSalesHeader(headings[11]);
+                headings[12] = returnSalesHeader(headings[12]);
+                headings[13] = returnSalesHeader(headings[13]);
+                headings[14] = returnSalesHeader(headings[14]);
+                headings[15] = returnSalesHeader(headings[15]);
+                headings[16] = returnSalesHeader(headings[16]);
+                headings[17] = returnSalesHeader(headings[17]);
+                headings[18] = returnSalesHeader(headings[18]);
+                headings[19] = returnSalesHeader(headings[19]);
+                headings[20] = returnSalesHeader(headings[20]);
+                headings[21] = returnSalesHeader(headings[21]);
+                headings[22] = returnSalesHeader(headings[22]);
+                headings[23] = returnSalesHeader(headings[23]);
+                headings[24] = returnSalesHeader(headings[24]);
+                headings[25] = returnSalesHeader(headings[25]);
+                headings[26] = returnSalesHeader(headings[26]);
+                headings[27] = returnSalesHeader(headings[27]);
+                headings[28] = returnSalesHeader(headings[28]);
+                headings[29] = returnSalesHeader(headings[29]);
+                headings[30] = returnSalesHeader(headings[30]);
+                headings[31] = returnSalesHeader(headings[31]);
+                headings[32] = returnSalesHeader(headings[32]);
+                headings[33] = returnSalesHeader(headings[33]);
+                headings[34] = returnSalesHeader(headings[34]);
+                headings[35] = returnSalesHeader(headings[35]);
+                headings[36] = returnSalesHeader(headings[36]);
+                headings[37] = returnSalesHeader(headings[37]);
+                headings[38] = returnSalesHeader(headings[38]);
+                headings[39] = returnSalesHeader(headings[39]);
+                headings[40] = returnSalesHeader(headings[40]);
+                headings[41] = returnSalesHeader(headings[41]);
+                headings[42] = returnSalesHeader(headings[42]);
+                rows[0] = headings.join();
+                return rows.join( '\n' );
+            },
+            complete: function(results) {
+                var myJson = JSON.stringify(results.data);
+                //console.log('myjson:'+myJson);
+                var csv = Papa.unparse(myJson);
+                //console.log('csv:'+csv);
+                var file = new File([csv], csvWrapper.fileName, {type: "text/plain"});
+                uploadFile(file);
+            }
+        });
+    }
+
+    
+    //converting header field names of Inventry record type
+    function returnColumnHeader(headerName) {
+        if(headerName=='Retailer_Code__c'){
+            return 'Retailer Code';
+        }else if(headerName=='Mainetti_Company__c'){
+            return 'Mainetti Company';
+        }else if(headerName=='Inventory_Model__c'){
+            return 'Inventory Model';
+        }else if(headerName=='Warehouse__c'){
+            return 'Warehouse';
+        }else if(headerName=='Color__c'){
+            return 'Color';
+        }else if(headerName=='Sizer_Print__c'){
+            return 'Sizer Print';
+        }else if(headerName=='Local_System_SKU__c'){
+            return 'Local System SKU';
+        }else if(headerName=='Source__c'){
+            return 'Source';
+        }else if(headerName=='Stock_In_Date__c'){
+            return 'Stock In Date';
+        }else if(headerName=='Stock_In_Qty__c'){
+            return 'Stock In Qty';
+        }
+    }
+    
+    //converting header field names of Material price record type
+    function returnSalesHeader(headerName)
+    {
+        if(headerName=='Company__c'){
+            return 'Company';
+        }else if(headerName=='Year__c'){
+            return 'Year';
+        }else if(headerName=='Week__c'){
+            return 'Week';
+        }else if(headerName=='Month__c'){
+            return 'Month';
+        }else if(headerName=='Item_code__c'){
+            return 'Item code';
+        }else if(headerName=='Material__c'){
+            return 'Material';
+        }else if(headerName=='Source__c'){
+            return 'Source';
+        }else if(headerName=='Model__c'){
+            return 'Model';
+        }else if(headerName=='Printed_Logo__c'){
+            return 'Printed_Logo';
+        }else if(headerName=='Color__c'){
+            return 'Color';
+            }else if(headerName=='Customer__c'){
+            return 'Customer';
+                }else if(headerName=='Customer_local_name__c'){
+            return 'Customer local name';
+        }else if(headerName=='Mainetti_Brand__c'){
+            return 'Mainetti_Brand';
+        }
+         else if(headerName=='Category__c'){
+            return 'Category';
+        }
+         else if(headerName=='Sub_Category__c'){
+            return 'Sub-Category';
+        }
+         else if(headerName=='Family__c'){
+            return 'Family';
+        }
+         else if(headerName=='Order_Type__c'){
+            return 'Order_Type';
+        }
+         else if(headerName=='Unit_Sold__c'){
+            return 'Units Sold';
+        }
+         else if(headerName=='Unit_Price_100_EUR__c'){
+            return 'Unit Price / 100(EUR)';
+        }
+         else if(headerName=='Unit_Price_100_USD__c'){
+            return 'Unit Price / 100(USD)';
+        }
+         else if(headerName=='Net_Unit_Price_100__c'){
+            return 'Net Unit Price/100';
+        }else if(headerName=='Sales_EUR__c'){
+            return 'Sales EUR';
+        }else if(headerName=='Sales_USD__c'){
+            return 'Sales USD';
+        }else if(headerName=='Transaction_Currency__c'){
+            return 'Transaction Currency';
+        }else if(headerName=='ExRate_to_EUR__c'){
+            return 'Exchange Rate to 1 EUR';
+        }else if(headerName=='ExRate_to_USD__c'){
+            return 'Exchange Rate to 1 USD';
+        }else if(headerName=='Local_Net_Unit_Pirce_100__c'){
+            return 'Local Net Unit Price/100';
+        }else if(headerName=='Sales_Transaction_Currency__c'){
+            return 'Sales (Transaction Currency)';
+        }else if(headerName=='Shipped_To_Factory__c'){
+            return 'Shipped To - Factory';
+        }else if(headerName=='Shipped_To_Country__c'){
+            return 'Shipped To - Country';
+            }else if(headerName=='Label__c'){
+            return 'Label';
+                }else if(headerName=='End_user__c'){
+            return 'End-user';
+        }else if(headerName=='Vendor__c'){
+            return 'Vendor';
+            }else if(headerName=='Division__c'){
+            return 'Division';
+                }else if(headerName=='Retailer_Brand__c'){
+            return 'Retailer_Brand';
+                    }else if(headerName=='Royalty_Rate__c'){
+            return 'Royalty Rate';
+        }else if(headerName=='Market__c'){
+            return 'Market';
+        }
+            else if(headerName=='Remark__c'){
+                return 'Remark';
+            }else if(headerName=='LOB__c'){
+                return 'LOB';
+            }else if(headerName=='SO_Number__c'){
+                return 'SO_Number';
+            }else if(headerName=='Production_Country__c'){
+                return 'Production Country';
+            }else if(headerName=='Gross_Sales_USD__c'){
+                return 'Gross Sales (USD)';
+            }else if(headerName=='Freight_Charge_USD__c'){
+                return 'Freight Charge (USD)';
+            }         
+        }
+    
+    function uploadFile(files) {
+        
+        var customBlockSize = files.size > 1024 * 1024 * 32 ? 1024 * 1024 * 4 : 1024 * 1024 * 1;
+        blobService.singleBlobPutThresholdInBytes = customBlockSize;
+        if (blobService) {
+            var fileName = files.name;
+            var fileType = files.type;
+            var batchId = '{!Inventory_Transaction_Master__c.Id}';        
+            var blobName = batchId+'/'+fileName;
+            speedSummary = blobService.createBlockBlobFromBrowserFile(
+                containerName,
+                blobName,
+                files, {
+                    blockSize: customBlockSize
+                },
+                function(error, result, response) {
+                    if (error) {
+                        console.log(JSON.stringify(error)) ;
+                    } else {
+                        //updating the file details in Transaction Master
+                        updateTransMaster(blobName,'6 - Azure File Upload Successful'); 
+                        document.getElementById("uploadStatus").innerHTML = 'Azure File Upload Successful';
+                        //delete the file from the ContentDocument after upload in Azure
+                        deleteCSVFile(batchId);                       
+                    }
+                });                   
+        }           
+    }     
+    /*Deleting the csv file from the contentVersion */
+    function deleteCSVFile(batchId){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.inventoryAzureFileUploadController.deleteCSVFile}',batchId,
+            function(result, event) {
+                if (event.status) {
+                    var delStatus = result;
+                    if(delStatus){
+                        document.getElementById("uploadStatus").innerHTML = ' Migration of Data In Progress...';
+                        //call the data Transfer function
+                        transferStagToMaster(batchId);
+                    }else{
+                        document.getElementById("uploadStatus").innerHTML = 'File Uploaded UnSuccessfull to Azure';
+                    }
+                } else if (event.type === 'exception') {        
+                    console.log(event.message);
+                } else {
+                    console.log(event.message);
+                }
+            }, {
+                escape: true
+            }
+        );
+    }
+    function transferStagToMaster(batchId){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.inventoryAzureFileUploadController.transferTransctionDataToDataUploadMaster}',batchId,
+            function(result, event) {
+                if (event.status) {                   
+                    var migStatus = result;
+                    if(migStatus){
+                        document.getElementById("uploadStatus").innerHTML = 'Upload Stock Data Migration Successfully...';                        
+                        getUploadDetails(batchId);
+                    }else{
+                        document.getElementById("uploadStatus").innerHTML = 'Upload Stock Data Migration UnSuccessfull....';
+                    }
+                    document.getElementById("closeAzure").style.display = 'block';
+                } else if (event.type === 'exception') {        
+                    console.log(event.message);
+                } else {
+                    console.log(event.message);
+                }
+            }, {
+                escape: true
+            }
+        );     
+    }
+    /*Getting the CSV File Content for Azure upload */
+    function getUploadDetails(batchId){
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.inventoryAzureFileUploadController.getUploadDetails}',batchId,
+            function(result, event) {
+                if (event.status) {
+                    
+                    document.getElementById("recCount").innerHTML = result.recCount;
+                    if(result.recType == 'Inventory'){
+                        document.getElementById("totalQtyUploaded").style.display = 'block';
+                        document.getElementById("totalQty").innerHTML = result.stockQty;
+                    }else{
+                        document.getElementById("totalQtyUploaded").style.display = 'none';
+                    }
+                } else if (event.type === 'exception') {        
+                    console.log(event.message);
+                } else {
+                    console.log(event.message);
+                }
+            }, {
+                escape: true
+            }
+        );
+    }
+    
+    function closeWindow(){
+        
+        var lexOrigin = "https://mainetti--lightsand.lightning.force.com";
+        // Sandbox03 URL 
+        // for batch master: https://mainetti--sandbox03--c.cs76.visual.force.com
+        //var lexOrigin = "https://mainetti--sandbox03.lightning.force.com";
+        var message = "Refresh";
+        window.opener.postMessage(message, lexOrigin);        
+        window.close();
+        
+        
+    }
+    /************************************/
+    //This function shows the progress when 
+    // any service is called.
+    /***********************************/
+    function refreshProgress() {
+        setTimeout(function() {
+            if (!finishedOrError) {
+                var process = speedSummary.getCompletePercent();
+                console.log('processes:' + process);
+                refreshProgress();
+            }
+        }, 200);
+    }    
+    </script>    
+    <apex:form > 
+        <!--<apex:pageBlock >  
+            <div class = "w3-container">
+                <div> -->
+            
+                    <table align = "center" >
+                        <tr>
+                            <td colspan= "2" class="slds-page-header" align = "center">
+                                <h4 id="customerdata" class="slds-text-heading_medium slds-hyphenate">Data Transaction Upload Status</h4>
+                            </td>
+                        </tr>  
+                        <tr><td colspan="2" align="center">&nbsp; </td>                
+                        </tr>
+                        <tr>
+                            <td  class="legend" colspan="2" align="center">Data Upload In Progress, <U style="color:red;font-style: oblique;">DO NOT</U> close the Window.</td>
+                        </tr>
+                        <tr><td class="legend"><b>Current Status :</b></td>
+                            <td ><div id="uploadStatus">Data Validation Successfully Completed</div>
+                            </td>
+                        </tr>
+                        <br/>
+                        <tr><td colspan="2" align="center">&nbsp; </td>                
+                        </tr>
+                        <tr><td colspan="2" align="center">&nbsp; </td>                
+                        </tr>
+                        <tr><td colspan="2" align="center"><div class= "modal-header" Id="closeAzure">
+                            <table>
+                                <tr>
+                                    <td align="right"><b>Total Number of Records:</b></td>
+                                    <td Id="recCount" style="color:white;font-weight: bold;" align = "left">&nbsp;</td>
+                                </tr>
+                                <tr Id="totalQtyUploaded">
+                                    <td align="right"><b>Total Qty Uploaded:</b></td>
+                                    <td Id="totalQty" style="color:white;font-weight: bold;" align = "left"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan ="2" >
+                                        <div align="center" draggable="false" >
+                                            <input type="button" style="border-radius: 10px;" class="w3-button w3-blue" value="Close" onclick="javascript:closeWindow();" />
+                                        </div>
+                                    </td>                                    
+                                </tr>
+                            </table>                            
+                            </div>                            
+                            </td>                
+                        </tr>
+                    </table>
+               <!-- </div>
+            </div> 
+        </apex:pageBlock>-->    
+        <script type="text/javascript">
+        uploadFileToAzure();
+        </script>    
+    </apex:form> 
+    <style type="text/css">
+        .slds-page-header
+        {
+        background-color:#16325c;
+        color: white;
+        border-radius: 10px;   
+        }
+        .modal-header
+        {
+        align: center;
+        background-color:DodgerBlue ;
+        color: black;
+        border-radius: 15px;
+        }
+        .legend{
+        font-family: Monospace, Courier New, Lucida Console;
+        font-weight: bold;
+        }
+    </style>
+</apex:page>

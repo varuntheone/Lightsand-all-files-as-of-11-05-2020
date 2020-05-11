@@ -1,0 +1,45 @@
+<apex:page standardController="Opportunity_Item_Master__c" extensions="ContentVersionUploadController" lightningStylesheets="true">
+    <!--<apex:sectionHeader subtitle="File Upload"/>-->
+    <!-- A simple function for changing the font. -->
+    <script>
+        function validatePrimary(input) {
+        var e = document.getElementsByClassName("CustomSectionName")[0];
+        var strSelectedSectionName = e.options[e.selectedIndex].value;
+        //alert('strSelectedSectionName:'+strSelectedSectionName);
+            if(strSelectedSectionName!='Opportunity Item') {
+                document.getElementsByClassName("PrimaryName")[0].disabled = true;
+                document.getElementsByClassName("PrimaryName")[0].checked = false;
+            }
+            else {
+               document.getElementsByClassName("PrimaryName")[0].disabled = false;
+            }
+        }
+    </script>
+    <apex:form enctype="multipart/form-data">
+        <apex:pageMessages />
+        <apex:pageBlock title="Upload a File">
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!upload}" value="Save" />
+                <apex:commandButton action="{!cancel}" value="Cancel" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Section Name" for="sectionName"/>
+                    <apex:selectList value="{!selectedSubSectionName}" multiselect="false" size="1" onchange="validatePrimary(this);" styleclass="CustomSectionName" >
+                        <apex:selectOptions value="{!subsectionList}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem id="primarySectionItemId">
+                    <apex:outputLabel value="Primary?" for="isPrimary"/>
+                    <apex:inputCheckbox value="{!isPrimary}" id="isPrimary" styleclass="PrimaryName" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection showHeader="false" columns="2" id="block1">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="File" for="file"/>
+                    <apex:inputFile value="{!contentVersion.VersionData}" filename="{!contentVersion.Title}" id="file"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

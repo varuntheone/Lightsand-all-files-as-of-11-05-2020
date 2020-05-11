@@ -1,0 +1,33 @@
+<apex:page lightningStylesheets="true"  standardController="Design_Log_Form__c" extensions="newProductButtonController" docType="html-5.0" >
+     
+<apex:includeScript value="/soap/ajax/43.0/connection.js"/>      
+<apex:includeScript value="/soap/ajax/43.0/apex.js"/> 
+<script type="text/javascript">
+   sforce.connection.sessionId = '{!$Api.Session_ID}';
+</script>    
+<script type = "text/javascript">
+     
+function Mainfunct() {
+           
+    var w=700; var h=500;
+    var left = (screen.width/2)-(w/2);
+    var top = (screen.height/2)-(h/2);
+    
+    if (sforce.one != undefined) {
+        // Lightning
+        sforce.one.createRecord('Product__c',null,{ 
+            Design_Log_Form__c :"{!designLogForm.Id}",
+        });
+    } 
+}  
+    var designStatus = '{!designLogForm.Project_Status__c}';
+    if(designStatus=='Complete'){
+    	Mainfunct();
+    }
+ </script>
+    <apex:form >  
+     <apex:pageBlock >  
+            <apex:pageMessages />
+     </apex:pageBlock>
+  </apex:form>
+</apex:page>

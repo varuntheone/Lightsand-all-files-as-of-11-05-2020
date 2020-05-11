@@ -1,0 +1,95 @@
+<apex:page standardController="Design_Drawing_File_Details__c" extensions="downloadBlobController" showHeader="false" sidebar="false"> 
+<apex:includeScript value="{!$Resource.AzureCommon}"/>
+<apex:includeScript value="{!$Resource.AzureBlob}"/>
+<apex:remoteObjects >
+        <apex:remoteObjectModel name="Design_Drawing_File_Details__c" fields="id,Design_Drawing_Image_Link__c,Drawing_File_Type__c,Drawing_File_Name__c,File_Full_Path__c,Design_Version__c,Design_Log_Form__c"/>
+        <apex:remoteObjectModel name="Design_Drawing_File_Viewing_Detail__c" />
+    </apex:remoteObjects>
+<script type="text/javascript">
+var containerName;
+ function changeUrl(){
+     				var accessPolicy = generateAccessPolicy();
+     				var fileName = '{!desigLogForm.File_Full_Path__c}';
+                     var token = blobService.generateSharedAccessSignature(containerName,fileName, accessPolicy);
+					var downloadLink = blobService.getUrl(containerName, fileName, token);
+     				window.location.href=downloadLink ;
+     				//window.close();
+ }
+function initBlobService(storage) {
+    //alert('hello'+storage.storageName);
+    if (AzureStorage) {
+        blobUri = 'https://' + storage.storageName + '.blob.core.windows.net';
+        blobService = AzureStorage.createBlobService(storage.storageName, storage.storageKey);
+        containerName = storage.containerName;
+    } else {
+        alert('Azure service not found');
+    }
+    
+}
+   function generateAccessPolicy(){
+     var startDate = new Date();
+    var expiryDate = new Date(startDate);
+    expiryDate.setMinutes(startDate.getMinutes() + 100);
+    startDate.setMinutes(startDate.getMinutes() - 100);
+    return sharedAccessPolicy = {
+        AccessPolicy: {
+            Permissions: AzureStorage.BlobUtilities.SharedAccessPermissions.READ,
+            Start: startDate,
+            Expiry: expiryDate
+        }
+    };
+   
+}
+function insertFileViewDetails() {        
+   
+         var designId = '{!desigLogForm.Design_Log_Form__c}';
+         var designVersion = '{!desigLogForm.Design_Version__c}';
+         var fileUploadBy = '{!$User.FirstName}, {!$User.LastName}';
+         var designLink = '{!desigLogForm.File_Full_Path__c}';
+         var fileType = '{!desigLogForm.Drawing_File_Type__c}';
+    	 var fileName = '{!desigLogForm.Drawing_File_Name__c}';
+         var today = new Date();
+         var fileUploadDate = new Date();
+         var fileModule = 'Design Log Drawing';
+      
+    	var ddfvd = new SObjectModel.Design_Drawing_File_Viewing_Detail__c();
+       ddfvd.create({User_Name__c:fileUploadBy,File_Module__c:fileModule, Design_Drawing_Image_Link__c: designLink, Drawing_File_Type__c: fileType, Drawing_File_Name__c: fileName, Design_Log_Form__c:designId,Design_Version__c:designVersion},function(error, records) {
+                if (error) {
+                    alert(error.message);
+                    console.log('ERRROR During CREATE of File Download'+error.message);
+                } 
+            });
+    }
+    
+      
+    function getContainerInfo() {
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.downloadBlobController.storageDetails}',
+        function(result, event) {
+            if (event.status) {
+                initBlobService(result);
+                insertFileViewDetails(); 
+                changeUrl();
+             } else if (event.type === 'exception') {
+                document.getElementById("response").innerHTML = event.message;
+            } else {
+                document.getElementById("response").innerHTML = event.message;
+            }
+        }, {
+            escape: true
+        }
+    );
+}
+
+    
+</script>
+   
+     <script type="text/javascript">
+        // Any js placed here will be fired when output panel is rerendered
+        
+            document.write('Downloading File..... ');
+            getContainerInfo();
+            
+        
+    </script>     
+</apex:page>

@@ -1,0 +1,19 @@
+<style>
+.innerTableHeader {
+    padding: 0 0 0 12px !important;
+    font-size: 1.05em !important;
+}
+
+.hide {
+    display: none;
+}
+
+.regionalRow {
+    background: #e5f0a8;
+    display: none
+}
+
+.objectiveRow {
+    background: #0000;
+}
+</style>

@@ -1,0 +1,20 @@
+<aura:component controller="AddRemoveCartonfromTransferNote" implements="force:AppHostable,flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader,forceCommunity:availableForAllPageTypes" access="global">
+    
+    <aura:attribute name="cartonDetails" type="Carton_Details__c" default="{ 'sobjectType': 'Carton_Details__c','Name': '','Status__c':'','Transfer_Note__c':''}"/>
+    <aura:attribute name="showButtons" type="Boolean" default="false" />
+    <aura:attribute name="showAddButton" type="Boolean" default="false" />
+    <aura:attribute name="showRemoveButton" type="Boolean" default="false" />
+    <aura:handler name="init" action="{!c.getRecordValues}" value="{!this}"/> 
+    <aura:handler event="force:refreshView" action="{!c.getRecordValues}" />    
+    <aura:handler event="force:showToast" action="{!c.getRecordValues}" />
+    
+    <aura:if  isTrue="{!v.showButtons}">
+        <aura:if  isTrue="{!v.showAddButton}">
+            <button class="slds-button slds-button_success" onclick="{!c.AddtoContainer}">Add to Transfer Note</button>
+        </aura:if>
+        
+        <aura:if  isTrue="{!v.showRemoveButton}">
+            <button class="slds-button slds-button_destructive" onclick="{!c.RemoveContainer}">Remove from Transfer Note</button>
+        </aura:if> 
+    </aura:if>
+</aura:component>

@@ -1,0 +1,143 @@
+<aura:component controller="uploadInventry">
+    <aura:method name="batchDetails" action="{!c.viewError}" description="Batch Detail Method with BatchId as parameter"> 
+        <aura:attribute name="batchId" type="String" default="parameter 1"/>
+    </aura:method>
+    <aura:attribute name="errordata" type="object"/>
+    <aura:attribute name="flag" type="Boolean" default="false"/>
+    <aura:attribute name="noRows" type="boolean" default="false"/>
+	    <lightning:layout>        
+        <lightning:layoutItem class="boxx" padding="around-small" >           
+            <aura:if isTrue="{!v.flag}">
+                <!-- <lightning:accordionSection name="B" label="Inventory Transaction stage">-->
+                <lightning:card title="Inventory Transaction stage"  >
+                    <div class="legend" align = "right">
+                        <lightning:icon class="missingField" size="small"/>&nbsp;Missing Data
+                        <lightning:icon class="masterDataNotFound" size="small"/>&nbsp;Master Data Not Found
+                        <lightning:icon class="modelNotFound" size="small"/>&nbsp;Model Not Found
+                    </div>
+                    <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+                        <col width="60px"></col>
+                        <col width="110px"></col>
+                        <col width="150px"></col>
+                        <col width="100px"></col>
+                        <col width="80px"></col>
+                        <col width="80px"></col>
+                        <col width="150px"></col>
+                        <col width="80px"></col>
+                        <col width="80px"></col>
+                        <col width="100px"></col>
+                        <col width="80px"></col>
+                        <col width="200px"></col>
+                        <thead class="row">
+                            <tr>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Row No</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Retailer_Code">Retailer Code</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Mainetti_Company">Mainetti Company</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Inventory_Model">Inventory Model</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Color">Color</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Sizer_Print">Sizer Print</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Warehouse">Warehouse</div></th>                                        
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Local_System_SKU">Local System SKU</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Source">Source</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Stock_In_Date">Stock In Date</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Stock_In_Qty">Stock In Qty</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Remarks">Remarks</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Use the Apex model and controller to fetch server side data -->
+                            <aura:iteration items="{!v.errordata}" var="err">
+                                <tr>
+                                    <td><div align="center" class="slds-truncate">{!err.Row_No__c}</div></td>
+                                    <td>
+                                        <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">                                                
+                                            <div align ="center" class="{!err.Retailer_Code_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Retailer_Code_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Retailer_Code__c} 
+                                                </div>                                         
+                                            </div>                                            
+                                        </div>                                        
+                                    </td> 
+                                    <td>
+                                        <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">                                                
+                                            <div align ="center" class="{!err.MC_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Manitte_Company_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Mainetti_Company__c} 
+                                                </div>                                         
+                                            </div>                                            
+                                        </div>                                        
+                                    </td>
+                                    <td>
+                                        <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">                                                
+                                            <div align ="center" class="{!err.Inventory_Model_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Inventory_Model_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Inventory_Model__c}                                          
+                                                </div>                                            
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">              
+                                            <div align ="center" class="{!err.Color_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Color_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Color__c} 
+                                                </div>                                         
+                                            </div>                                            
+                                        </div>                                        
+                                    </td>
+                                    <td>                                            
+                                        <aura:if isTrue="{!err.Retailer_Code__c=='LOJAS RENNER'}">
+                                            <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">                                                
+                                                <div align ="center" class="{!err.Sizer_Print_NF__c? 'masterDataNotFound' : ''}">
+                                                    <div align ="center" class="{!err.Sizer_Print_FB__c? 'missingField' : ''}">
+                                                        &nbsp;{!err.Sizer_Print__c}                                                             
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <aura:set attribute="else">
+                                                <div align ="center" class="{!err.Sizer_Print_NF__c? 'masterDataNotFound' : ''}">
+                                                    <div align ="center" class="{!err.Sizer_Print_FB__c? 'missingField' : ''}">
+                                                        &nbsp;{!err.Sizer_Print__c}                                                             
+                                                    </div>
+                                                </div> 
+                                            </aura:set>
+                                        </aura:if>                                                             
+                                    </td>                      
+                                    <td>
+                                        <div align ="center" class="{!err.Warehouse_NF__c? 'masterDataNotFound' : ''}">
+                                            <div align ="center" class="{!err.Warehouse_FB__c? 'missingField' : ''}">                                                    
+                                                &nbsp;{!err.Warehouse__c}                                      
+                                            </div>                                            
+                                        </div>                                        
+                                    </td> 
+                                    
+                                    <td><div align="center" class="slds-truncate">{!err.Local_System_SKU__c}</div></td>
+                                    <td>
+                                        <div align ="center" class="{!err.Source_NF__c? 'masterDataNotFound' : ''}">
+                                            <div align ="center" class="{!err.Source_FB__c? 'missingField' : ''}">                                                    
+                                                &nbsp;{!err.Source__c}                                      
+                                            </div>                                            
+                                        </div>                                        
+                                    </td>                                                                                                        
+                                    <td><div align ="center" class="{!err.Stock_In_Date_FB__c? 'missingField' : ''}">{!err.Stock_In_Date__c}&nbsp;</div></td>                                                                   
+                                    <td><div align ="center" class="{!err.Stock_In_Qty_FB__c? 'missingField' : ''}">{!err.Stock_In_Qty__c}&nbsp;</div></td>
+                                    <td><div align ="center" ><textarea cols="24">{!err.Remarks__c}</textarea></div></td>
+                                </tr>
+                            </aura:iteration>                
+                            <aura:if isTrue="{!v.noRows}">
+                                <div>
+                                    <tr >
+                                        <td colspan='41' align="center">No Rows uploaded</td>
+                                    </tr>
+                                </div>
+                            </aura:if>
+                        </tbody>
+                    </table>
+                </lightning:card>
+                <!--</lightning:accordionSection>-->
+            </aura:if>
+        </lightning:layoutItem>
+        
+        <!--</lightning:accordion>-->
+    </lightning:layout>
+</aura:component>

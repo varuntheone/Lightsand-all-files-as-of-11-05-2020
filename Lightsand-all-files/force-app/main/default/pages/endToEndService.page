@@ -1,0 +1,743 @@
+<apex:page title="Marketing Portal" controller="AzureService" lightningStyleSheets="true" >
+     <apex:remoteObjects >        
+        <apex:remoteObjectModel name="Design_Drawing_File_Viewing_Detail__c" />
+    </apex:remoteObjects>
+    <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous"></link>   
+<!-- Optional theme -->
+<apex:stylesheet value="{!$Resource.AzSearchCss}"/>
+<apex:includeScript value="{!$Resource.AzureCommon}"/>
+    <apex:includeScript value="{!$Resource.AzureBlob}"/>
+
+<style>
+    .container-fluid .navbar-brand{
+    width: 1000px;
+    }
+    
+    ::-webkit-input-placeholder {
+    color: blue;
+    font-weight: bold;
+    font-size: 14px;
+    }
+    ::-moz-placeholder {
+    color: blue;
+    font-weight: bold;
+    font-size: 14px;
+    }
+    .container {
+    position: relative;
+    text-align: center;
+    color: white;
+    }
+    .centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    }
+    ul.breadcrumb {
+    padding: 10px 10px;
+    list-style: none;
+    background-color: #eee;
+    }
+    ul.breadcrumb li {
+    display: inline;
+    font-size: 15px;
+    }
+    ul.breadcrumb li+li:before {
+    background-image: url('{!$Resource.forward_arrow}');
+    background-size: 12px 12px;
+    display: inline-block;
+    width: 12px; 
+    height: 12px;
+    content:""; 
+    
+    }
+    ul.breadcrumb li a {
+    color: #0275d8;
+    text-decoration: none;
+    }
+    ul.breadcrumb li a:hover {
+    color: #01447e;
+    text-decoration: underline;
+    }        
+    
+</style>    
+<apex:sectionHeader >
+    <div align="center">
+        <table width="95%" border="0">
+            <tr>
+                <td width="10%" align="center">
+                    <div style="display:block;" align="center"> 
+                    </div>   
+                </td>
+                <td align="center" width="80%">
+                    <div class="container" Id="bannerContainer">
+                        <div class="centered" Id="folderLabel"><b>Marketing Portal</b></div>
+                    </div>
+                </td>
+                <td width="10%">&nbsp;</td>
+            </tr>
+            
+            <tr>
+                <td  colspan="3">
+                    <div style="display:block;" align="left"> <ul id="folderLevel" class="breadcrumb"></ul>
+                        <input type="hidden" id="CurrentFolderPath"/>
+                    </div>   
+                </td>
+            </tr>
+        </table>
+    </div>   
+    <div id="app" >
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    
+                    <div class="row">
+                        <div class="col-md-2 pagelabel">
+                            <a class="navbar-brand pagelabel" href="#">Marketing Portal</a>
+                        </div>
+                        <div id="searchBox" class="col-mid-8 col-sm-8 col-xs-6" align="center"></div>
+                        <div id="navbar" class="navbar-collapse collapse"></div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container-fluid" id="searchResult" style="display:block;">
+            <div class="row">
+                <!--div id="facetPanel" class="col-sm-3 col-md-3 sidebar collapse">
+<div id="clearFilters"></div>
+<ul class="nav nav-sidebar">
+<div className="panel panel-primary behclick-panel"></div>
+</ul>
+</div-->
+                <div class="col-sm-9 col-sm-offset-3 col-md-9 col-md-offset-3 results_section">
+                    <div id="results" class="row placeholders"> </div>
+                    <div id="pager" class="row">  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</apex:sectionHeader>    
+<script type="text/javascript">
+
+document.title = "Marketing Portal";
+
+var blobService;
+var speedSummary;
+var finishedOrError = false;
+var containerName;
+var gridFolder = '';    
+var currentFolderPath=null;    
+var uploadBy;
+var isListProcessing;
+/************************************/
+//This function will initialise the Azure Service.
+/************************************/    
+function initBlobService(storage) {
+    
+    if (AzureStorage) {
+        blobUri = 'https://' + storage.storageName + '.blob.core.windows.net';
+        blobService = AzureStorage.createBlobService(storage.storageName, storage.storageKey);
+        containerName = storage.containerName;
+    } else {
+        console.log('Azure service not found');
+    }
+}
+function backToHome(){
+    currentFolderPath=null;
+    isHome=true;
+    document.getElementById("CurrentFolderPath").value=currentFolderPath;
+    listDirectories(currentFolderPath);
+    document.getElementById("searchResult").style.display = 'none';
+}
+
+/************************************/
+//This function is used to call the home page 
+// when the page is loaded.
+/************************************/    
+function loadHomePage(results){
+   
+    var homepage = document.getElementById("homePage");
+    homepage.style.display = 'block';  
+    document.getElementById("folderSection").style.display = 'none';
+    document.getElementById("fileSection").style.display = 'none';
+    document.getElementById("files").innerHTML ='';
+    document.getElementById("folder").innerHTML ='';
+    document.getElementById("homeFolder").innerHTML ='';
+    var list = document.getElementById("homeFolder");         
+    var colCount = 0;
+    
+    if(results.entries.length > 0){
+        
+        var tblbdy = document.createElement('tbody');
+        var tr;
+        for (var i = 0, container; container = results.entries[i]; i++) {
+            
+            if(colCount==0){
+                tr = document.createElement('tr');
+                var td = document.createElement('td');
+            }else{
+                var td = document.createElement('td');                                      
+            }   
+            td.setAttribute('width', '20%');
+            td.setAttribute('align', 'center');
+            var link = document.createElement('a');           
+            var blobFileName = container.name;          
+            var folderName = blobFileName.split( '/' );               
+            var folderNameOnly = folderName[ folderName.length - 2 ] ;                
+            //link.setAttribute('href', 'javascript:listblobs(\''+container.name+'\')');               
+            link.setAttribute('href', 'javascript:void(0);');
+			link.setAttribute('onclick', 'javascript:listblobs(\''+container.name+'\'); return false;');
+            var imageName;
+            if(folderNameOnly=='Marketing'){imageName='{!$Resource.marketingImg}';  
+                                           }else if(folderNameOnly=='Meetings'){imageName='{!$Resource.meetingImg}';
+                                                                               }else if(folderNameOnly=='Trainings'){imageName='{!$Resource.trainingImg}';
+                                                                                                                    }
+            link.innerHTML = '<img src='+ imageName +' border=0></br><b>'+ folderNameOnly+'</b>';
+            td.appendChild(link);
+            tr.appendChild(td);
+            colCount++;
+            if(colCount > 4){
+                colCount=0; 
+                tblbdy.appendChild(tr);
+            }                                                       
+        }
+        tblbdy.appendChild(tr); 
+        list.appendChild(tblbdy);
+    }else{
+    }
+}
+/************************************/
+//This function builds the breadcrumbs 
+// folder path is passed.
+/************************************/    
+function buildBreadCrumbs(folderPath){
+    
+    var fl = document.getElementById("folderLevel");
+    fl.innerHTML = '';
+    var li = document.createElement('li');  
+    var link = document.createElement('a');
+    //link.setAttribute('href', 'javascript:backToHome()');
+    link.setAttribute('href', 'javascript:void(0);');
+    link.setAttribute('onclick', 'javascript:backToHome(); return false;');
+
+    link.innerHTML = 'Home';
+    
+    li.appendChild(link);
+    fl.appendChild(li);
+    if(folderPath != null){            
+        var folderNamePath = folderPath.split( '/' );
+        var folderUrlPath='';
+        document.getElementById("files").innerHTML ='';
+        if(folderNamePath.length > 0){                           
+            for (i = 0; i < folderNamePath.length; i++) {                 
+                var val = (i+1);  
+                var li = document.createElement('li');  
+                if(val == (folderNamePath.length -1)){
+                    li.innerHTML = folderNamePath[i];
+                }else{
+                    folderUrlPath += folderNamePath[i]+'/';
+                    var link = document.createElement('a');
+                    //link.setAttribute('href', 'javascript:listblobs(\''+folderUrlPath+'\')');
+		    link.setAttribute('href', 'javascript:void(0);');
+		    link.setAttribute('onclick', 'javascript:listblobs(\''+folderUrlPath+'\'); return false;');
+
+                    link.innerHTML = folderNamePath[i];
+                    li.appendChild(link);
+                }            
+                fl.appendChild(li);
+            }
+        }
+    }
+}
+
+/************************************/
+//This function lists the folders when the 
+// folder path is passed.
+/************************************/    
+function listDirectories(folderPath) {
+    
+    if (blobService) {
+        document.getElementById("CurrentFolderPath").value=folderPath;
+        //building the breadCrumbs on the top
+        buildBreadCrumbs(folderPath);
+          
+        blobService.listBlobDirectoriesSegmentedWithPrefix(containerName,folderPath, null, {
+            delimiter: '',
+            maxResults: 100
+        }, function (error, results) {
+            if (error) {
+                 document.getElementById("response").innerHTML = JSON.stringify(error);                 
+            } else {
+                //load the home page
+                var folderLabel="";
+                if(folderPath == null){
+                    folderLabel = "Home";
+                }else{
+                    folderLabel = folderPath;
+                }
+                 
+                document.getElementById("folderLabel").innerHTML='<b>'+folderLabel+'</b>';
+                if((folderPath == null) || (folderPath == '')){
+                    loadHomePage(results);                          
+                }else{
+                    document.getElementById("folderSection").style.display = 'block';
+                    document.getElementById("homeFolder").innerHTML ='';
+                    document.getElementById("folder").innerHTML ='';
+                    //document.getElementById("files").innerHTML ='';
+                    var list = document.getElementById("folder");                 
+                    var colCount = 0;
+                    
+                    if(results.entries.length > 0){
+                        
+                        var tblbdy = document.createElement('tbody');                         
+                        var tr;
+                        for (var i = 0, container; container = results.entries[i]; i++) {                             
+                            if(colCount==0){
+                                tr = document.createElement('tr');
+                                var td = document.createElement('td');
+                            }else{
+                                var td = document.createElement('td');                                     
+                            }   
+                            td.setAttribute('width', '20%');
+                            td.setAttribute('align', 'center');
+                            var link = document.createElement('a');
+                            //link.setAttribute('href', 'javascript:listblobs(\''+container.name+'\')');
+			     link.setAttribute('href', 'javascript:void(0);');
+			      link.setAttribute('onclick', 'javascript:listblobs(\''+container.name+'\'); return false;');
+                            var blobFileName = container.name;          
+                            var folderName = blobFileName.split( '/' );                  
+                            var folderNameOnly = folderName[ folderName.length - 2 ] ;
+                            
+                            //getting the images
+                            if(folderNameOnly=='Hangers & Accessories'){
+                                gridFolder='{!$Resource.hanger}';  
+                            }else if(folderNameOnly=='Label & Tickets'){
+                                gridFolder='{!$Resource.label}'; 
+                            }else if(folderNameOnly=='Polybags'){
+                                gridFolder='{!$Resource.flexible}'; 
+                            }else if(folderNameOnly=='Flexible Packaging'){
+                                gridFolder='{!$Resource.flexible}';   
+                            }else if(folderNameOnly=='Total Look Accessories'){
+                                gridFolder='{!$Resource.total}'; 
+                            }else if(folderNameOnly=='EAS & RFID'){
+                                gridFolder='{!$Resource.eas}'; 
+                            }else if(folderNameOnly=='E-Commerce'){
+                                gridFolder='{!$Resource.ecommerce}'; 
+                            }else if(folderNameOnly=='Corporate'){
+                                gridFolder='{!$Resource.corporate}'; 
+                            }else{
+                                gridFolder='{!$Resource.gridFolder}'; 
+                            }                                                                                                         
+                            link.innerHTML = '<img src='+ gridFolder +' border=0 height=75px></br>'+ folderNameOnly;
+                            td.appendChild(link);
+                            tr.appendChild(td);
+                            colCount++;
+                            if(colCount > 2){
+                                colCount=0; 
+                                tblbdy.appendChild(tr);
+                            }                                                      
+                        }
+                        tblbdy.appendChild(tr); 
+                        list.appendChild(tblbdy);
+                    }else{
+                    }
+                }
+                
+            }
+        });       
+    } else {
+        console.log("Blob Service not Found !");
+    }
+}
+var blobs = [];
+function aggregateBlobs(err, result, cb) {
+    if (err) {
+        cb(er);
+    } else {
+        blobs = blobs.concat(result.entries);
+        if (result.continuationToken !== null) {
+            blobService.listBlobsSegmented(
+                containerName,
+                result.continuationToken,
+                aggregateBlobs);
+        } else {
+            cb(null, blobs);
+        }
+    }
+}
+/************************************/
+//This function lists both the directories
+// and the files in those directories.
+// This is called when the user clicks on the folders.
+/************************************/
+function listblobs(directoryName) {
+    
+    currentFolderPath = directoryName;
+    
+    if (blobService) {        
+         
+        listDirectories(directoryName);        
+        lenOfDirName = directoryName.split( '/' );
+        
+        //not load if it is home page
+        if(lenOfDirName.length > 2){
+            isListProcessing = false;
+            
+            blobService.listBlobsSegmentedWithPrefix(containerName, directoryName, null, {
+                delimiter: '',
+                include: 'metadata',
+                maxResults: 100
+            }, function(error, results) {
+                aggregateBlobs(error, results, function(error, blobs) {
+                    if (error) {
+                        document.getElementById("response").innerHTML = JSON.stringify(error);                        
+                    } else {
+                        document.getElementById("folderSection").style.display = 'block';
+                        document.getElementById("fileSection").style.display = 'block';
+                        document.getElementById("files").innerHTML ='';
+                        var list = document.getElementById("files");
+                        var colCount = 0;           
+                        if(results.entries.length > 0){      
+                            
+                            var tblbdy = document.createElement('tbody');                                                     
+                            list.innerHTML ='';
+                            list.innerHTML ="<tr><th style='text-align:center;background-color:powderblue'><b>S#</b></th><th style='text-align:center;background-color:powderblue'><b>File Name</b></th><th style='text-align:center;background-color:powderblue'><b>Owner</b></th><th style='text-align:center;background-color:powderblue'><b>Created Date</b></th></tr>";                                                              
+                            for (var i = 0, container; container = results.entries[i]; i++) {
+                                var blobFileName = container.name;                                                 
+                                var  tr = document.createElement('tr');
+                                var tdSNo = document.createElement('td');
+                                var tdFileName = document.createElement('td'); 
+                                var tdUpOn = document.createElement('td');
+                                var tdUpBy = document.createElement('td');
+                                
+                                tdSNo.innerHTML = parseInt(i)+1 ;
+                                tdSNo.setAttribute('align', 'center');  
+                                tdSNo.setAttribute('width', '10%'); 
+                                
+                                var link = document.createElement('a');                          
+                                var fileName = container.name.split( '/' ); 
+                                var fileNameOnly = fileName[ fileName.length - 1 ] ;
+                                //link.setAttribute('href', 'javascript:viewFile(\''+container.name+'\')'); 
+								link.setAttribute('href', 'javascript:void(0);'); 
+								link.setAttribute('onclick', 'javascript:viewFile(\''+container.name+'\'); return false;'); 
+                                link.innerHTML = fileNameOnly ;                 
+                                
+                                
+                                tdFileName.appendChild(link);
+                                tdFileName.setAttribute('align', 'center'); 
+                                tdFileName.setAttribute('width', '50%'); 
+                                tdUpOn.innerHTML = container.metadata.uploadedby;                                
+                                tdUpOn.setAttribute('align', 'center');
+                                tdUpOn.setAttribute('width', '20%'); 
+                                tdUpBy.innerHTML = container.metadata.uploadedon;
+                                tdUpBy.setAttribute('align', 'center');
+                                tdUpBy.setAttribute('width', '20%'); 
+                                
+                                tr.appendChild(tdSNo);
+                                tr.appendChild(tdFileName);
+                                tr.appendChild(tdUpOn);
+                                tr.appendChild(tdUpBy);
+                                tblbdy.appendChild(tr);       
+                                
+                            }
+                            list.appendChild(tblbdy);                               
+                        }else{
+                            document.getElementById("response").innerHTML = 'Please Try Again.UnExpected Error....';                                
+                        }                     
+                    }
+                });
+            });
+            
+        }
+    } else {
+        console.log("Blob Service not Found !");
+    }
+    
+    return false;
+}
+/************************************/
+//This function lists the file in the directory.
+// This is called when the user clicks on the search result.
+/************************************/
+function searchListBlobs(directoryName,filePath) {
+    document.getElementById("searchResult").style.display = 'none';
+     currentFolderPath = directoryName;
+    
+    if (blobService) {        
+        
+        listDirectories(directoryName);        
+        lenOfDirName = directoryName.split( '/' );
+         //not load if it is home page
+        if(lenOfDirName.length > 2){
+            isListProcessing = false;
+            
+            blobService.listBlobsSegmentedWithPrefix(containerName, filePath, null, {
+                delimiter: '',
+                include: 'metadata',
+                maxResults: 100
+            }, function(error, results) {
+                aggregateBlobs(error, results, function(error, blobs) {
+                    if (error) {
+                        document.getElementById("response").innerHTML = JSON.stringify(error);
+                    } else {
+                        document.getElementById("folderSection").style.display = 'block';
+                        document.getElementById("fileSection").style.display = 'block';
+                        document.getElementById("files").innerHTML ='';
+                        var list = document.getElementById("files");
+                        var colCount = 0;           
+                        if(results.entries.length > 0){      
+                            
+                            var tblbdy = document.createElement('tbody');                                                     
+                            list.innerHTML ='';
+                            list.innerHTML ="<tr><th style='text-align:center;background-color:powderblue'><b>S#</b></th><th style='text-align:center;background-color:powderblue'><b>File Name</b></th><th style='text-align:center;background-color:powderblue'><b>Owner</b></th><th style='text-align:center;background-color:powderblue'><b>Created Date</b></th></tr>";                                                              
+                            for (var i = 0, container; container = results.entries[i]; i++) {
+                                var blobFileName = container.name;                                                 
+                                var  tr = document.createElement('tr');
+                                var tdSNo = document.createElement('td');
+                                var tdFileName = document.createElement('td'); 
+                                var tdUpOn = document.createElement('td');
+                                var tdUpBy = document.createElement('td');
+                                
+                                tdSNo.innerHTML = parseInt(i)+1 ;
+                                tdSNo.setAttribute('align', 'center');  
+                                tdSNo.setAttribute('width', '10%'); 
+                                
+                                var link = document.createElement('a');                          
+                                var fileName = container.name.split( '/' ); 
+                                var fileNameOnly = fileName[ fileName.length - 1 ] ;
+                                //link.setAttribute('href', 'javascript:viewFile(\''+container.name+'\')');
+								link.setAttribute('href', 'javascript:void(0);');
+								link.setAttribute('onclick', 'javascript:viewFile(\''+container.name+'\'); return false;');
+                                link.innerHTML = fileNameOnly ;                                   
+                                
+                                tdFileName.appendChild(link);
+                                tdFileName.setAttribute('align', 'center'); 
+                                tdFileName.setAttribute('width', '50%'); 
+                                tdUpOn.innerHTML = container.metadata.uploadedby;                                
+                                tdUpOn.setAttribute('align', 'center');
+                                tdUpOn.setAttribute('width', '20%'); 
+                                tdUpBy.innerHTML = container.metadata.uploadedon;
+                                tdUpBy.setAttribute('align', 'center');
+                                tdUpBy.setAttribute('width', '20%'); 
+                                
+                                tr.appendChild(tdSNo);
+                                tr.appendChild(tdFileName);
+                                tr.appendChild(tdUpOn);
+                                tr.appendChild(tdUpBy);
+                                tblbdy.appendChild(tr);       
+                                
+                            }
+                            list.appendChild(tblbdy);                               
+                        }else{
+                            document.getElementById("response").innerHTML = 'Please Try Again.UnExpected Error....';                                
+                        }                     
+                    }
+                });
+            });
+            
+        }
+    } else {
+        console.log("Blob Service not Found !");
+    }
+    
+    return false;
+}
+
+function searchViewFile(fileFullPath){     
+     
+    var searchFileName = decodeURIComponent(fileFullPath);
+    var filePath = searchFileName.substring(searchFileName.indexOf(containerName)+17);     
+    var directoryName = filePath.substring(0,filePath.lastIndexOf('/')+1);  
+    
+    searchListBlobs(directoryName,filePath);
+}
+
+function viewFile(blobFileName){
+    
+    var accessPolicy = generateAccessPolicy();                                     
+    var fileName = blobFileName.split( '/' );   
+    var fileNameOnly = fileName[ fileName.length - 1 ] ;
+    var token = blobService.generateSharedAccessSignature(containerName,blobFileName, accessPolicy);
+    var downloadLink = blobService.getUrl(containerName, blobFileName, token);
+    window.open(
+        downloadLink,
+        '_blank'
+    );
+    insertFileViewDetails(blobFileName,fileNameOnly);
+}
+function insertFileViewDetails(filePath,fileName) {        
+     
+    var userName = '{!$User.FirstName}, {!$User.LastName}';
+    var fileModule = 'Marketing';
+    var ddfvd = new SObjectModel.Design_Drawing_File_Viewing_Detail__c();
+    ddfvd.create({User_Name__c:userName,File_Module__c:fileModule, Design_Drawing_Image_Link__c: filePath, Drawing_File_Name__c: fileName},function(error, records) {
+        if (error) {
+            console.log(error.message);
+        } 
+    });
+}   
+/************************************/
+// This function generates the access policy 
+// which is used for the file access token 
+// generation.
+/************************************/
+function generateAccessPolicy(){
+    var startDate = new Date();
+    var expiryDate = new Date(startDate);
+    expiryDate.setMinutes(startDate.getMinutes() + 100);
+    startDate.setMinutes(startDate.getMinutes() - 100);
+    return sharedAccessPolicy = {
+        AccessPolicy: {
+            Permissions: AzureStorage.BlobUtilities.SharedAccessPermissions.READ,
+            Start: startDate,
+            Expiry: expiryDate
+        }
+    };
+    
+}
+/************************************/
+//This function get the details of the container
+// this is called when the page is loaded.
+/************************************/
+function getContainerInfo() {
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.AzureService.storageDetails}',
+        function(result, event) {
+            if (event.status) {
+                initBlobService(result);
+                listDirectories();
+            } else if (event.type === 'exception') {                
+                document.getElementById("response").innerHTML = event.message;
+            } else {
+                document.getElementById("response").innerHTML = event.message;
+            }
+        }, {
+            escape: true
+        }
+    );
+}
+/************************************/
+//This function shows the progress when 
+// any service is called.
+/***********************************/
+function refreshProgress() {
+    setTimeout(function() {
+        if (!finishedOrError) {
+            var process = speedSummary.getCompletePercent();
+            //console.log('processes:' + process);
+            refreshProgress();
+        }
+    }, 200);
+}    
+</script>
+<apex:form >
+    <div id="response"></div>
+    <div width="50">          
+        <apex:pageBlock >
+            <apex:pageMessages />
+            <div id="homePage" style="display:block;">
+                <table width="75%" Id="homeFolder" style="margin-left:auto;margin-right:auto;">                    
+                </table>
+            </div>
+            <div  id="fileFolder">     
+                <div id="response"> </div>                      
+                <div id="folderSection" style="display:none">
+                    <apex:pageBlockSection title="Folders" columns="1" id="folderBlock" >
+                        <table width="75%" align="center" Id="folder" style="margin-left:auto;margin-right:auto;">                    
+                        </table>                                                                                                          
+                    </apex:pageBlockSection>
+                </div>
+                <div id="fileSection" style="display:none">
+                    <apex:pageBlockSection title="Files" columns="1" id="fileBlock" >  
+                        <apex:pageBlock >
+                            <table width="75%" border="1" Id="files" cellspacing="1" cellpadding="1" style="border-collapse: collapse"><caption>Request File Data</caption>
+                            </table>
+                        </apex:pageBlock>    
+                    </apex:pageBlockSection>
+                </div>    
+            </div>
+        </apex:pageBlock>
+    </div>
+    <script type="text/javascript">    
+    // Any js placed here will be fired when output panel is rerendered     
+    getContainerInfo();        
+    </script>   
+    <apex:includeScript value="{!$Resource.JQueryMin}"/>
+   <apex:includeScript value="{!$Resource.BootStrapMin}"/>    
+    <!-- Dependencies -->
+    <apex:includeScript value="{!$Resource.ReactMin}"/>
+    <apex:includeScript value="{!$Resource.RectDomMin}"/>
+    <apex:includeScript value="{!$Resource.ReduxMin}"/>
+    <!-- Main -->
+    <apex:includeScript value="{!$Resource.AzureSearchService}"/>
+    <script>
+        //This hides the default home page display with folders when the search funtionality is done	 
+    function hideDefault() {        
+        document.getElementById("searchResult").style.display = 'block';
+        document.getElementById("folderSection").style.display = 'none';
+        document.getElementById("fileSection").style.display = 'none';
+        document.getElementById("files").innerHTML ='';
+        document.getElementById("folder").innerHTML ='';
+        document.getElementById("homeFolder").innerHTML ='';
+        var homepage = document.getElementById("homePage");
+        homepage.style.display = 'none';  
+              
+    }
+    var automagic = new AzSearch.Automagic({ index: "portal-marketing-index", queryKey: "22F77AD683F6AACA08FF00BDB192F3C7", service: "search4mpdm01" });
+    
+    // Initialize and connect to your search service
+    const resultTemplate ='<div><a href="javascript:searchViewFile(\'{{metadata_storage_path}}\')">{{metadata_storage_name}}</a></div>';
+    
+    // add a results view using the template defined above
+    automagic.addResults("results", { count: true }, resultTemplate);
+    
+    // Adds a pager control << 1 2 3 ... >>
+    automagic.addPager("pager");
+    
+    var resultsProcessor = function(results){         
+        hideDefault();
+        return results.map(function(result){
+         	var fileFullPath = result.metadata_storage_path;
+         	var fileFullPathDecodedd = decodeURIComponent(fileFullPath);
+    		var onlyFilePath = fileFullPathDecodedd.substring(fileFullPathDecodedd.indexOf('/portal-marketing/')+18);
+            result.metadata_storage_name= onlyFilePath;
+            return result;
+        })
+    };
+    automagic.store.setResultsProcessor(resultsProcessor);
+    
+    // Set some processors to format results for display
+    var suggestionsProcessor = function (results) {
+        return results.map(function (result) {			          
+            result.searchText = result["@search.text"];
+            return result;
+        });
+    };
+    
+    automagic.store.setSuggestionsProcessor(suggestionsProcessor);
+    
+    var suggestionsTemplate = ' <p> metadata_storage_content_type: {{metadata_storage_content_type}} </p> <p> metadata_storage_name: {{metadata_storage_name}} </p><> {{}} </><p> {{metadata_storage_name}} </p>     <p> {{content}} </p> {{{searchText}}}';
+    
+    // Add a search box that uses suggester "sg", grabbing some additional fields to display during suggestions. Use the template defined above
+    automagic.addSearchBox("searchBox",
+                           {
+                               placeholder:"Search...",
+                               highlightPreTag: "<b>",
+                               highlightPostTag: "</b>",
+                               suggesterName: "sg",
+                               select: "metadata_storage_content_type,metadata_storage_name,,metadata_storage_name,content"
+                           },
+                           "",
+                           suggestionsTemplate);  
+    
+    // Adds a button to clear any applied filters
+    automagic.addClearFiltersButton("clearFilters");
+    
+    </script>
+</apex:form>
+</apex:page>

@@ -1,0 +1,102 @@
+<apex:page language="zh_TW" renderAs="pdf" applyBodyTag="false" controller="PDFGetDataController_jcpprl">
+   <head>
+      <style>
+         body { font-family: 'Arial Unicode MS'; }
+      </style>
+   </head>
+   <body>
+      <br/><br/>
+      <br/><br/>
+      <span id="j_id0:j_id5">
+         <h3 style="color:#aaa;font-style:italic;">
+            <span>
+            <img alt="" src="{!$Resource.Mainetti_Logo}" style="opacity: 0.9; width: 250px; height: 93px;"/>
+            </span>
+         </h3>
+         &nbsp;
+         <table border="0" cellpadding="0" cellspacing="0" style="width:100%">
+            <tbody>
+               <tr>
+                  <td style="width:50%">
+                     <span style="font-size:14px;">
+                     <strong>
+                     <font face="Arial Unicode MS"></font>Online Enquiry:&nbsp;{!onlineEnqForPDF.Name}</strong>
+                     </span>
+                  </td>
+                  <td>&nbsp;</td>
+                  <td style="width:50%">
+                     <div>
+                        <span style="font-size:14px;">
+                        <strong>Enquiry Date: <span style="background-color: rgb(238, 238, 238);">{!onlineEnqForPDF.Enquiry_Date__c}</span></strong>
+                        </span>
+                     </div>
+                  </td>
+               </tr>
+            </tbody>
+         </table>
+         <table border="0" cellpadding="0" cellspacing="0" style="width:100%">
+            <tbody>
+               <tr>
+                  <td style="width:50%"><strong><span style="font-size:14px;">Sales Representative:&nbsp;{!onlineEnqForPDF.Sales_Representative__c}</span></strong></td>
+                  <td>&nbsp;</td>
+                  <td style="width:50%"><span style="font-size:14px;"><strong>Mainetti Company:&nbsp;{!onlineEnqForPDF.Order_Country__c}</strong></span></td>
+               </tr>
+            </tbody>
+         </table>
+         <table border="0" cellpadding="0" cellspacing="0" style="width:100%">
+            <tbody>
+               <tr>
+                  <td style="width:50%"><strong>Bill To:&nbsp;</strong></td>
+                  <td>&nbsp;</td>
+                  <td style="width:50%"><strong>Ship To:</strong></td>
+               </tr>
+               <tr>
+                  <td>{!onlineEnqForPDF.Bill_to_Company__c}<br/>{!onlineEnqForPDF.Bill_to_Address1__c}<br/>{!onlineEnqForPDF.Bill_to_Address2__c}<br/>{!onlineEnqForPDF.Bill_to_State__c}<br/>{!onlineEnqForPDF.Bill_to_Postcode__c}<br/>{!onlineEnqForPDF.Bill_to_Country__c}<br/>Contact:&nbsp;{!onlineEnqForPDF.Bill_to_Contact__c}<br/>Tel:&nbsp;{!onlineEnqForPDF.Bill_to_Tel__c}<br/>Fax:&nbsp;{!onlineEnqForPDF.Bill_to_Fax__c}<br/>Email:&nbsp;{!onlineEnqForPDF.Bill_to_Email__c}</td>
+                  <td>&nbsp;</td>
+                  <td>{!onlineEnqForPDF.Ship_to_Company__c}<br/>{!onlineEnqForPDF.Ship_to_Address1__c}<br/>{!onlineEnqForPDF.Ship_to_Address2__c}<br/>{!onlineEnqForPDF.Ship_to_State__c}<br/>{!onlineEnqForPDF.Ship_to_Postcode__c}<br/>{!onlineEnqForPDF.Ship_to_Country__c}<br/>Contact:&nbsp;{!onlineEnqForPDF.Ship_to_Contact__c}<br/>Tel:&nbsp;{!onlineEnqForPDF.Ship_to_Tel__c}<br/>Fax:&nbsp;{!onlineEnqForPDF.Ship_to_Fax__c}<br/>Email:&nbsp;{!onlineEnqForPDF.Ship_to_Email__c}</td>
+               </tr>
+            </tbody>
+         </table>
+         &nbsp;
+         <table bgcolor="gray">
+            <tbody>
+               <tr style="font-size:12px;font-weight:bold;">
+                  <th>Enquiry Details</th>
+               </tr>
+            </tbody>
+         </table>
+         <p></p>
+         <br/>
+         <table cellpadding="2" cellspacing="0" border="1">
+            <tbody style="">
+               <tr style="background: #DCDCDC; color:black; font-weight:bold;" bgcolor="grey">
+                  <th><font size="1">Model</font></th>
+                  <th><font size="1">Color</font></th>
+                  <th><font size="1">Product Description</font></th>
+                  <th><font size="1">Product Type</font></th>
+                  <th><font size="1">Product Family</font></th>
+                  <th><font size="1">Quantity (pcs)</font></th>
+                  <th><font size="1">Retailer</font></th>
+                  <th><font size="1">Model Remark</font></th>
+               </tr>
+             <apex:repeat value="{!detailsList}" var="eachDetail">
+                   <tr>
+                       <td><font size="1">{!eachDetail.model}</font></td>
+                       <td><font size="1">{!eachDetail.color}</font></td>
+                       <td><font
+                          size="1">{!eachDetail.descreption}</font></td>
+                       <td><font
+                          size="1">{!eachDetail.productType}</font></td>
+                       <td><font size="1">{!eachDetail.productFamily}</font></td>
+                       <td><font
+                          size="1">{!eachDetail.qty}</font></td>
+                       <td><font size="1">{!eachDetail.retailerCodeName}</font></td>
+                       <td><font
+                          size="1">{!eachDetail.modelRemark}</font></td>
+</tr>
+               </apex:repeat>
+            </tbody>
+         </table>
+      </span>
+   </body>
+</apex:page>

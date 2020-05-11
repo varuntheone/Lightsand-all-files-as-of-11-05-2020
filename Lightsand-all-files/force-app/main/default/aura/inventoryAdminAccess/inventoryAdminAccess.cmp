@@ -1,0 +1,86 @@
+<aura:component controller="inventoryAdminAccessClass" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="retailerData" type="Inventory_Transaction_Stage__c"/>
+    <aura:attribute name="modelData" type="Inventory_Transaction_Stage__c"/>
+    <aura:attribute name="batchId" type="ID"/>
+    
+    <!--<aura:registerEvent name="adminAccess" type="c:inventoryAdminAccessEvent"/>
+    <aura:handler name="adminAccess" event="c:inventoryAdminAccessEvent" action="{!c.handleAdminAccessEvent}"/>-->
+    
+    
+    <!-- Page Header -->
+    <div class="slds-page-header" role="banner">
+        <div class="slds-grid">
+            <div class="slds-col slds-has-flexi-truncate">
+                <!-- HEADING AREA -->
+                <h1 class="slds-page-header__title slds-truncate" title="Inventory Transaction Master">Mismatch Model/Retailer</h1>
+                <!-- / HEADING AREA -->
+            </div>
+            <!--<div class="slds-col slds-no-flex slds-grid slds-align-top">
+                <button class="slds-button slds-button_brand" name = "Back" onclick="{!c.backClick}">Back</button>
+            </div>-->
+        </div>
+    </div>
+    <!-- Page Header -->
+    
+    <lightning:layout multipleRows="True">
+        <lightning:layoutItem class="box" padding="around-small" size="6">
+            <lightning:card title="Inventory" >                
+                <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+                    <col width="150px"></col>
+                    <col width="50px"></col>
+                    <col width="50px"></col>
+                    <thead class="row">
+                        <tr>
+                            <th scope="col"><div align = "center" class="slds-truncate" title="Retailer">Retailer Code</div></th>                            
+                            <th scope="col"><div align = "center" class="slds-truncate" title="Mismatch">Mismatch</div></th>
+                            <th scope="col"><div align = "center" class="slds-truncate" title="Valid">Valid</div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.retailerData}" var="data">
+                            <tr>
+                                <td>
+                                    <div align="center" class="slds-truncate">{!data.Retailer_Code__c}&nbsp;</div>                                    
+                                </td>
+                                <td><div align="center" class="slds-truncate"><input type="checkbox" name="mismatch_check"/></div></td>
+                                <td><div align="center" class="slds-truncate"><input type="checkbox" name="valid_check"/></div></td>           
+                            </tr>
+                        </aura:iteration>
+                    </tbody>                    
+                </table>
+                &nbsp;
+                <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+                    <col width="150px"></col>
+                    <col width="50px"></col>
+                    <col width="50px"></col>
+                    <thead class="row">
+                        <tr>
+                            <th scope="col"><div align = "center" class="slds-truncate" title="Model">Inventory Model</div></th>
+                            <th scope="col"><div align = "center" class="slds-truncate" title="Mismatch">Mismatch</div></th>
+                            <th scope="col"><div align = "center" class="slds-truncate" title="Valid">Valid</div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.modelData}" var="data">
+                            <tr>
+                                <td>                                    
+                                    <div align="center" class="slds-truncate">{!data.Inventory_Model__c}&nbsp;</div>
+                                </td>
+                                <td><div align="center" class="slds-truncate"><input type="checkbox" name="mismatch_check"/></div></td>
+                                <td><div align="center" class="slds-truncate"><input type="checkbox" name="valid_check"/></div></td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                &nbsp;
+                <div align="right">                    
+                    <button class="slds-button slds-button_neutral" name = "Notify" onclick="{!c.notifyClick}">Notify mismatch to User</button>
+                    <button class="slds-button slds-button_neutral" name = "Process" onclick="{!c.processClick}">Proceed to Upload</button> &nbsp;
+                </div>
+            </lightning:card>
+        </lightning:layoutItem>
+    </lightning:layout>
+    
+</aura:component>

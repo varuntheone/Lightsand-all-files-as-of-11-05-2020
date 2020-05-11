@@ -1,0 +1,16 @@
+.THIS .Negative{
+    background : orangered;
+    color : black;
+}
+.THIS .Postive{
+    background : lightgreen;
+    color : black;
+}
+
+.THIS .tableHeader thead th span {
+background-color: #78071e;
+color: white
+}
+.THIS .Table_size{
+     width:10%;
+}

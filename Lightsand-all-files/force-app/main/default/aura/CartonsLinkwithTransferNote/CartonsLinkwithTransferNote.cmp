@@ -1,0 +1,161 @@
+<aura:component controller="AddRemoveCartonfromTransferNote" implements="force:AppHostable,flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global">
+    
+    <aura:attribute name="cartonsList" type="list" /> 
+    <aura:attribute name="duplicateCartonsList" type="list" /> 
+    <aura:attribute name="cartonswithTFNote" type="list" />   
+    <aura:attribute name="isSelectAll" type="boolean" default="false"/>
+    <aura:attribute name="isRemoveFromTFNote" type="boolean" default="false"/>
+    <aura:attribute name="ShowActiveRecordMessage" type="String" default="" />  
+    <aura:attribute name="transferNoteInfo" type="Transfer_Note__c" default="{ 'sobjectType': 'Transfer_Note__c','Name': '','Status__c':''}"/>
+    
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    
+    <div class="slds-grid slds-grid_align-spread slds-p-bottom_small" >
+        <h1 style="font-size: 15px;text-align: center;" > Check Active Catons and Add</h1>
+        
+        
+        
+        <div class="slds-col ">
+            <lightning:button label="Add To Transfer Note" class="slds-button_brand" onclick="{!c.handleSelectedCartons}"  disabled="{!or(v.transferNoteInfo.Status__c == 'In transit',v.transferNoteInfo.Status__c == 'Closed')}" />
+        </div>
+    </div>
+    
+    <div class="slds-grid slds-gutters">                           
+        <div class="slds-col slds-m-left_large">
+            <lightning:input aura:id="enter-search" name="enter-search" type="search" placeholder="Cartons Search..." onchange="{!c.handleKeySearchcartons}"/>
+        </div>
+    </div>       
+    
+    <br/>
+    
+    <table class="slds-table slds-table--bordered slds-table--cell-buffer" role="grid">      
+        <thead>  
+            <tr class="slds-text-title--caps">
+                <th>           
+                    <label class="slds-checkbox">
+                        <ui:inputCheckbox value="{!v.isSelectAll}" change="{!c.handleSelectAllCartons}" aura:id="selectAll"/>
+                        <span class="slds-checkbox--faux" />
+                        <span class="slds-form-element__label"></span>
+                    </label>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Name">Name</div>
+                </th> 
+                
+                <th scope="col">
+                    <div class="slds-truncate" title="Status">Status</div>
+                </th>
+                
+                <th scope="col">
+                    <div class="slds-truncate" title="Phone">Warehouse Name</div>
+                </th>
+                
+                <th scope="col">
+                    <div class="slds-truncate" title="TFNote">Transfer Note</div>
+                </th> 
+            </tr>
+        </thead>
+        <tbody>        
+            <aura:iteration items="{!v.cartonsList}" var="carton">
+                <tr>
+                    <th>
+                        <label class="slds-checkbox">
+                            <ui:inputCheckbox aura:id="checkCarton" value="" text="{!carton.Id}"/>
+                            <span class="slds-checkbox--faux" />
+                            <span class="slds-form-element__label"></span>
+                        </label>
+                    </th>
+                    <th scope="row">
+                        <!--    <a href="{! '/' + carton.Id }" class="slds-truncate">{!carton.Name}</a> -->
+                        <div class="slds-truncate" title="{!carton.Name}">{!carton.Name}</div>
+                    </th>
+                    <td>
+                        <div class="slds-truncate" title="{!carton.Status__c}">{!carton.Status__c}</div>
+                    </td> 
+                    <th scope="row">
+                        <div class="slds-truncate" title="{!carton.Owner_Warehouse_ID__r.Name}">{!carton.Owner_Warehouse_ID__r.Name}</div>
+                    </th> 
+                    <td>
+                        <div class="slds-truncate" title="{!carton.Transfer_Note__r.Name}">{!carton.Transfer_Note__r.Name}</div>
+                    </td> 
+                </tr>
+            </aura:iteration>
+            <aura:if  isTrue="{!v.ShowActiveRecordMessage == ''}">
+                {!v.ShowActiveRecordMessage}
+            </aura:if>
+        </tbody>
+    </table>
+    <br/>
+    
+    <!-- Active cartons of current tf Note start -->
+    
+    <div class="slds-grid slds-grid_align-spread slds-p-bottom_small" >
+        <h1 style="font-size: 15px;text-align: center;" >Remove Active Catons</h1>
+        <div class="slds-col ">
+            <lightning:button label="Remove From Transfer Note" class="slds-button_brand" onclick="{!c.RemoveSelectedCartons}"  disabled="{!or(v.transferNoteInfo.Status__c == 'In transit',v.transferNoteInfo.Status__c == 'Closed')}" />
+        </div>
+    </div>
+    
+    
+    <table class="slds-table slds-table--bordered slds-table--cell-buffer" role="grid">      
+        <thead>  
+            <tr class="slds-text-title--caps">
+                <th>           
+                    <label class="slds-checkbox">
+                        <ui:inputCheckbox value="{!v.isRemoveFromTFNote}" change="{!c.RemoveAllCartons}" aura:id="selectAllTF"/>
+                        <span class="slds-checkbox--faux" />
+                        <span class="slds-form-element__label"></span>
+                    </label>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Name">Name</div>
+                </th> 
+                
+                <th scope="col">
+                    <div class="slds-truncate" title="Status">Status</div>
+                </th>
+                
+                <th scope="col">
+                    <div class="slds-truncate" title="Phone">Warehouse Name</div>
+                </th>
+                
+                <th scope="col">
+                    <div class="slds-truncate" title="TFNote">Transfer Note</div>
+                </th> 
+            </tr>
+        </thead>
+        <tbody>        
+            <aura:iteration items="{!v.cartonswithTFNote}" var="cartonTF">
+                <tr>
+                    <th>
+                        <label class="slds-checkbox">
+                            <ui:inputCheckbox aura:id="checkcartontfnote" value="" text="{!cartonTF.Id}"/>
+                            <span class="slds-checkbox--faux" />
+                            <span class="slds-form-element__label"></span>
+                        </label>
+                    </th>
+                    <th scope="row">
+                        <div class="slds-truncate" title="{!cartonTF.Name}">{!cartonTF.Name}</div>
+                    </th>
+                    <td>
+                        <div class="slds-truncate" title="{!cartonTF.Status__c}">{!cartonTF.Status__c}</div>
+                    </td> 
+                    <th scope="row">
+                        <div class="slds-truncate" title="{!cartonTF.Owner_Warehouse_ID__r.Name}">{!cartonTF.Owner_Warehouse_ID__r.Name}</div>
+                    </th> 
+                    <td>
+                        <div class="slds-truncate" title="{!cartonTF.Transfer_Note__r.Name}">{!cartonTF.Transfer_Note__r.Name}</div>
+                    </td> 
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+    <br/>
+    
+    <!-- Active cartons of current tf Note end -->
+    
+    <div align="center">        
+        
+        <lightning:button label="Close Window"  class="slds-button slds-button_destructive" onclick="{!c.closePopUp}" />
+    </div>
+</aura:component>

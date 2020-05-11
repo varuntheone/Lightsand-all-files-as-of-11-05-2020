@@ -1,0 +1,46 @@
+<aura:component controller="Inventory_Allocated_Controller">
+    <aura:attribute name="lis"  type="Inventory_Allocation__c[]"/>
+    <aura:handler name="init" value="{!this}" action="{!c.callMe}"/>
+      <div class="box">
+    <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+        <thead class="row">
+            
+            <tr>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Name</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Inventory Allocation Type</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Week Number</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Week End Date</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Week Start Date</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Quantity</div></th>
+            </tr>
+        </thead>
+        <tbody>
+           
+            <aura:iteration items="{!v.lis}" var="li" indexVar="index">
+                <tr>
+                    <td>
+                        <div align ="center" class="slds-truncate">{!li.remove.Name}</div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate">{!li.Inventory_Allocation_Type__c}</div> 
+                    </td>
+                    <td>
+                          <div align ="center" class="slds-truncate">{!li.Week_Number__c}</div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate">{!li.Week_End_Date__c}</div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate">{!li.Week_Start_Date__c}</div> 
+                    </td>
+                    <td>
+                      <div align ="center" class="slds-truncate">{!li.Quantity__c}</div> 
+                    </td>
+                </tr>
+            </aura:iteration>
+            
+        
+        </tbody>
+          </table>
+    </div>
+</aura:component>

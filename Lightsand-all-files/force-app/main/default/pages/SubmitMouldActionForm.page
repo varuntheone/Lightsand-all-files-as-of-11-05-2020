@@ -1,0 +1,4 @@
+<apex:page standardController="Mould_Action_Form__c" extensions="SubmitMouldActionCON" action="{!submitMouldActionForm}">
+    <apex:pageMessages />
+    <apex:outputLink value="/{!MAF.Id}">Back to record</apex:outputLink>
+</apex:page>

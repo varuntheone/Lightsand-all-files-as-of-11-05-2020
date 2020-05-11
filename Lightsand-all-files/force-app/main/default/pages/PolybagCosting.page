@@ -1,0 +1,181 @@
+<apex:page standardController="Product_Configurator__c" extensions="PolybagCostingController" action="{!initialize}"> 
+    <style>
+        .pbSubheader {
+        background-color: #8a9ebe !Important;
+        border-style: solid !Important;
+        font-weight: bold !Important;
+        font-size: 91% !Important;
+        padding: 2px 2px 2px 5px !Important;
+        margin-top: 15px !Important;
+        overflow: hidden !Important;
+        margin-bottom: 2px !Important;
+        }
+    </style>
+    <apex:form >
+ <apex:pageBlock tabStyle="Product_Configurator__c">
+<apex:pageBlockButtons >
+               <apex:commandButton value="Save" action="{!save}"  />
+               <apex:commandButton value="Cancel" action="{!cancel}"  />
+           </apex:pageBlockButtons>
+<apex:pageBlockSection title="Information" showheader="true" columns="2">
+        <apex:inputField value="{!prodConfidObj.Product_Configurator_Name__c}"/>
+        <apex:inputField value="{!prodConfidObj.Retailer_Code__c}"/>
+        <apex:inputField value="{!prodConfidObj.Customer_Information__c}"/>
+        <apex:inputField value="{!prodConfidObj.Series__c}"/>
+        <apex:inputField value="{!prodConfidObj.Polybag_Code__c}"/>
+        <apex:inputField value="{!prodConfidObj.Annual_Programme_Volume__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.Bag_Type__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.Production_Run_Quantity__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.Department__c}" required="true"/>     
+         
+        <apex:inputField value="{!prodConfidObj.Local_SKU__c}" required="false"/>  
+        <apex:inputField value="{!prodConfidObj.Costing_Remark__c}" />  
+
+
+</apex:pageBlockSection>
+
+
+<apex:pageBlockSection title="Request" showheader="true" columns="2">
+        <apex:inputField value="{!prodConfidObj.Description__c}"/>
+        <apex:inputField value="{!prodConfidObj.Product_Reference__c}"/>
+        <apex:inputField value="{!prodConfidObj.Production_Quantity__c}"/>
+        
+       
+</apex:pageBlockSection>    
+
+<apex:pageBlockSection title="Dimension and Tolerances" showheader="true" columns="2">
+        <apex:inputField value="{!prodConfidObj.Width_cm__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.Length_mm__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.Flap__c}"/>
+        <apex:inputField value="{!prodConfidObj.Side_Gusset_mm__c}"/>
+        <apex:inputField value="{!prodConfidObj.Bottom_Gusset_mm__c}"/>
+</apex:pageBlockSection>  
+
+<apex:pageBlockSection title="Material & Thickness" showheader="true" columns="2">
+        <apex:inputField value="{!prodConfidObj.Length_of_Extrusion__c}"/>
+</apex:pageBlockSection>  
+
+<apex:pageBlockSection title="Outer-Film" showheader="true" columns="2">
+        <apex:selectList value="{!prodConfidObj.Outer_Film_Type1__c}" size="1" required="true"> 
+        <apex:selectOptions value="{!Filmtype}" /> 
+        </apex:selectList>
+        
+        <apex:inputField value="{!prodConfidObj.Outer_Film_Thickness_Micron__c}" required="true"/>
+        <apex:selectList value="{!prodConfidObj.Outer_Film_Masterbatch1__c}" size="1"> 
+        <apex:selectOptions value="{!Masterbatch}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.of_Outer_Masterbatch_Type__c}"/>
+</apex:pageBlockSection>  
+
+<apex:pageBlockSection title="Middle-Film" showheader="true" columns="2">
+        <apex:selectList value="{!prodConfidObj.Middle_Film_Type1__c}" size="1"> 
+        <apex:selectOptions value="{!Filmtype}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.Middle_Film_Thickness_Micron__c}"/>    
+        <apex:selectList value="{!prodConfidObj.Middle_Film_Masterbatch1__c}" size="1"> 
+        <apex:selectOptions value="{!Masterbatch}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.of_Middle_Film_Masterbatch__c}"/>
+</apex:pageBlockSection>  
+
+<apex:pageBlockSection title="Inner-Film" showheader="true" columns="2">
+        <apex:selectList value="{!prodConfidObj.Inner_Film_Type1__c}" size="1"> 
+        <apex:selectOptions value="{!Filmtype}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.Inner_Film_Thickness_Micron__c}"/>
+        <apex:selectList value="{!prodConfidObj.Inner_Film_Masterbatch1__c}" size="1"> 
+        <apex:selectOptions value="{!Masterbatch}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.of_Inner_Film_Masterbatch__c}"/>
+</apex:pageBlockSection>  
+
+
+<apex:pageBlockSection title="Printing Color" showheader="true" columns="2">
+        <apex:inputField value="{!prodConfidObj.Front_num_of_Color__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.Back_numof_Color__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.of_Front_logo_size_sq_cm__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.of_Back_logo_size_sq_cm__c}" required="true"/>
+   
+        <apex:selectList value="{!prodConfidObj.Ink_Color1__c}" size="1" required="true"> 
+        <apex:selectOptions value="{!Inkcolor}" /> 
+        </apex:selectList>
+     
+        <apex:inputField value="{!prodConfidObj.Number_of_logo_on_1_Printing_Plate__c}" required="true"/>
+        <apex:inputField value="{!prodConfidObj.Printing_Plate_Type__c}" required="true"/>       
+        <apex:inputField value="{!prodConfidObj.Length_of_Plastic_Printing_Mould__c}"/>     
+</apex:pageBlockSection>  
+
+<apex:pageBlockSection title="Accessories" showheader="true" columns="2">     
+        <apex:selectList value="{!prodConfidObj.Ziplock_Model1__c}" size="1"> 
+        <apex:selectOptions value="{!Ziplockmodel}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.Number_of_Ziplock_per_bag__c}"/>
+        <apex:selectList value="{!prodConfidObj.Zipper_Model1__c}" size="1"> 
+        <apex:selectOptions value="{!Zippermodel}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.Number_of_Zipper_per_bag__c}"/>
+        <apex:selectList value="{!prodConfidObj.Adhesive_Strip1__c}" size="1"> 
+        <apex:selectOptions value="{!Adhesivestrip}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.Number_of_Adhesive_Strips_per_bag__c}"/>
+        <apex:selectList value="{!prodConfidObj.Patch1__c}" size="1"> 
+        <apex:selectOptions value="{!Patch}" /> 
+        </apex:selectList>    
+        <apex:inputField value="{!prodConfidObj.Number_of_Patch_per_bag__c}"/>        
+        <apex:selectList value="{!prodConfidObj.Sticker1__c}" size="1"> 
+        <apex:selectOptions value="{!Sticker}" /> 
+        </apex:selectList>      
+        <apex:inputField value="{!prodConfidObj.Number_of_Sticker_per_bag__c}"/>       
+        <apex:selectList value="{!prodConfidObj.Eyelet2__c}" size="1"> 
+        <apex:selectOptions value="{!Eyelet}" /> 
+        </apex:selectList>     
+        <apex:inputField value="{!prodConfidObj.Number_of_Eyelet_Set_per_bag__c}"/>  
+        <apex:inputField value="{!prodConfidObj.Subcontracting_Cost_1000_bags__c}"/>       
+        <apex:inputField value="{!prodConfidObj.Subcontracting_Cost_Remark__c}"/>  
+</apex:pageBlockSection> 
+
+<apex:pageBlockSection title="Hook" showheader="true" columns="2">
+        <apex:selectList value="{!prodConfidObj.Hook_Model1__c}" size="1"> 
+        <apex:selectOptions value="{!Hookmodel}" /> 
+        </apex:selectList>  
+        <apex:inputField value="{!prodConfidObj.Number_of_Hook_per_bag__c}"/>
+</apex:pageBlockSection> 
+
+<apex:pageBlockSection title="String" showheader="true" columns="2">
+        <apex:selectList value="{!prodConfidObj.String1__c}" size="1"> 
+        <apex:selectOptions value="{!String}" /> 
+        </apex:selectList>  
+        <apex:inputField value="{!prodConfidObj.Number_of_String_per_bag__c}"/>
+        <apex:inputField value="{!prodConfidObj.Length_of_String_mm__c}"/>
+</apex:pageBlockSection> 
+
+<apex:pageBlockSection title="Handle" showheader="true" columns="2">
+        <apex:selectList value="{!prodConfidObj.Hard_Handle1__c}" size="1"> 
+        <apex:selectOptions value="{!Hardhandle}" /> 
+        </apex:selectList>
+        <apex:selectList value="{!prodConfidObj.Soft_Handle1__c}" size="1"> 
+        <apex:selectOptions value="{!Softhandle}" /> 
+        </apex:selectList>
+        <apex:inputField value="{!prodConfidObj.Number_of_Hard_Handle_per_bag__c}"/>
+        <apex:inputField value="{!prodConfidObj.Number_of_Soft_Handle_per_bag__c    }"/>    
+</apex:pageBlockSection> 
+
+<apex:pageBlockSection title="Cardboard" showheader="true" columns="2">
+        <apex:inputField value="{!prodConfidObj.Number_of_Cardboard_1__c}"/>
+        <apex:inputField value="{!prodConfidObj.Number_of_Cardboard_2__c}"/>
+        <apex:selectList value="{!prodConfidObj.Cardboard_1_Color1__c}" size="1"> 
+        <apex:selectOptions value="{!Cardboardcolor}" /> 
+        </apex:selectList>
+        <apex:selectList value="{!prodConfidObj.Cardboard_2_Color1__c}" size="1"> 
+        <apex:selectOptions value="{!Cardboardcolor}" /> 
+        </apex:selectList>  
+        <apex:inputField value="{!prodConfidObj.Length_of_Cardboard_1_per_bag_mm__c}"/>
+        <apex:inputField value="{!prodConfidObj.Length_of_Cardboard_2_per_bag_mm__c}"/>
+        <apex:inputField value="{!prodConfidObj.Width_of_Cardboard_1_per_bag_mm__c}"/>
+        <apex:inputField value="{!prodConfidObj.Width_of_Cardboard_2_per_bag_mm__c}"/>    
+
+</apex:pageBlockSection> 
+
+</apex:pageblock>
+</apex:form>
+</apex:page>

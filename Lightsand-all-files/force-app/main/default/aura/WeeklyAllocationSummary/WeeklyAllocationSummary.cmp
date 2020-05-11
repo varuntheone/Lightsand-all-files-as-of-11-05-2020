@@ -1,0 +1,62 @@
+<aura:component controller="WeeklyAllocationSummaryController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName" access="global" > 
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" /> 
+    
+    <aura:attribute name="WeeklyAllocationSummaryList" type="Inventory_Allocation__c[]"/> 
+    <aura:attribute name="page" type="integer" description="stores page Number"/> 
+    <aura:attribute name="pages" type="integer" description="Display Page Number"/> 
+    <aura:attribute name="total" type="integer" description="Total Number of Records"/> 
+    <aura:attribute name="isCurrentWeek" type="boolean" default="false" description="Only for current week"/> 
+    <aura:attribute name="WeeklyColumns" type="List"/>
+    
+    
+   <!-- attributes to store search inputs -->
+    <aura:attribute name="mainettiCompany" type="string"/>
+    <aura:attribute name="retailerCode" type="string"/>
+    <aura:attribute name="modelName" type="string"/>
+    <aura:attribute name="weekStartDate" type="Date"/> 
+    <aura:attribute name="weekEndDate" type="Date"/>
+    <aura:attribute name="allocationType" type="string" default="All"/>
+    <aura:attribute name="onlyShortFallRecords" type="Boolean"/>
+    <aura:method name="rerenderList" action="{! c.doInit}" /> 
+    
+    <!--declare events handler which is used to get inputs from the search component-->  
+    <aura:handler name="searchCommunication" event="c:AllocationSearchCommunication" action="{!c.handleSearch}"/>
+    
+    <!--Calling search component Start-->
+    <c:InventoryAllocationSearch SourceType = "Allocation"/>	
+    <!--Calling search component End-->
+    
+    
+    
+    <div class="slds-m-around_small"> 
+        <div class="slds-page-header" >  
+            <div class="slds-page-header__row slds-align-right" align="right">
+                <p class="slds-page-header__title slds-truncate">Total Weekly Summary &nbsp; {!v.total} </p>
+                 &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;
+                <p class="slds-page-header__title slds-truncate slds-align-right" >
+                 (  Page {!v.page} of {!v.pages} )</p> 
+                <div class="slds-col" Style="width:110px" align="right">
+                    <ui:inputSelect aura:id="recordSize" label="Records Per Page: " change="{!c.onSelectChange}" class="Table_size"> 
+                        <ui:inputSelectOption text="10" label="10" value="true"/> 
+                        <ui:inputSelectOption text="15" label="15"/> 
+                        <ui:inputSelectOption text="20" label="20"/> 
+                    </ui:inputSelect> 
+                </div>
+            </div>
+        </div> 
+        
+        <p class="slds-p-horizontal_small slds-box"> 
+            <aura:if isTrue="{!v.isCurrentWeek}">
+                <lightning:datatable class="tableHeader" data="{!v.WeeklyAllocationSummaryList}" columns="{!v.WeeklyColumns }" keyField="Id"  hideCheckboxColumn="true" min-column-width="30px" onrowaction="{!c.handleWeeklyRowAction}"  onsave="{! c.handleSaveEdition }"/>
+                <aura:set attribute="else">
+                    <lightning:datatable class="tableHeader" data="{!v.WeeklyAllocationSummaryList}" columns="{!v.WeeklyColumns }" keyField="Id" hideCheckboxColumn="true" min-column-width="30px" onrowaction="{!c.handleWeeklyRowAction}"  onsave="{! c.handleSaveEdition }"/>
+                </aura:set>                
+            </aura:if>
+        </p> 
+        <div class="slds-align_absolute-center">             
+            <lightning:button disabled="{!v.page == 1}" variant="brand" label="Previous Page" onclick="{!c.navigate }" />             
+            <lightning:button disabled="{!v.page == v.pages}" aura:id="previousPage" variant="brand" label="Next Page" onclick="{! c.navigate }" />
+            
+        </div> 
+    </div> 
+</aura:component>

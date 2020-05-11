@@ -1,0 +1,117 @@
+<aura:component controller="uploadInventry">
+    <aura:method name="materialDetails" action="{!c.viewError}" description="Batch Detail Method with BatchId as parameter"> 
+        <aura:attribute name="batchId" type="String" default="parameter 1"/>
+    </aura:method>
+    <aura:attribute name="errordata" type="object"/>
+    <aura:attribute name="flag" type="Boolean" default="false"/>
+	    <lightning:layout>        
+        <lightning:layoutItem class="boxx" padding="around-small" >           
+            <aura:if isTrue="{!v.flag}">
+                <!-- <lightning:accordionSection name="B" label="Inventory Transaction stage">-->
+                <lightning:card title="Inventory Transaction stage"  >
+                    <div class="legend" align = "right">
+                        <lightning:icon class="missingField" size="small"/>&nbsp;Missing Data
+                        <lightning:icon class="masterDataNotFound" size="small"/>&nbsp;Master Data Not Found
+                        <lightning:icon class="modelNotFound" size="small"/>&nbsp;Model Not Found
+                    </div>
+                    <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+                        <col width="100px"></col>
+                        <col width="200px"></col>
+                        <col width="150px"></col>
+                        <col width="150px"></col>
+                        <col width="100px"></col>
+                        <col width="100px"></col>
+                        <col width="100px"></col>
+                        <col width="100px"></col>
+                        <col width="80px"></col>
+                        <col width="200px"></col>
+                        <thead class="row">
+                            <tr>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Row No</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Mainetti_Company">Mainetti Company</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Location">Location</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Material_Type">Material Type</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Unit_Price">Unit Price</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="UOM">UOM</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Year">Year</div></th>                                        
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Month">Month</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Date">Date</div></th>   
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Remarks">Remarks</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Use the Apex model and controller to fetch server side data -->
+                            <aura:iteration items="{!v.errordata}" var="err">
+                                <tr>
+                                    <td><div align="center" class="slds-truncate">{!err.Row_No__c}</div></td>                 
+                                    <td>                                                                                      
+                                            <div align ="center" class="{!err.MC_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Manitte_Company_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Mainetti_Company__c} 
+                                                </div>                                         
+                                            </div>                                                         
+                                    </td>
+                                    <td>                                                                                        
+                                            <div align ="center" class="{!err.Location_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Location_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Location__c}                                          
+                                                </div>                                            
+                                            </div>                                        
+                                    </td>
+                                    <td>                                                     
+                                            <div align ="center" class="{!err.Material_Type_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Material_Type_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Material_Type__c} 
+                                                </div>                                         
+                                            </div>                                                                             
+                                    </td>
+                                    <td>                            
+                                        <div align ="center" class="{!err.UP_NF__c? 'masterDataNotFound' : ''}">
+                                            <div align ="center" class="{!err.UP_FB__c? 'missingField' : ''}">
+                                                &nbsp;{!err.Unit_Price__c}                                                             
+                                            </div>
+                                        </div>                                                                                                     
+                                    </td>                      
+                                    <td>
+                                        <div align ="center" class="{!err.UOM_NF__c? 'masterDataNotFound' : ''}">
+                                            <div align ="center" class="{!err.UOM_FB__c? 'missingField' : ''}">                                                    
+                                                &nbsp;{!err.UOM__c}                                      
+                                            </div>                                            
+                                        </div>                                        
+                                    </td>                                    
+                                    
+                                    <td>
+                                        <div align ="center" class="{!err.Year_NF__c? 'masterDataNotFound' : ''}">
+                                            <div align ="center" class="{!err.Year_FB__c? 'missingField' : ''}">                                                    
+                                                &nbsp;{!err.Year__c}                                      
+                                            </div>                                            
+                                        </div>                                        
+                                    </td>  
+                                    <td>
+                                        <div align ="center" class="{!err.Month_NF__c? 'masterDataNotFound' : ''}">
+                                            <div align ="center" class="{!err.Month_FB__c? 'missingField' : ''}">                                                    
+                                                &nbsp;{!err.Month__c}                                      
+                                            </div>                                            
+                                        </div>                                        
+                                    </td> 
+                                    <td>
+                                        <div align ="center" class="{!err.Date_NF__c? 'masterDataNotFound' : ''}">
+                                            <div align ="center" class="{!err.Date_FB__c? 'missingField' : ''}">                                                    
+                                                &nbsp;{!err.Date__c}                                      
+                                            </div>                                            
+                                        </div>                                        
+                                    </td> 
+                                    <td><div align ="center" ><textarea cols="24">{!err.Remarks__c}</textarea></div></td>
+                                </tr>
+                            </aura:iteration>                
+                            
+                        </tbody>
+                    </table>
+                </lightning:card>
+                <!--</lightning:accordionSection>-->
+            </aura:if>
+        </lightning:layoutItem>
+        
+        <!--</lightning:accordion>-->
+    </lightning:layout>
+</aura:component>

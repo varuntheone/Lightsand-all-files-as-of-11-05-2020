@@ -1,0 +1,450 @@
+<apex:page language="zh_TW" renderAs="pdf" applyBodyTag="false" controller="PDFProdConGetDataController">
+    <head>
+        <style>
+         body { font-family: 'Arial Unicode MS'; }
+         td, tr{ font-size:9px;}
+         th { font-size:14px;}
+         
+          #table_inside td, th, tr{font-size:10px; border-right:1px solid #000; border-bottom:1px solid #000;}
+          #highInfoId td, th, tr{font-size:10px; border-right:1px solid #000; border-bottom:1px solid #000;}
+          #highInfoId  th {background-color: #f2f2f2;}
+    @page {
+        @top-right {
+          content: "Page " counter(page) " of " counter(pages);
+              font-weight: lighter;
+              font-size:8pt;
+            }
+         @bottom-center {
+                    content: element(header);
+                    font-weight: lighter;
+              font-size:8pt;
+                }
+       
+        }
+        div.header {
+                font-weight: lighter;
+                  font-size:8pt;
+                text-align: center;
+                position: running(header);
+            }
+      </style>
+    </head>
+   <body>
+        
+              <span id="j_id0:j_id5">
+                
+         
+             
+           
+            <table id="highInfoId" cellpadding="4" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="3" style="width:100%;border-right:0px solid #000;">
+                            <strong>Production Configurator</strong>&nbsp;
+                        </th>
+                    </tr>
+                    <tr>
+                        <td rowspan ='2' style="width:40%; text-align:left;">
+                        <img alt="" src="{!$Resource.Mainetti_Logo}" style="  width: 250px; height: 50px;"/>
+                     
+                          </td>
+                          <td rowspan ='2' style="width:40%; text-align:left;vertical-align: text-top;">
+                        <strong>Customer Name:</strong><br></br>&nbsp;<span style="font-size:20pt;font-weight: bold;">{!ProdConForPDF.Customer_Name__c}</span>
+                     
+                          </td>
+                         <td style="width:20%; text-align:left;border-right:0px solid #000;">
+                            <strong>Salesforce Number:</strong>&nbsp;{!ProdConForPDF.Name}
+                          </td>                         
+                    </tr>
+                    <tr>
+                    <td style="width:20%; text-align:right;border-right:0px solid #000;">
+                     <p id="highheader"><strong>Date:</strong>&nbsp;
+                     <span style="background-color: rgb(238, 238, 238);">
+                                <apex:outputText value="{0,date, MMMM d,  yyyy}">
+                                    <apex:param value="{!ProdConForPDF.Created_Date__c}"/>
+                                </apex:outputText>
+                            </span>
+                            </p>
+                          </td>  
+                    </tr>
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:100%;border-right:0px solid #000;">
+                            <strong></strong>&nbsp;
+                        </th>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Quotation__c}"/>&nbsp;Quotation
+                     
+                          </td>
+                          <td rowspan="1" style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Sample__c}"/>&nbsp;Sample
+                          </td>
+                           <td rowspan="1" style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Sample Quantity:&nbsp;{!ProdConForPDF.Sample_Quantity__c}                     
+                          </td> 
+                          
+                          
+                    </tr>
+                    
+                    <tr>
+                        <td style="width:25%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Artwork__c}"/>&nbsp;Artwork                     
+                          </td>
+                          <td style="width:25%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Production__c}"/>&nbsp;Production
+                          </td>
+                           <td style="width:25%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                        Production Quantity:&nbsp;{!ProdConForPDF.Production_Quantity__c}                      
+                          </td> 
+                          
+                          
+                    </tr>
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:80%;border-right:0px solid #000;">
+                            <strong></strong>&nbsp;
+                        </th>
+                        <th colspan="1" style="width:50%;border-right:0px solid #000;">
+                            <strong></strong>&nbsp;
+                        </th>
+                    </tr>
+                    <tr  style="height:35px;">
+                        <td  style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                          <apex:outputField value="{!ProdConForPDF.Garmentbag_Shape1__c}"/>                                  
+                          </td>
+                          <td  style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                          <apex:outputField value="{!ProdConForPDF.GarmentBag_Shape2__c}"/>                  
+                          </td>
+                           <td style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                          <apex:outputField value="{!ProdConForPDF.Garmentbag_Shape3__c}"/>                
+                          </td> 
+                          <td style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                          <apex:outputField value="{!ProdConForPDF.Garmentbag_Shape4__c}"/>            
+                          </td>
+                          <td rowspan='2' style="width:20%; text-align:left;border-right:0px solid #000;">
+                          Width (cm):&nbsp;{!ProdConForPDF.Width_cm__c} <br></br>
+                          Heigth (cm):&nbsp;{!ProdConForPDF.Height_cm__c} <br></br>
+                          Gusset (cm):&nbsp;{!ProdConForPDF.Gusset_cm__c}           
+                          </td>
+                          
+                    </tr>
+                    <tr  style="height:35px;">
+                        <td style="width:20%; text-align:center;border-right:0px solid #000;">
+                        
+                            <apex:repeat var="cv" value="{!urlpolybag1}">                                                                              
+                            <img alt="" src="/servlet/servlet.FileDownload?file={!cv.id}" style="  "/>
+                            </apex:repeat>                                       
+                          </td>
+                          <td  style="width:20%; text-align:center;border-right:0px solid #000;">
+                            <apex:repeat var="cv" value="{!urlpolybag2}">                                                                              
+                            <img alt="" src="/servlet/servlet.FileDownload?file={!cv.id}" style="  "/>
+                            </apex:repeat>                    
+                          </td>
+                           <td style="width:20%; text-align:center;border-right:0px solid #000;">
+                            <apex:repeat var="cv" value="{!urlpolybag3}">                                                                              
+                            <img alt="" src="/servlet/servlet.FileDownload?file={!cv.id}" style="  "/>
+                            </apex:repeat>                 
+                          </td> 
+                          <td  style="width:20%; text-align:center;border-right:0px solid #000;">
+                            <apex:repeat var="cv" value="{!urlpolybag4}">                                                                              
+                            <img alt="" src="/servlet/servlet.FileDownload?file={!cv.id}" style="  "/>
+                            </apex:repeat>               
+                          </td>
+                          
+                          
+                    </tr>
+                    
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="5" style="width:80%;border-right:0px solid #000;">
+                            <strong>Materials</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                    <tr>
+                        <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        PVC (mm):&nbsp;{!ProdConForPDF.PVC_mm__c}                                      
+                          </td>
+                          <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Polyester:&nbsp;{!ProdConForPDF.Polyester__c}               
+                          </td>
+                           <td style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        PEVA (mm):&nbsp;{!ProdConForPDF.PEVA_mm__c}                
+                          </td> 
+                          <td style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        PP Non-Woven (g):&nbsp;{!ProdConForPDF.PP_Non_Woven__c}               
+                          </td>
+                          <td style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Cotton:&nbsp;{!ProdConForPDF.Cotton__c}            
+                          </td>
+                          
+                    </tr>
+                    <tr>
+                        <td style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        PVC Color:&nbsp;{!ProdConForPDF.PVC_Color__c}                                    
+                          </td>
+                          <td style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Polyester Color:&nbsp;{!ProdConForPDF.Polyester_Color__c}                                    
+                          </td>
+                           <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        PEVA Color:&nbsp;{!ProdConForPDF.PEVA_color__c}                                    
+                          </td> 
+                          <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        PP Non-Woven Color:&nbsp;{!ProdConForPDF.PP_Non_Woven_Color__c}                                    
+                          </td>
+                          <td style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Cotton Color:&nbsp;{!ProdConForPDF.Cotton_Color__c}   
+                          </td>
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:20%; text-align:left;">
+                        PVC Others:&nbsp;{!ProdConForPDF.PVC_Others__c}                                            
+                          </td>
+                          <td  style="width:20%; text-align:left;">
+                        Polyester Others:&nbsp;{!ProdConForPDF.Polyester_Others__c}           
+                          </td>
+                           <td style="width:20%; text-align:left;">
+                        PEVA Others:&nbsp;{!ProdConForPDF.PEVA_others__c}           
+                          </td> 
+                          <td  style="width:20%; text-align:left;">
+                        PP Non-Woven Others:&nbsp;{!ProdConForPDF.PP_Non_Woven_Others__c}           
+                          </td>
+                          <td style="width:20%; text-align:left;border-right:0px solid #000;">
+                        Cotton Others:&nbsp;{!ProdConForPDF.Cotton_Color__c}           
+                          </td>
+                          
+                    </tr>
+                    
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="1" style="width:20%;border-right:0px solid #000;">
+                            <strong>Edges</strong>&nbsp;
+                        </th>
+                        <th colspan="4" style="width:80%;border-right:0px solid #000;">
+                            <strong>Handles</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                    <tr>
+                        <td rowspan='3' style="width:20%; text-align:left;vertical-align: text-top;">
+                        Edges:&nbsp;{!ProdConForPDF.Edges__c}           
+                        <br></br>
+                        Edges Color:&nbsp;{!ProdConForPDF.Edges_Color__c}     
+                          </td>
+                        <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Handles_No_Handle__c}"/>&nbsp;Handles-No Handle                                      
+                          </td>
+                          <td  style="width:25%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Handle_Stiched_Over_Strip__c}"/>&nbsp;Handle-Stiched Over Strip               
+                          </td>
+                           <td style="width:30%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        <apex:outputField value="{!ProdConForPDF.Handle_Stiched_on_the_Edge__c}"/>&nbsp;Handle-Stiched on the Edge               
+                          </td> 
+                          
+                          
+                          
+                    </tr>
+                    <tr>
+                        
+                          <td style="width:25%; text-align:left;border-right:0px solid #000;border-bottom:0px solid #000;">
+                        <apex:repeat var="cv" value="{!urlhandle1}">                                                                              
+                            <img alt="" src="/servlet/servlet.FileDownload?file={!cv.id}" style="  "/>
+                            </apex:repeat>                 
+                          </td>
+                           <td style="width:25%; text-align:left;border-right:0px solid #000;border-bottom:0px solid #000;">
+                             <apex:repeat var="cv" value="{!urlhandle2}">                                                                              
+                            <img alt="" src="/servlet/servlet.FileDownload?file={!cv.id}" style="  "/>
+                            </apex:repeat>             
+                          </td> 
+                          <td  style="width:30%; text-align:left;border-right:0px solid #000;border-bottom:0px solid #000;">
+                            <apex:repeat var="cv" value="{!urlhandle3}">                                                                              
+                            <img alt="" src="/servlet/servlet.FileDownload?file={!cv.id}" style="  "/>
+                            </apex:repeat>           
+                          </td>
+                          
+                          
+                    </tr>
+                   <tr>
+                   <td colspan='3' style="width:80%; text-align:left;border-right:0px solid #000;vertical-align: text-top;">
+                        Handle Material:&nbsp;{!ProdConForPDF.Handle_Material__c} <br></br>
+                        Handle Length:&nbsp;{!ProdConForPDF.Handle_Length__c} <br></br>
+                        Handles Material:&nbsp;{!ProdConForPDF.Handles_Material__c}             
+                          </td>
+                   </tr>
+                                       
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="2" style="width:100%;border-right:0px solid #000;">
+                            <strong>Print</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                    <tr>
+                        <td style="width:30%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Print Size Width (cm):&nbsp;{!ProdConForPDF.Print_Size_Width_cm__c}          
+                          </td>
+                        <td  style="width:30%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Print Color Pantone1:&nbsp;{!ProdConForPDF.Print_Color_Pantone1__c}                                         
+                          </td>
+                          
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Print Size High (cm):&nbsp;{!ProdConForPDF.Print_Size_High_cm__c}                                
+                          </td>
+                          <td style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Print Color Pantone2:&nbsp;{!ProdConForPDF.Print_Color_Pantone2__c}                   
+                          </td>
+                        
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Print Type:&nbsp;{!ProdConForPDF.Print_Type__c}                               
+                          </td>
+                          <td  style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        Print Color Pantone3:&nbsp;{!ProdConForPDF.Print_Color_Pantone3__c}                 
+                          </td>
+                         
+                          
+                    </tr>
+                    <tr>
+                        <td  style="width:20%; text-align:left;border-right:0px solid #000;">
+                        Print Sides:&nbsp;{!ProdConForPDF.Print_Sides__c}                              
+                          </td>
+                          <td  style="width:20%; text-align:left;border-right:0px solid #000;">
+                                   
+                          </td>
+                         
+                          
+                    </tr>
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="4" style="width:100%;border-right:0px solid #000;">
+                            <strong>Accessories</strong>&nbsp;
+                        </th>
+                        
+                    </tr>
+                    <tr>
+                        <td style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Zip Size (mm):&nbsp;{!ProdConForPDF.Zip_Size__c}             
+                          </td>
+                        <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Clips - Metallic (mm):&nbsp;{!ProdConForPDF.Clips_Metallic__c}                                         
+                          </td>
+                         
+                         <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Metal Eyelet Size (mm):&nbsp;{!ProdConForPDF.Metal_Eyelet_Size_mm__c}                                        
+                          </td>
+                        <td  style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        PVC Pocket (mm):&nbsp;{!ProdConForPDF.PVC_Pocket_mm__c}                                           
+                          </td>
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Zip Color:&nbsp;{!ProdConForPDF.Zip_Color__c}             
+                          </td>
+                        <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Clips - Metallic Color:&nbsp;{!ProdConForPDF.Clips_Metallic_Color__c}                                            
+                          </td>
+                          
+                         <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Metal Eyelet Color:&nbsp;{!ProdConForPDF.Metal_Eyelet_Color__c}                                       
+                          </td>
+                         <td  style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                        PVC Window (mm):&nbsp;{!ProdConForPDF.PVC_Window_mm__c}                                      
+                          </td>
+                        
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Zip all around:&nbsp;{!ProdConForPDF.Zip_all_around__c}            
+                          </td>
+                        <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Clips - Plastic (mm):&nbsp;{!ProdConForPDF.Clips_Plastic_mm__c}                                          
+                          </td>
+                         
+                         <td  style="width:20%; text-align:left;border-bottom:0px solid #000;">
+                        Metallic Corners:&nbsp;{!ProdConForPDF.Metallic_Corners__c}                                      
+                          </td>
+                        <td  style="width:20%; text-align:left;border-bottom:0px solid #000;border-right:0px solid #000;">
+                                                                 
+                          </td>
+                          
+                          
+                    </tr>
+                    <tr>
+                        <td style="width:20%; text-align:left;">
+                        Pocket with Zip (mm):&nbsp;{!ProdConForPDF.Pocket_with_Zip_mm__c}          
+                          </td>
+                        <td  style="width:20%; text-align:left;">
+                        Clips - Plastic Color:&nbsp;{!ProdConForPDF.Clips_Plastic_Color__c}                                      
+                          </td>
+                         
+                         <td  style="width:20%; text-align:left;">
+                        Metallic Corners Color:&nbsp;{!ProdConForPDF.Metallic_Corners_Color__c}                                     
+                          </td>
+                        <td  style="width:20%; text-align:left;border-right:0px solid #000;">
+                        Accessories Others:&nbsp;{!ProdConForPDF.Accessories_Others__c}                                        
+                          </td>
+                          
+                          
+                    </tr>
+                </tbody>
+            </table>
+            <table id="highInfoId" cellpadding="2" cellspacing="0" style="width:100%;  border:1px solid #000;">
+            <tbody>
+                    <tr>
+                    <th colspan="2" style="width:100%;border-right:0px solid #000;">
+                            <strong>Others Information</strong> 
+                        </th>
+                        
+                    </tr>
+                    <tr style="height:100px">
+                        <td style="width:50%; text-align:left;vertical-align: text-top;">
+                        Packing Requirement:&nbsp;{!ProdConForPDF.Packing_Requirement__c}          
+                          </td>                   
+                        <td style="width:50%; text-align:left;vertical-align: text-top;border-right:0px solid #000;">
+                        Remark:&nbsp;{!ProdConForPDF.Remark__c}           
+                          </td>
+                        
+                          
+                          
+                    </tr>
+                    
+                </tbody>
+            </table>
+
+         
+         </span>
+    </body>
+</apex:page>

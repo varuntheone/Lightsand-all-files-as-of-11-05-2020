@@ -1,0 +1,107 @@
+<aura:component controller="WeeklySupplySummaryClass" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" /> 
+     
+    <aura:attribute name="SupplySummaryList" type="ViewDemandForecastObj[]"/> 
+    <aura:attribute name="page" type="integer" description="stores page Number"/> 
+    <aura:attribute name="pages" type="integer" description="Display Page Number"/> 
+    <aura:attribute name="total" type="integer" description="Total Number of Records"/> 
+    <aura:attribute name="isCurrentWeek" type="boolean" default="false" description="Only for current week"/> 
+    <aura:attribute name="supplyColumns" type="List"/> 
+    <!--<aura:attribute name="SourceType" type="String"/>-->
+    
+    <!-- attributes to store search inputs -->
+    <aura:attribute name="mainettiCompany" type="string"/>
+    <aura:attribute name="retailerCode" type="string"/>
+    <aura:attribute name="modelName" type="string"/>
+    <aura:attribute name="weekStartDate" type="Date"/>
+    <aura:attribute name="weekEndDate" type="Date"/>
+    <aura:attribute name="source" type="string" default="All"/>
+    <aura:attribute name="wareHouse" type="string" default=""/>
+    <aura:attribute name="onlyShortFallRecords" type="Boolean" />
+    
+    
+    <aura:attribute name="sendSupplyId" type="string" default=""/>
+    <aura:attribute name="sendRetailer" type="string" default=""/>
+    <aura:attribute name="sendModel" type="string" default=""/>
+    <aura:attribute name="sendColor" type="string" default=""/>
+    <aura:attribute name="sendSizerPrint" type="string" default=""/>
+    <aura:attribute name="sendWarehouse" type="string" default=""/>
+    <aura:attribute name="OnAllocateClick" type="Boolean" default="false"/>
+    <aura:attribute name="isSourceToSource" type="Boolean" default="false"/>
+    
+    
+    <!--declare events handler which is used to get inputs from the search component-->  
+    <aura:handler name="searchCommunication" event="c:AllocationSearchCommunication" action="{!c.handleSearch}"/>
+    
+    <!--register event which is used to pass inputs to allocation modal popup-->
+    <!--<aura:registerEvent name="modalCommunication" type="c:WeeklySupplyModelCommunicationevent"/>-->
+    <aura:handler name="modalCommunication" event="c:WeeklySupplyModelCommunicationevent" action="{!c.closeModal}"/>
+    <aura:method name="rerenderList" action="{! c.doInit}" />
+    
+    <!-- Start Calling search component Start-->
+    <c:InventoryAllocationSearch SourceType = "Supply"/>
+    <!-- End Calling search component End-->
+     
+    <div class="slds-m-around_small"> 
+        <div class="slds-page-header" > 
+             <div class="slds-page-header__row slds-align-right">
+                 <p class="slds-page-header__title slds-truncate">Total Supply Forecast </p>
+                 &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;
+                <p class="slds-page-header__title slds-truncate slds-align-right" >
+               ( Page {!v.page} of {!v.pages} )</p> 
+            <div class="slds-col" Style="width:110px" align="right">
+            <ui:inputSelect aura:id="recordSize" label="Records Per Page: " change="{!c.onSelectChange}" class="Table_size"> 
+                <ui:inputSelectOption text="10" label="10" value="true"/> 
+                <ui:inputSelectOption text="15" label="15"/> 
+                <ui:inputSelectOption text="20" label="20"/> 
+            </ui:inputSelect> 
+                </div>
+            </div>
+        </div>
+        
+        <!--<lightning:layout multipleRows="True">
+            <lightning:layoutItem class="box" padding="around-small" size="12">
+                <lightning:card title="Supply" >
+                    <p class="slds-p-horizontal_small slds-box"> 
+                        <lightning:datatable class="tableHeader" data="{!v.SupplySummaryList}" columns="{! v.supplyColumns }" keyField="id"  hideCheckboxColumn="true" min-column-width="30px" onrowaction="{! c.handleRowAction }"/>
+                    </p>
+                </lightning:card>
+            </lightning:layoutItem>
+        </lightning:layout>-->
+         
+        <p class="slds-p-horizontal_small slds-box"> 
+            <aura:if isTrue="{!v.isCurrentWeek}">
+                <lightning:datatable class="tableHeader" data="{!v.SupplySummaryList}" columns="{! v.supplyColumns }" keyField="id"  hideCheckboxColumn="true" min-column-width="30px" onrowaction="{! c.handleRowAction }"/>
+                <aura:set attribute="else">
+                    <lightning:datatable class="tableHeader" data="{!v.SupplySummaryList}" columns="{! v.supplyColumns }" keyField="id" hideCheckboxColumn="true" min-column-width="30px" />
+                </aura:set>                
+            </aura:if>
+        </p>
+        <div class="slds-align_absolute-center">             
+            <lightning:button disabled="{!v.page == 1}" variant="brand" label="Previous Page" onclick="{! c.navigate }" />             
+            <lightning:button disabled="{!v.page == v.pages}" aura:id="previousPage" variant="brand" label="Next Page" onclick="{! c.navigate }" /> 
+        </div>
+    </div> 
+    
+    <!--Modal PopUp -->
+    <div>
+        <section aura:id="allocationModal" class="slds-modal slds-modal_large" role="dialog" tabindex="-1" aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" >
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>                    
+                </header>
+                
+                <div class="slds-modal__content slds-p-around_large" id="customerBody" >
+                    <aura:if isTrue="{!v.OnAllocateClick}">
+                    <c:AllocateDemand sourceObj ="Supply" isSourceToSource ="{!v.isSourceToSource}"
+                                      supplyId ="{!v.sendSupplyId}" retailer ="{!v.sendRetailer}" 
+                                      model ="{!v.sendModel}" color ="{!v.sendColor}"
+                                      sizerPrint ="{!v.sendSizerPrint}" warehouse ="{!v.sendWarehouse}"/>
+                    </aura:if>
+                </div>
+            </div>
+        </section>
+        <div aura:id="allocationModalBackdrop" class="slds-backdrop"></div>
+    </div>
+    <!--Modal PopUp -->
+</aura:component>

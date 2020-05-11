@@ -1,0 +1,167 @@
+<apex:page standardController="Online_Detail__c" tabStyle="Online_Detail__c" extensions="NewOrEdigProductSelectionExtension" action="{!init}">
+    <script src="{!URLFOR($Resource.JQueryJS)}">
+    </script>
+    <script>
+        var j$ = jQuery.noConflict();
+        var newWin = null;
+        var clickedId = '';
+        var clickedHiddenId = '';
+        function openLookupPopup(RetailerCode, Country, htmlId, lookupHiddenId) {
+            //var RetailerCode = document.getElementById('OnlineEnquiryCountry');
+            //var Country = document.getElementById('OnlineEnquiryRetailerCode');
+            // alert('htmlSource--->'+htmlId);
+            //alert("RetailerCode-->"+RetailerCode);
+            //alert("Country--->"+Country);
+            //alert('REtailerCode Id--->'+{!onlineEnquiry.Retailer_Code__c});
+            clickedId=htmlId;
+            clickedHiddenId=lookupHiddenId;
+            var url = "/CustomerPortal/ListOfPriceSpecBookProdVF?retailercode=" + RetailerCode + "&country=" + Country;
+            newWin = window.open(url, 'Popup', 'height=500,width=1080,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no');
+            if (window.focus) {
+                newWin.focus();
+            }
+            return false;
+        }
+
+        function closeLookupPopup() {
+
+            if (null != newWin) {
+                newWin.close();
+            }
+            // populateNumber();     
+        }
+    function lookupPick(recordId,recordName,selectedRow){
+        //alert('Yes Lookup pick on parent called'+RecordName);
+        //alert('Id to be set:'+clickedId);
+        //j$('#'+clickedId).value=RecordName;
+        //document.getElementById(clickedId).value=RecordName;
+        
+        //Row 1st td
+        var maintd = document.getElementById(clickedId);
+        //Color td
+        var coltd = j$(maintd).parent().siblings()[1].firstChild;
+        j$(coltd).val(j$((selectedRow)[0]).text());
+        j$(coltd).next().html(j$((selectedRow)[0]).text());
+        
+        //Product Description
+        var coltd = j$(maintd).parent().siblings()[2].firstChild;
+        j$(coltd).val(j$((selectedRow)[1]).text());
+        j$(coltd).next().html(j$((selectedRow)[1]).text());
+        
+        //Product Type
+        var coltd = j$(maintd).parent().siblings()[3].firstChild;
+        j$(coltd).val(j$((selectedRow)[2]).text());
+        j$(coltd).next().html(j$((selectedRow)[2]).text());
+        
+        //Product Family
+        var coltd = j$(maintd).parent().siblings()[4].firstChild;
+        j$(coltd).val(j$((selectedRow)[3]).text());
+        j$(coltd).next().html(j$((selectedRow)[3]).text());
+        
+        //USD Price
+        /* var coltd = j$(maintd).parent().siblings()[6].firstChild;
+        j$(coltd).val(j$((selectedRow)[4]).text());
+        j$(coltd).next().html(j$((selectedRow)[4]).text());
+        
+        //Freight Terms
+        var coltd = j$(maintd).parent().siblings()[7].firstChild;
+        j$(coltd).val(j$((selectedRow)[5]).text());
+j$(coltd).next().html(j$((selectedRow)[5]).text());*/
+        
+        document.getElementById(clickedId).value=recordName;
+        document.getElementById(clickedHiddenId).value=recordId;
+    }
+    function escapeSplChar(selector) {
+        return selector.replace(/([ #;&,.+*~\':"!^$[\]()=>|\/])/g,'\\$1');
+    }
+    function getModelIds(){
+        var allModels;
+        j$("input[id$=':Model']").each(function (index){
+            currentVal=j$(this).attr('value');
+            console.log(currentVal);
+                allModels+=currentVal;
+        });
+        return allModels;
+    }
+    var isRecordSaved = 'false';
+    function SaveConfirm(){
+        alert('Please make sure you have saved your changes');
+    }
+    function SaveClicked(){
+        isRecordSaved = 'true';
+    }
+    </script>
+    <apex:form id="prodtSelectionForm">
+        <input type='hidden' name='selectedModels'/>
+        <apex:pageblock mode="edit" title="Select Products">
+        <apex:pageblockbuttons >
+            <apex:commandbutton value="Add" action="{!Add}" rerender="pb1"/>
+            <apex:commandbutton value="Save" action="{!Save}"/>
+            <apex:commandbutton value="Submit" action="{!Submit}" onclick="javascript:SaveConfirm();"/>
+            <apex:commandbutton value="Cancel" action="{!Cancel}"/>
+        </apex:pageblockbuttons>
+            <apex:outputpanel >
+                <apex:pageblock mode="edit" id="pb1">
+                    <apex:dataTable value="{!lstInner}" var="e1" border="0" id="therepeat" rowClasses="odd,even">
+                      <apex:column width="5%" >
+                            <apex:facet name="header">&nbsp;</apex:facet>
+                        <!-- <apex:commandLink value="Delete" action="{!Del}" rerender="pb1">
+                                <apex:param name="rowToBeDeleted" value="{!e1.recCount}" assignTo="{!selectedRowIndex}"></apex:param>
+                            </apex:commandLink>-->
+                    </apex:column>
+                     <apex:column width="10%">
+                            <apex:facet name="header">Model</apex:facet>
+                            <apex:inputtext size="5" id="Model" rendered="true" value="{!e1.onlineDetail.TempModel__c}"/>                        
+                            <apex:inputHidden value="{!e1.onlineDetail.TempModelId__c}" id="ModelId"/>  
+                         <img src="/s.gif" onclick="openLookupPopup('{!onlineEnquiry.TempRetailerCodeId__c}', '{!onlineEnquiry.Ship_to_Country__c}', j$(this).prev().prev().attr('id'), j$(this).prev().attr('id')); return false" alt="Model Lookup (New Window)" class="lookupIcon" onblur="this.className = 'lookupIcon';" onfocus="this.className = 'lookupIconOn';" onmouseout="this.className = 'lookupIcon';this.className = 'lookupIcon';" onmouseover="this.className = 'lookupIconOn';this.className = 'lookupIconOn';" title="Model Lookup (New Window)"/>
+                    </apex:column>
+                    <apex:column width="7%">
+                            <apex:facet name="header">Color</apex:facet>  
+                            <apex:inputHidden value="{!e1.color}" id="colorIdHidden"/>  
+                            <apex:outputText id="colorId">{!e1.color}</apex:outputText> 
+                    </apex:column> 
+                    <apex:column width="18%">
+                            <apex:facet name="header">Product Description</apex:facet>
+                            <apex:inputHidden value="{!e1.pdtDesc}" id="prodDescHidden"/>  
+                            <apex:outputText id="prodDesc">{!e1.pdtDesc}</apex:outputText> 
+                    </apex:column>
+                    <apex:column width="10%">
+                            <apex:facet name="header">Product Type</apex:facet>
+                            <apex:inputHidden value="{!e1.pdtType}" id="productTypeHidden"/>
+                            <apex:outputText id="productType">{!e1.pdtType}</apex:outputText>
+                    </apex:column>
+                      <apex:column width="10%">
+                            <apex:facet name="header">Product Family</apex:facet>
+                            <apex:inputHidden value="{!e1.pdtFamily}" id="productFamilyHidden"/>
+                            <apex:outputText id="productFamily">{!e1.pdtFamily}</apex:outputText> 
+                    </apex:column>
+                     
+                     
+                     <apex:column width="10%">
+                            <apex:facet name="header">Qty (pcs)</apex:facet>    
+                            <apex:inputfield value="{!e1.onlineDetail.Qty__c}"/>
+                    </apex:column>
+                        <!--    <apex:column style="">
+                            <apex:facet name="header">USD Price/100 pcs</apex:facet>
+                            <apex:inputHidden value="{!e1.usdPrice}" id="usdPriceHidden"/>
+                            <apex:outputText id="usdPrice">{!e1.usdPrice}</apex:outputText>
+                    </apex:column>
+                     <apex:column width="10%">
+                            <apex:facet name="header">Freight Terms</apex:facet>
+                            <apex:inputHidden value="{!e1.freightTerms}" id="freighttermsHidden"/>
+                            <apex:outputText id="freightterms">{!e1.freightTerms}</apex:outputText>
+                    </apex:column>-->
+                     <apex:column width="10%">
+                            <apex:facet name="header">Model Remark</apex:facet>  
+                            <apex:inputfield value="{!e1.onlineDetail.Model_Remark__c}"/>
+                    </apex:column>
+                    <apex:column width="10%">
+                            <apex:facet name="header">Style Name or Number</apex:facet>  
+                            <apex:inputfield value="{!e1.onlineDetail.Style_Name_or_Number__c}"/>
+                    </apex:column>                       
+                </apex:dataTable>
+            </apex:pageblock>
+        </apex:outputpanel>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

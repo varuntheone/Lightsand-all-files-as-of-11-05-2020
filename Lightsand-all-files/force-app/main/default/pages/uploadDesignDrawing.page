@@ -1,0 +1,208 @@
+<apex:page lightningStyleSheets="true" standardController="Design_Log_Form__c" extensions="designLogController"  >
+<apex:includeScript value="{!$Resource.AzureCommon}"/>
+<apex:includeScript value="{!$Resource.AzureBlob}"/>
+<apex:image url="{!$Resource.uploadLogo}" style="position:relative;left:05%"/>
+<apex:sectionHeader title="Upload Design Drawing File">     
+</apex:sectionHeader>
+     <apex:remoteObjects >
+        <apex:remoteObjectModel name="Design_Log_Form__c" fields="Id,Project_ID__c,Design_Version__c"/>
+        <apex:remoteObjectModel name="Design_Drawing_File_Details__c" jsShorthand="DesignFileUpload"/>
+    </apex:remoteObjects>
+<style>
+.loader {
+ position: absolute;
+  top: 50%;
+  left: 50%;
+ border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 60px;
+  height: 60px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+<script src='/canvas/sdk/js/publisher.js'></script>    
+<script type="text/javascript">
+var blobService;
+var speedSummary;
+var finishedOrError = false;
+var containerName;
+var deleteBlobExits = false;
+var designLogUpdate = false;    
+var fileLength;
+var fileLengthTrack=1;
+    
+function initBlobService(storage) {
+    //alert('hello'+storage.storageName);
+    if (AzureStorage) {
+        blobUri = 'https://' + storage.storageName + '.blob.core.windows.net';
+        blobService = AzureStorage.createBlobService(storage.storageName, storage.storageKey);
+        containerName =  storage.containerName;
+    } else {
+        alert('Azure service not found');
+    }
+}
+
+function uploadFile(files) {
+    
+    var customBlockSize = files.size > 1024 * 1024 * 32 ? 1024 * 1024 * 4 : 1024 * 1024 * 1;
+    blobService.singleBlobPutThresholdInBytes = customBlockSize;
+    if (blobService) {
+        var fileName = files.name;
+        var fileType = files.type;
+        var designLogId = '{!Design_Log_Form__c.Id}';
+        var designVersion = '{!Design_Log_Form__c.Design_Version__c}';
+        var blobDeleteStatus = false;
+        var blobName = designLogId+'/'+designVersion+'/'+fileName;
+        speedSummary = blobService.createBlockBlobFromBrowserFile(
+            containerName,
+            blobName,
+            files, {
+                blockSize: customBlockSize
+            },
+            function(error, result, response) {
+                 if (error) {
+                    document.getElementById("response").innerHTML = JSON.stringify(error);
+                } else {          
+                    var blobEtagWithQuote = result.etag;
+                    var search='"';
+                    var blobEtag = blobEtagWithQuote.split(search).join('');                    
+                    //update only once
+                    if(!designLogUpdate){
+                        updateUploadFileDetails();
+                        designLogUpdate=true;
+                     }
+                    createUploadFileDetails(blobName,fileType,fileName,blobEtag);                    
+                   if( fileLengthTrack==fileLength){
+                        document.getElementById("loader").style.display = 'none';
+                       alert(' File upload and Record created Successfully....');
+                       Sfdc.canvas.publisher.publish({ name: "publisher.close", payload: {refresh:"true"}});
+                   }
+                    fileLengthTrack++;
+                }
+            });                   
+    }           
+}
+    /*************************************************/
+    //This function is written to make the for loop delay
+    // as we are calling the REST API to Azure.
+    function uploadDesignFiles(){
+       var files = document.getElementById("theFile").files;
+         if (parseInt(files.length) > 3){
+             alert("You are only allowed to upload a maximum of 3 files at a time");
+    	}else{
+             document.getElementById("loader").style.display = 'block';
+            fileLength = files.length;
+             for (var i = 0; i < files.length; i++) {                
+              (function (i) {
+                setTimeout(function () {
+                    uploadFile(files[i]);//calling file upload
+                }, 3000*i);
+              })(i);
+            };
+         }         
+    }
+   
+    function updateUploadFileDetails() {        
+         var designId = '{!Design_Log_Form__c.Id}';
+         var designLogForm = new SObjectModel.Design_Log_Form__c();
+         var designLink = '/lightning/r/Design_Log_Form__c/{!Design_Log_Form__c.Id}/related/Design_Drawing_File_Details__r/view';  
+         designLogForm.update([designId], {Design_Drawing_Image_Link__c: designLink},function(error, records) {        
+                if (error) {
+                    alert(error.message);
+                } 
+            });
+    }
+ function createUploadFileDetails(blobName,fileType,fileName,blobEtag) {        
+         var designId = '{!Design_Log_Form__c.Id}';
+         var fileUploadBy = '{!$User.FirstName}, {!$User.LastName}';
+         var today = new Date();
+         var fileUploadDate = new Date();
+         var designVersion = '{!Design_Log_Form__c.Design_Version__c}';
+     	 var designUpload = new SObjectModel.DesignFileUpload();
+         var imageLink = '/apex/downloadBlobFile?blobetag='+blobEtag;
+         var module = 'Design Log Drawing'; 
+          designUpload.create({File_Module__c:module,File_Full_Path__c:blobName,blogEtag__c:blobEtag,Design_Version__c:designVersion,Design_Log_Form__c:designId,File_Uploaded_By__c: fileUploadBy, Design_Drawing_Image_Link__c: imageLink, Drawing_File_Type__c: fileType, Drawing_File_Name__c: fileName, File_Uploaded_Date__c: fileUploadDate},function(error, records) {
+                if (error) {
+                    alert(error.message);
+                } 
+            });
+    }    
+function createContainer() {
+                
+    if (!blobService)
+        return;               
+    	blobService.createContainerIfNotExists(containerName, function(error, result){
+        if (error) {
+            alert('Create container failed, open browser console for more detailed info.');
+            console.log(error);
+        } else {
+            //alert('Create ' + containerName + ' successfully!');
+        }
+    });
+ }
+
+function getContainerInfo() {   
+        Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.designLogController.storageDetails}',
+        function(result, event) {
+            if (event.status) {
+                initBlobService(result);
+                createContainer();
+            } else if (event.type === 'exception') {
+                document.getElementById("response").innerHTML = event.message;
+            } else {
+                document.getElementById("response").innerHTML = event.message;
+            }
+        }, {
+            escape: true
+        }
+    );
+}
+
+function refreshProgress() {
+    setTimeout(function() {
+        if (!finishedOrError) {
+            var process = speedSummary.getCompletePercent();
+            console.log('processes:' + process);
+            refreshProgress();
+        }
+    }, 200);
+}    
+</script>
+  <apex:form >     
+    <div id="response"></div>      
+  		<apex:pageBlock >
+            <table align="center">
+                <tr><td><div class="loader" style="display:none" Id="loader" ></div></td></tr>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td></tr>                 
+                <tr><td>
+                    <apex:pageBlockButtons location="bottom">         
+                        <input type="file" id="theFile" multiple="multiple" />                   
+                    </apex:pageBlockButtons>
+                    <apex:pageBlockButtons location="bottom">
+                        <apex:commandButton value="Upload Design Drawing"  reRender="block" onclick="javascript:uploadDesignFiles();">                  
+                        </apex:commandButton>                
+                    </apex:pageBlockButtons>
+                </td></tr>
+           </table>     
+        </apex:pageBlock>
+<script type="text/javascript">
+  // Any js placed here will be fired when output panel is rerendered     
+        getContainerInfo();
+ </script>      
+</apex:form>    
+</apex:page>

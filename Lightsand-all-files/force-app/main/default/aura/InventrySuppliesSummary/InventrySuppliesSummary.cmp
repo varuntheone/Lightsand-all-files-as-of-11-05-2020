@@ -1,0 +1,141 @@
+<aura:component controller="InventrySupplyclass" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:attribute name="ws" type="Weekly_Supply_Summary__c"/>
+    <aura:attribute name="weeklySupplyMap" type="Map"/>
+     <aura:attribute name="isOpen" type="boolean" default="false"/>
+    <table class="slds-table slds-table_bordered" style="Background:#ecebea">
+    <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_col-bordered slds-table_edit slds-table_resizable-cols"  style="width:1000px">
+        <thead class="row">
+            <tr>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Supply Id</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Mainetti Company</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Retailer</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Mainetti Model</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Color</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Print</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Quantity</div></th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.ws}" var="li" indexVar="index">
+                <tr>
+                     <td>
+                        <div align ="center" class="slds-truncate" style="width:150px">                                                    
+                            &nbsp;{!li.Id}                                     
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:280px">                                                    
+                            &nbsp;{!li.Mainetti_Company__c}                                     
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:150px">                                                    
+                            &nbsp;{!li.Retailer_Code__r.Name}                                      
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:150px">                                                    
+                            &nbsp;{!li.Mainetti_Model__r.Name}                                      
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:50px">                                                    
+                            &nbsp;{!li.Color__c}                                      
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:40px">                                                    
+                            &nbsp;{!li.Sizer_Print__c}                                      
+                        </div> 
+                    </td>
+                     <td>
+                        <div align ="center" class="slds-truncate" style="width:40px">                                                    
+                            &nbsp;{!li.Quantity__c}                                      
+                        </div> 
+                    </td>
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+    </table>
+    <div class="slds-m-around_xx-large">
+        
+        <lightning:button variant="brand"
+                          label="Supply Summary Details"
+                          title="Supply Summary Details"
+                          onclick="{! c.openModel }" />
+        <!--Use aura:if tag to display Model Box, on the bese of conditions. [isOpen boolean attribute] -->   
+        <aura:if isTrue="{!v.isOpen}">
+            
+            <!--###### MODAL BOX Start######--> 
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- ###### MODAL BOX HEADER Start ######-->
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                              onclick="{! c.closeModel }"
+                                              alternativeText="close"
+                                              variant="bare-inverse"
+                                              class="slds-modal__close"/>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Weekly Supply Summary</h2>
+                    </header>
+                    <!--###### MODAL BOX BODY Part Start######-->
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <table class="slds-table slds-table_bordered" style="Background:#ecebea">
+    <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_col-bordered slds-table_edit slds-table_resizable-cols">
+        <thead class="row">
+            <tr>
+               <!-- <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Supply Id</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Mainetti Company</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Retailer</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Mainetti Model</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Color</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Print</div></th>-->
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Supply Quantity</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Allocated Quantity</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Balance Quantity</div></th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.weeklySupplyMap}" var="my" indexVar="index">
+                <tr>
+                   
+                     <td>
+                        <div align ="center" class="slds-truncate" >                                                    
+                            &nbsp;{!v.weeklySupplyMap.SupplyQty}                                      
+                        </div> 
+                    </td>
+                     <td>
+                        <div align ="center" class="slds-truncate">                                                    
+                            &nbsp;{!v.weeklySupplyMap.AllocatedQty}                                      
+                        </div> 
+                    </td>
+                     <td>
+                        <div align ="center" class="slds-truncate">                                                    
+                            &nbsp;{!v.weeklySupplyMap.BalanceQty}                                      
+                        </div> 
+                    </td>
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+    </table>
+                    </div>
+                    <!--###### MODAL BOX FOOTER Part Start ######-->
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="neutral" 
+                                          label="Cancel"
+                                          title="Cancel"
+                                          onclick="{! c.closeModel }"/>
+                        <lightning:button variant="brand" 
+                                          label="Submit"
+                                          title="Submit"
+                                          onclick="{! c.likenClose }"/>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>   
+        </aura:if>
+    </div>
+</aura:component>

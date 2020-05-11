@@ -1,0 +1,66 @@
+.THIS .box {
+    margin-left:0px;
+    padding:10px;
+}
+.THIS.searchBox {
+    margin-left:450px;
+}
+.THIS .boxx {
+    /*margin-right:150px; */
+     padding:20px;
+}
+.THIS .row th{
+    background-color:#16325c;
+    color: white;
+}
+.THIS .dietCSSClass {
+	background-color:green;
+}
+.THIS .missingField{
+    background-color:#d4af0b;
+    color: white;
+}
+.THIS .masterDataNotFound{
+    background-color:#708eb5;
+    color: white;
+}
+.THIS .modelNotFound{
+    background-color:red;
+    color: white;
+}	
+.THIS .legend{
+    margin-right:150px;
+    font-family: Monospace, Courier New, Lucida Console;
+    font-weight: bold;
+}
+.THIS .cols thead th span {
+background-color: #16325c;
+color: white}
+
+
+.THIS .Remarks{
+    word-break: break-all;
+}
+.THIS.slds-page-header{
+    background-color:#16325c;
+    color: white;
+    border-radius: 20px;   
+}
+.THIS.slds-spinner_container {
+  z-index: 10000;
+  position: fixed;   
+}
+.THIS.modal-body{
+    /*height:100px;
+    max-height: calc(100% - 120px); */
+    overflow: scroll;
+}
+.THIS .errorMissing
+{
+    background-color:white;
+    color : red;
+}
+.THIS.ex2
+{
+    padding : 0px 0px;
+}

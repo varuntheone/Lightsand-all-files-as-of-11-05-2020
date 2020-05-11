@@ -1,0 +1,243 @@
+<apex:page title="Price Book" standardController="Contact_Related_Retailer__c" extensions="retailerPriceBookController" lightningStyleSheets="true" >
+    <apex:remoteObjects >        
+        <apex:remoteObjectModel name="Design_Drawing_File_Viewing_Detail__c" />
+    </apex:remoteObjects>
+    <!-- Optional theme -->
+    <apex:includeScript value="{!$Resource.AzureCommon}"/>
+    <apex:includeScript value="{!$Resource.AzureBlob}"/>
+    <style>        
+        .container {
+        position: relative;
+        text-align: center;
+        color: white;
+        }
+        .centered {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        }
+             
+    </style>    
+   
+        <div align="center">
+            <table width="95%" border="0">
+                <tr>
+                    <td width="10%" align="center">
+                        <div style="display:block;" align="center"> 
+                        </div>   
+                    </td>
+                    <td align="center" width="80%">
+                        <div class="container" Id="bannerContainer">
+                            <div class="centered" Id="folderLabel"><b>Price Book</b></div>
+                        </div>
+                    </td>
+                    <td width="10%">&nbsp;</td>
+                </tr>                
+                
+            </table>
+        </div>           
+    
+    <script type="text/javascript">    
+    document.title = "Price Book";    
+    var blobService;
+    var speedSummary;
+    var finishedOrError = false;
+    var containerName;
+    var gridFolder = '';    
+    var currentFolderPath=null;    
+    var uploadBy;
+    var isListProcessing;
+    /************************************/
+    //This function will initialise the Azure Service.
+    /************************************/    
+    function initBlobService(storage) {
+        
+        if (AzureStorage) {
+            blobUri = 'https://' + storage.storageName + '.blob.core.windows.net';
+            blobService = AzureStorage.createBlobService(storage.storageName, storage.storageKey);
+            containerName = storage.containerName;
+        } else {
+            console.log('Azure service not found');
+        }
+    }
+    var blobs = [];
+    function aggregateBlobs(err, result, cb) {
+        if (err) {
+            cb(er);
+        } else {
+            blobs = blobs.concat(result.entries);
+            if (result.continuationToken !== null) {
+                blobService.listBlobsSegmented(
+                    containerName,
+                    result.continuationToken,
+                    aggregateBlobs);
+            } else {
+                cb(null, blobs);
+            }
+        }
+    }
+    /************************************/
+    //This function lists both the directories
+    // and the files in those directories.
+    // This is called when the user clicks on the folders.
+    /************************************/
+    function listblobs(directoryName) {        
+        currentFolderPath = directoryName;        
+        if (blobService) {                    
+            //listDirectories(directoryName);        
+            lenOfDirName = directoryName.split( '/' );            
+            //not load if it is home page
+            if(lenOfDirName.length > 2){
+                isListProcessing = false;                
+                blobService.listBlobsSegmentedWithPrefix(containerName, directoryName, null, {
+                    delimiter: '',
+                    include: 'metadata',
+                    maxResults: 100
+                }, function(error, results) {
+                    aggregateBlobs(error, results, function(error, blobs) {
+                        if (error) {
+                            document.getElementById("response").innerHTML = JSON.stringify(error);                        
+                        } else {
+                            document.getElementById("fileSection").style.display = 'block';
+                            document.getElementById("files").innerHTML ='';
+                            var list = document.getElementById("files");
+                            var colCount = 0;           
+                            if(results.entries.length > 0){      
+                                
+                                var tblbdy = document.createElement('tbody');                                                     
+                                list.innerHTML ='';
+                                list.innerHTML ="<tr><th style='text-align:center;background-color:powderblue'><b>S#</b></th><th style='text-align:center;background-color:powderblue'><b>File Name</b></th><th style='text-align:center;background-color:powderblue'><b>Owner</b></th><th style='text-align:center;background-color:powderblue'><b>Created Date</b></th></tr>";                                                              
+                                for (var i = 0, container; container = results.entries[i]; i++) {
+                                    var blobFileName = container.name;                                                 
+                                    var  tr = document.createElement('tr');
+                                    var tdSNo = document.createElement('td');
+                                    var tdFileName = document.createElement('td'); 
+                                    var tdUpOn = document.createElement('td');
+                                    var tdUpBy = document.createElement('td');                                    
+                                    tdSNo.innerHTML = parseInt(i)+1 ;
+                                    tdSNo.setAttribute('align', 'center');  
+                                    tdSNo.setAttribute('width', '10%');                                     
+                                    var link = document.createElement('a');                          
+                                    var fileName = container.name.split( '/' ); 
+                                    var fileNameOnly = fileName[ fileName.length - 1 ] ;
+                                    link.setAttribute('href', 'javascript:void(0);'); 
+                                    link.setAttribute('onclick', 'javascript:viewFile(\''+container.name+'\'); return false;'); 
+                                    link.innerHTML = fileNameOnly ;                                 
+                                    tdFileName.appendChild(link);
+                                    tdFileName.setAttribute('align', 'center'); 
+                                    tdFileName.setAttribute('width', '40%'); 
+                                    tdUpOn.innerHTML = container.metadata.uploadedby;                                
+                                    tdUpOn.setAttribute('align', 'center');
+                                    tdUpOn.setAttribute('width', '20%'); 
+                                    tdUpBy.innerHTML = container.metadata.uploadedon;
+                                    tdUpBy.setAttribute('align', 'center');
+                                    tdUpBy.setAttribute('width', '30%'); 
+                                    
+                                    tr.appendChild(tdSNo);
+                                    tr.appendChild(tdFileName);
+                                    tr.appendChild(tdUpOn);
+                                    tr.appendChild(tdUpBy);
+                                    tblbdy.appendChild(tr);       
+                                    
+                                }
+                                list.appendChild(tblbdy);                               
+                            }else{
+                                document.getElementById("response").innerHTML = 'Please Try Again.UnExpected Error....';                                
+                            }                     
+                        }
+                    });
+                });
+                
+            }
+        } else {
+            console.log("Blob Service not Found !");
+        }        
+        return false;
+    }    
+    function viewFile(blobFileName){
+        
+        var accessPolicy = generateAccessPolicy();                                     
+        var fileName = blobFileName.split( '/' );   
+        var fileNameOnly = fileName[ fileName.length - 1 ] ;
+        var token = blobService.generateSharedAccessSignature(containerName,blobFileName, accessPolicy);
+        var downloadLink = blobService.getUrl(containerName, blobFileName, token);
+        window.open(
+            downloadLink,
+            '_blank'
+        );
+        insertFileViewDetails(blobFileName,fileNameOnly);
+    }
+    function insertFileViewDetails(filePath,fileName) {        
+        
+        var userName = '{!$User.FirstName}, {!$User.LastName}';
+        var fileModule = 'PriceBook';
+        var ddfvd = new SObjectModel.Design_Drawing_File_Viewing_Detail__c();
+        ddfvd.create({User_Name__c:userName,File_Module__c:fileModule, Design_Drawing_Image_Link__c: filePath, Drawing_File_Name__c: fileName},function(error, records) {
+            if (error) {
+                console.log(error.message);
+            } 
+        });
+    }   
+    /************************************/
+    // This function generates the access policy 
+    // which is used for the file access token 
+    // generation.
+    /************************************/
+    function generateAccessPolicy(){
+        var startDate = new Date();
+        var expiryDate = new Date(startDate);
+        expiryDate.setMinutes(startDate.getMinutes() + 100);
+        startDate.setMinutes(startDate.getMinutes() - 100);
+        return sharedAccessPolicy = {
+            AccessPolicy: {
+                Permissions: AzureStorage.BlobUtilities.SharedAccessPermissions.READ,
+                Start: startDate,
+                Expiry: expiryDate
+            }
+        };
+        
+    }
+    /************************************/
+    //This function get the details of the container
+    // this is called when the page is loaded.
+    /************************************/
+    function getContainerInfo() {
+        
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.retailerPriceBookController.storageDetails}',
+            function(result, event) {
+                if (event.status) {
+                    initBlobService(result);
+                    var rawRetailerName = '{!folderPath}';
+                    var retailerName = rawRetailerName.replace(/'/g,'');
+                    var folderPath = 'Marketing/Hangers & Accessories/Portal Download' +'/'+retailerName;
+                    //listDirectories(folderPath);
+                    listblobs(folderPath);
+                } else if (event.type === 'exception') {                
+                    document.getElementById("response").innerHTML = event.message;
+                } else {
+                    document.getElementById("response").innerHTML = event.message;
+                }
+            }, {
+                escape: true
+            }
+        );
+    }
+    </script>
+    <apex:form >
+        <div id="response"></div>
+        <div width="50%" align="center">           
+                <div  id="fileFolder">     
+                    <div id="response"> </div>             
+                    <div id="fileSection" style="display:none">
+                        <table width="75%" border="1" Id="files" cellspacing="1" cellpadding="1" style="border-collapse: collapse"><caption>Request File Data</caption></table>                            
+                    </div>    
+                </div>            
+        </div>
+        <script type="text/javascript">    
+        // Any js placed here will be fired when output panel is rerendered     
+        getContainerInfo();        
+        </script>                
+    </apex:form>
+</apex:page>

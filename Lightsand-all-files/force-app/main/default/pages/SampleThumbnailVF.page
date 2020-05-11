@@ -1,0 +1,5 @@
+<apex:page standardController="Opportunity_Item_Master__c">
+    
+    <c:FileImageThumbnailVFComponent oppItemId="{!Opportunity_Item_Master__c.Id}" type="Sample"/>
+
+</apex:page>

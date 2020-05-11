@@ -1,0 +1,645 @@
+<apex:page standardController="Online_Detail__c" recordSetVar="onlineDetails" extensions="NewProductSelectionExtension">
+    <apex:stylesheet value="{!URLFOR($Resource.JqueryUiCssZip, 'JqueryUiCssZip/jqueryui.css')}"/>
+    <script src="{!URLFOR($Resource.JQueryJS)}"></script>
+    <script src="{!URLFOR($Resource.JQueryUI)}"></script>
+    <script>
+        var j$ = jQuery.noConflict();
+            
+        // disable enter    
+        function stopRKey(evt) {
+           var evt = (evt) ? evt : ((event) ? event : null);
+           var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+           if ((evt.keyCode == 13) && (node.type=="text")) {return false;}
+        }
+        document.onkeypress = stopRKey; 
+
+        // getting instance url.
+        console.log('Instnace URL:'+'{!LEFT($CurrentPage.URL,FIND('/',$CurrentPage.URL,9))}');      
+        
+        // disable enter
+    var newWin = null;
+    var clickedId = '';
+    var clickedHiddenId = '';
+    function openLookupPopup(url,htmlId) {
+            clickedId=htmlId;
+        //    clickedHiddenId=lookupHiddenId;
+        //alert('clickedId--->'+clickedId);
+        //alert('clickedHiddenId--->'+clickedHiddenId);
+        //alert('is Disabled:'+document.getElementById(clickedId).disabled);
+            //var url = "/CustomerPortal/ListOfRetailerCodeForUser";
+            //var url = "/apex/ProductImageViewer";
+                newWin = window.open(url, 'Popup', 'height=500,width=1080,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no');
+             if (window.focus) {
+                    newWin.focus();
+            }
+            return false;
+        }
+    function closeLookupPopup() {
+
+            if (null != newWin) {
+                newWin.close();
+            }
+            // populateNumber();     
+        }
+    
+    function retailerLookupPick(attchmentId,recordId){
+        //alert('called from parent recordId--->'+recordId);
+        //alert('called from parent recordName--->'+recordName);
+        //alert('clickedId--->'+clickedId);
+        //alert('clickedHiddenId--->'+clickedHiddenId);
+
+        //alert('recordId:'+recordId);
+        //styleClass
+        var inputElem = document.getElementsByTagName("img");
+        for(var i=0; i<inputElem.length; i++){
+             if (inputElem[i].className == recordId) {
+                //alert(inputElem[i].src);
+                inputElem[i].src='/servlet/servlet.FileDownload?file='+attchmentId;
+                //alert(inputElem[i].src);
+             }  
+        }
+        
+        var inputElemHid = document.getElementsByTagName("input");
+        for(var i=0; i<inputElemHid.length; i++){
+             if (inputElemHid[i].className == ('HIDDEN_'+recordId)) {
+                //alert(inputElem[i].src);
+                inputElemHid[i].value=attchmentId;
+                //alert(inputElem[i].src);
+             }
+             
+            
+        }
+        
+        //document.getElementById(clickedId).value='/servlet/servlet.FileDownload?file='+attchmentId;
+        //document.getElementById(clickedHiddenId).value=recordId;
+        
+        //Added new Code on 24-Aug 2015 Start
+        //document.getElementById(clickedId).select();
+        //j$('input[id="'+clickedId+'"]').select();
+        //Added new Code on 24-Aug 2015 End
+}
+
+    function checkUncheckCheckBox(inputEle){
+        var taxPercentageValue = inputEle.value;
+        if(taxPercentageValue>0){
+            j$("input[type='checkbox']").prop("checked", true);
+        }else{
+            j$("input[type='checkbox']").prop("checked", false);
+        }
+    }
+    
+    // model to show error  
+    var j$modalDialog = j$('<div></div>')
+       .dialog({
+            autoOpen: false,
+            title: 'Order Qty(pcs) Validation Error',
+            resizable: false,
+            width: 600,
+            autoResize: true,
+            modal: true,
+            draggable: false
+    });
+    
+    function validateOrderQty(isFullBoxEnabled,orderQtyElement,boxSize){
+        if(orderQtyElement!=null && orderQtyElement!='undefined' && typeof(orderQtyElement)!='undefined' && orderQtyElement.value!=0){
+            //orderQtyElement=orderQtyElement.replace(/\,/g,'');
+            //var orderQtyValue = parseInt(orderQtyElement.value);
+            var orderQtyElementValue = orderQtyElement.value.replace(/\,/g,'');
+            var orderQtyValue = parseInt(orderQtyElementValue);
+            //alert(typeof(orderQtyValue));
+            if(typeof orderQtyValue === 'number'){  
+                // it is a number
+            }else{
+                //alert('Entered Order Qty(pcs) is not a number.');
+                //orderQtyElement.focus();
+                j$modalDialog.html('<br/><br/>Entered Order Qty(pcs) is not a number.');
+                j$modalDialog.dialog('open');
+                return false;
+            }
+            
+            //boxSize = 20; 
+            if(isFullBoxEnabled && boxSize>0){
+                var fullBoxNumber = orderQtyValue/boxSize;
+                
+                if(typeof fullBoxNumber === 'number'){  // it is a number
+                    if(fullBoxNumber % 1 === 0){
+                        // do not do anything
+                    } else{
+                        //alert('Order Qty(pcs) should be in multiple of Box Size Qty(pcs)');
+                        //orderQtyElement.focus();
+                        j$modalDialog.html('<br/><br/>Order Qty(pcs) should be in multiple of Box Size Qty(pcs).');
+                        j$modalDialog.dialog('open');
+                    }
+                } else{
+                    // not a number
+                }
+            }
+        
+        }
+    }
+        
+
+        j$( document ).ready(function() {
+            var retCodeEle = j$('[id*="retailer_code_hidden"]').get(0);
+            if(retCodeEle!=null && retCodeEle!='undefined' && typeof(retCodeEle)!='undefined'){
+                retCodeEle.style.visibility = "hidden";
+                retCodeEle.disabled = "disabled";
+            }
+            
+            var orderToCompany = j$('[id*="order_to_company"]').get(0);
+            if(orderToCompany!=null && orderToCompany!='undefined' && typeof(orderToCompany)!='undefined'){
+                orderToCompany.style.visibility = "hidden";
+                orderToCompany.disabled = "disabled";
+            }
+        }
+
+    </script>
+    
+    
+     <style type="text/css">
+        pre {
+           font-size: 14px;
+        }
+    </style>
+    <apex:form id="pageMainForm">
+         <apex:pageMessages ></apex:pageMessages>
+        <apex:outputPanel id="massCreateAndUpdate">
+            <apex:panelGrid columns="9" cellspacing="10px" style="width:100%">
+                    <apex:pageblock mode="edit" title="Selected Products">
+                        <apex:pageblockbuttons location="top">
+                            <!--<apex:commandbutton value="Submit" action="{!Submit}"/>-->
+                            <apex:commandbutton value="Save" action="{!Save}"/>
+                            <apex:commandbutton value="Close/Cancel" action="{!Cancel}"/>
+                            
+                            <!--<apex:commandbutton value="Add Charges & Tax" action="{!Add}"/>-->
+                            <apex:commandbutton value="Add Charges & Tax" action="{!AddOtherCharges}"/>
+                            
+                            <!--<apex:commandbutton value="Add Remarks & Company Address" action="{!Remark}"/>-->
+                            <!--<apex:commandbutton value="Add Remarks & Company Address" action="{!AddRemarks}"/>-->
+                            
+                            <!--<apex:commandbutton value="Add Remarks & Company Address" action="{!Remark}"/>-->
+                            <!--<apex:commandbutton value="Add Sales Person Information" action="{!AddSalesPersonInfo}"/>-->
+                            <apex:commandbutton value="Add Company & Account Manager" action="{!AddSalesPersonInfo}"/>
+                            
+                            <apex:commandbutton value="Add Product" action="{!AddProduct}"/>
+                            <apex:commandbutton value="Check Ship Date" action="{!checkShipDate}"/>
+                            
+                                <apex:commandbutton value="Check Bill To" onclick="javascript:window.open('{!LEFT($CurrentPage.URL,FIND('/',$CurrentPage.URL,9))}{!billToAddressId}','newBillToPopup','height=500,width=1080,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no'); return false;"/>
+                            
+                            <apex:commandlink action="{!PreviewQuotePdf}" target="_blank" style="text-decoration:none;border:0">
+                                <apex:commandbutton value="Preview Quote Pdf"/>
+                            </apex:commandlink>
+                            
+                            
+                            
+                        </apex:pageblockbuttons>
+                        <apex:pageBlockTable id="selProdList" var="selProduct" value="{!onlineDetailsToInsertOrUpdateMap}">
+                            <apex:column headerValue="" style="">
+                               <!--<a href="#" onclick='remove("{! selProduct.Id}","{!selProduct.Name}",j$("a:contains({! selProduct.Name})").parent());' style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">Remove</a>-->
+                                <apex:commandLink action="{!removeItem}" value="Remove">
+                                    <!--<apex:param assignTo="{!removeId}" value="{! onlineDetailsToInsertOrUpdateMap[selProduct].Model__c}" name="rowToBeDeleted"/>-->
+                                    <apex:param assignTo="{!removeId}" value="{! onlineDetailsToInsertOrUpdateMap[selProduct].Id}" name="rowToBeDeleted"/>
+                                </apex:commandLink>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Mainetti Model Code" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Name}</apex:column>
+                            <apex:column headerValue="Visual"  rendered="{!isProdImageToBeDisplayed}">
+                                <apex:commandLink reRender="selProdList" >
+                                <a href="#" onclick="javascript:openLookupPopup('/apex/ProductImageViewer?id={!onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__C}','{!onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__C}')">
+                                    <!--<apex:image styleClass="{!onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__C}" value="/servlet/servlet.FileDownload?file={!productIdAttachMap[onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__C][0].id}" height="40" width="50"/>-->
+                                    <apex:image styleClass="{!onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__C}" value="/servlet/servlet.FileDownload?file={!dummyOnlineDetailMap[selProduct].Product_Image_ID__c}" height="40" width="50"/>
+                                    <!--<apex:inputHidden value="{!dummyOnlineDetailMap[selProduct].Product_Image_ID__c}" name="id"/>-->
+                                    <!--<apex:inputField value="{!dummyOnlineDetailMap[selProduct].Product_Image_ID__c}" styleClass="HIDDEN_{!onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__C}" style="visibility: hidden"/>-->
+                                </a>
+                                </apex:commandLink>     
+                            </apex:column>
+                            <apex:column headerValue="Color" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Color__c}</apex:column>
+                            <!--- Tony edit description 2018-5-23 -->
+                            <apex:column headerValue="Product Description" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Description__c}</apex:column>
+                            <!--<apex:column headerValue="Product Description" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__r.Product_Description__c}</apex:column>-->
+                            <!--<apex:column headerValue="Product Description 2" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Description__c}</apex:column>-->
+                            <apex:column headerValue="Sizer Print" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Sizer_Print__c}</apex:column>
+                            <apex:column headerValue="Product Type" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__r.Product_Type__c}</apex:column>
+                            <apex:column headerValue="Product Family" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__r.Product_Family__c}</apex:column>
+                            <!--<apex:column headerValue="Local SKU #" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Local_SKU__c}</apex:column> -->
+                            <apex:column headerValue="Local SKU #" style="">
+                                <apex:inputField id="localSkuEditId" value="{! dummyOnlineDetailMap[selProduct].Local_SKU1__c}"/>
+                            </apex:column>
+                            
+                            
+                            
+                            
+                            <!--<apex:column headerValue="USD Price/100 pcs" style="">{! selProduct.Price_100pcs__c}</apex:column>
+                            <apex:column headerValue="Freight Terms" style="">{! selProduct.Freight_Terms__c}</apex:column>-->
+                            <!--<apex:column headerValue="Retailer Code" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Retailer_Code__r.Name}</apex:column>-->
+                            <apex:column headerValue="Country" style="">{! onlineDetailsToInsertOrUpdateMap[selProduct].Country__c}</apex:column>
+                            <apex:column headerValue="Box Qty(pcs)" style="" rendered="{!isFullBoxEnabled}"  >{!IF(onlineDetailsToInsertOrUpdateMap[selProduct].BOX_QTY__c !=null, onlineDetailsToInsertOrUpdateMap[selProduct].BOX_QTY__c, 0)}
+                            </apex:column>
+                            
+                            <apex:column headerValue="" width="10%">
+                                <apex:facet name="header">Order Qty (pcs)</apex:facet>    
+                                <apex:inputfield id="qtyId" style="background-color: yellow;width: 60px;" value="{!dummyOnlineDetailMap[selProduct].Qty__c}"  onblur="javascript:validateOrderQty('{!isFullBoxEnabled}',this,'{!IF(onlineDetailsToInsertOrUpdateMap[selProduct].BOX_QTY__c !=null, onlineDetailsToInsertOrUpdateMap[selProduct].BOX_QTY__c, 0)}')"/>
+                            </apex:column>
+                            <apex:column headerValue="Global Price/100 pcs" style="width: 40px;"><!--{!currencyCode} {!dummyOnlineDetailMap[selProduct].USD_Price_100__c}-->
+                                <!--<apex:facet name="header">Global Price/100 pcs</apex:facet>  -->
+                                <!--<apex:inputfield value="{!dummyOnlineDetailMap[selProduct].USD_Price_100__c}" style="width: 60px;"/>-->
+                                <!--<apex:outputText value="{!currencyCode} {!dummyOnlineDetailMap[selProduct].USD_Price_100__c}" style="width: 60px;"/>-->
+                                <!--<apex:outputText value="{!currencyCode} {!dummyOnlineDetailMap[selProduct].USD_Price_100__c}" style="background-color:#DCDCDC;width: 60px;word-wrap:break-word;"/>-->
+                                <apex:outputText value="{!currencyCode} {!dummyOnlineDetailMap[selProduct].USD_Price_100__c}" style="width: 60px;word-wrap:break-word;"/>
+                                </apex:column>
+                            <!--</apex:column>-->
+                            <apex:column headerValue="Requested Currency"><!--{!requestedCurrency}-->
+                                <!--<apex:facet name="header">Requested Currency</apex:facet>  -->
+                                <!--<apex:inputfield value="{!dummyOnlineDetailMap[selProduct].USD_Price_100__c}" style="width: 60px;"/>-->
+                                <!--<apex:outputText value="{!requestedCurrency}" style="width: 10px;"/>-->
+                                <!--<apex:outputText value="{!requestedCurrency}" style="background-color:#DCDCDC;width: 20px;word-wrap:break-word;"/>-->
+                                <apex:outputText value="{!requestedCurrency}" style="width: 20px;word-wrap:break-word;"/>
+                                </apex:column>
+                            <!--</apex:column>-->
+                            <apex:column headerValue="" style="">
+                                <apex:facet name="header">Exchange Rate</apex:facet>
+                                <!--<apex:inputfield value="{!dummyOnlineDetailMap[selProduct].USD_TO_PREFER_CURRENCY__c}" style="background-color:#DCDCDC;width: 70px;"/>-->
+                                <apex:inputfield value="{!dummyOnlineDetailMap[selProduct].USD_TO_PREFER_CURRENCY__c}" style="background-color:#FFA500;width: 70px;"/>
+                            </apex:column>
+                            <apex:column headerValue="" style="">
+                                <apex:facet name="header">Price/100 pcs in quoted Currency </apex:facet>
+                                <!--<apex:inputfield id="quotedCurPriceId" value="{!dummyOnlineDetailMap[selProduct].Quoted_Currency_Price_100__c}" style="background-color:#FADFC0;width: 100px;"/>-->
+                                <apex:inputfield id="quotedCurPriceId" value="{!dummyOnlineDetailMap[selProduct].Quoted_Currency_Price_100__c}" style="background-color:#FFA500;width: 100px;"/>
+                            </apex:column>
+                            <apex:column headerValue="Amount" style="">
+                                <!--<apex:facet name="header">Amount</apex:facet>-->
+                                <!--<apex:outputText id="salesValueInQuotedCurId" value="{!dummyOnlineDetailMap[selProduct].Sales_Value_In_Quoted_Currency__c}"     style="background-color:#FAC8F1;width: 60px;"/>-->
+                                <!--<input type="text" name="SalesValue" value="{!dummyOnlineDetailMap[selProduct].Sales_Value_In_Quoted_Currency__c}" style="background-color:#FADFC0;width: 60px;"/>-->
+                                <input type="text" name="SalesValue" value="{!dummyOnlineDetailMap[selProduct].Sales_Value_In_Quoted_Currency__c}" style="width: 60px;" readonly="true" />
+                            </apex:column>
+                            <apex:column headerValue="" style="">
+                            <!--- added by tony 03-Jan-2019 -->
+                            <apex:facet name="header">{!IF(CONTAINS(onlineEnq.Retailer_Code_Hidden__c,"GEORGE CLOTHING/ASDA"), 'George PO Number','Model Remark')}</apex:facet>
+                                <!--<apex:facet name="header">Model Remark</apex:facet> -->  
+                                <apex:inputfield value="{!dummyOnlineDetailMap[selProduct].Model_Remark__c}"/>
+                            </apex:column>
+                            <apex:column headerValue="" style="">
+                                <apex:facet name="header">Shipped Qty</apex:facet>  
+                                <apex:inputfield value="{!dummyOnlineDetailMap[selProduct].Shipped_Qty__c}" style="width: 40px;"/>
+                            </apex:column>
+                             <apex:column headerValue="" style="">
+                                <apex:facet name="header">Shipped Date</apex:facet>  
+                                <apex:inputfield value="{!dummyOnlineDetailMap[selProduct].Shipped_Date__c}" style="width: 60px;"/>
+                            </apex:column>
+                            <apex:column headerValue="" style="">
+                                <apex:facet name="header">Reuse/Virgin</apex:facet>  
+                                <apex:inputfield value="{!dummyOnlineDetailMap[selProduct].Reuse_Virgin__c}"/>
+                                <apex:inputField value="{!dummyOnlineDetailMap[selProduct].Product_Image_ID__c}" styleClass="HIDDEN_{!onlineDetailsToInsertOrUpdateMap[selProduct].Product_Unique_ID__C}" style="visibility: hidden"/>
+                            </apex:column>                            
+                        </apex:pageBlockTable>
+                    </apex:pageBlock> 
+                </apex:panelGrid>           
+        </apex:outputPanel>
+
+        
+                        <apex:outputPanel id="othersTablePanelFields" rendered="{!isAddOtherCharges==true}">
+                            <apex:pageBlock mode="edit">
+                                <apex:pageBlockSection title="" columns="1">
+                                    <apex:pageBlockSectionItem >
+                                    <apex:commandButton value="Add Another Charges" action="{!addRow}" rerender="enqCharesListTableId">
+                                        <apex:param assignTo="{!taxPercentage}" value="{!overallTax}" name="taxToBeSetForCharges"/>
+                                    </apex:commandButton>   
+                                    <apex:outputPanel >
+                                     TAX % :&nbsp;<apex:inputText value="{!overallTax}" onblur="javascript:checkUncheckCheckBox(this);"/>
+                                    </apex:outputPanel>
+                                    </apex:pageBlockSectionItem>
+                                <apex:pageBlockTable value="{!onlineEnqChargesIdMap}" var="eachEnquiryCharge" id="enqCharesListTableId">
+                                    
+                                    <apex:column headerValue="" style="">
+                                       <!--<a href="#" onclick='remove("{! selProduct.Id}","{!selProduct.Name}",j$("a:contains({! selProduct.Name})").parent());' style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">Remove</a>-->
+                                        <apex:commandLink action="{!deleteEnquiryChargesById}" value="Remove" rerender="enqCharesListTableId">
+                                            <!--<apex:param assignTo="{!removeId}" value="{! onlineDetailsToInsertOrUpdateMap[selProduct].Model__c}" name="rowToBeDeleted"/>-->
+                                            <apex:param assignTo="{!enquiryChargesRowId}" value="{! onlineEnqChargesIdMap[eachEnquiryCharge].Id}" name="enqChargesRowToBeDeleted"/>
+                                        </apex:commandLink>
+                                    </apex:column>
+                                    <apex:column headerValue="Misc. Charges" width="10%">
+                                        <apex:inputfield value="{!onlineEnqChargesIdMap[eachEnquiryCharge].Misc_Charges__c}" required="true"/>
+                                    </apex:column>
+                                    <apex:column headerValue="Description" width="18%">
+                                        <apex:inputTextarea value="{!onlineEnqChargesIdMap[eachEnquiryCharge].Description__c}" style="width:95%;"/>
+                                    </apex:column>
+                                    <apex:column headerValue="Requested Currency" width="10%">
+                                        <apex:outputText value="{!requestedCurrency}" />
+                                    </apex:column>
+                                    <apex:column headerValue="Amount" width="10%">
+                                        <apex:inputfield value="{!onlineEnqChargesIdMap[eachEnquiryCharge].Amount__c}" required="true"/>
+                                    </apex:column>
+                                    <apex:column headerValue="Include Tax%" width="60%">
+                                        <apex:inputfield value="{!onlineEnqChargesIdMap[eachEnquiryCharge].Include_Tax__c}" />
+                                    </apex:column>
+                                </apex:pageBlockTable>
+                                </apex:pageBlockSection>
+                            </apex:pageBlock>
+                    
+                        </apex:outputPanel>
+                           
+                        <apex:outputPanel rendered="{!isAddSalesPersonInfo==true}">
+                            <apex:outputPanel id="addRemarkPanelFieldsId">
+                              <table border="0" style="width:100%;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Order To Company:" style="font-weight: bold;">Order To Company:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:actionRegion id="theActionRegionForTermsNConditions">
+                                                <apex:inputField value="{!onlineEnq.Partner_Id__c}" required="true" style="width:30%;">
+                                                    <apex:actionSupport event="onchange" action="{!populatePartnerTermsNConditions}" rerender="addRemarkPanelFieldsId"/> 
+                                                </apex:inputfield>
+                                            </apex:actionRegion>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Payment Term:" style="font-weight: bold;">Payment Term:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                        <apex:inputField value="{!onlineEnq.Payment_Term__c}" required="true" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Shipment Term:" style="font-weight: bold;">Shipment Term:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Export_Term__c}" required="true" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Order To Company:" style="font-weight: bold;">Order To Company:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField id="order_to_company" value="{!onlineEnq.Order_Country__c}" required="true" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Retailer Code:" style="font-weight: bold;">Retailer Code:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField id="retailer_code_hidden" value="{!onlineEnq.Retailer_Code_Hidden__c}" required="true" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="REMARKS:" style="font-weight: bold;">REMARKS:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputfield value="{!onlineEnq.Sales_Rep_Remark__c}" style="width:30%;height:70px;"/>
+                                            <!--<apex:outputlabel escape="false" value="{!remarksByRep}"/>-->
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+                        </apex:outputPanel>
+                            
+                            <apex:outputPanel id="addSalesPersonInfoPanelFieldsId">
+                              <table border="0" style="width:100%;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager:" style="font-weight: bold;">Account Manager:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                             <apex:actionRegion id="theActionRegionForMainContactId">
+                                                <apex:inputfield value="{!onlineEnq.Main_Contact_Id__c}" required="false" id="mainContactId" style="width:30%;">
+                                                    <apex:actionSupport event="onchange" action="{!populateMainContactDetails}" rerender="addSalesPersonInfoPanelFieldsId"/> 
+                                                </apex:inputfield>
+                                            </apex:actionRegion>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager:" style="font-weight: bold;">Account Manager Name:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Account_Manager__c}" required="false" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager Contact Number:" style="font-weight: bold;">Account Manager Contact Number:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Account_Manager_Contact_Number__c}" required="false" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager Email Address:" style="font-weight: bold;">Account Manager Email Address:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Account_Manager_Email_Address__c}" required="false" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager Sales Person Code:" style="font-weight: bold;">Account Manager Sales Person Code:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Account_Manager_Local_Code__c}" required="false" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+                            </apex:outputPanel>
+                            
+                                            <apex:outputPanel id="addCustSeriveInfoPanelFieldsId">
+                              <table border="0" style="width:100%;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager:" style="font-weight: bold;">Customer Service:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                             <apex:actionRegion id="theActionRegionForMainContactCSId">
+                                                <apex:inputfield value="{!onlineEnq.Main_Contact_Id__c}" required="false" id="mainContactCSId" style="width:30%;">
+                                                    <apex:actionSupport event="onchange" action="{!populateMainContactCSDetails}" rerender="addCustSeriveInfoPanelFieldsId"/> 
+                                                </apex:inputfield>
+                                            </apex:actionRegion>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager:" style="font-weight: bold;">Customer Service Name:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Customer_Service_Name__c}" required="false" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager Contact Number:" style="font-weight: bold;">Customer Service Contact Number:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Customer_Service_Contact_Number__c}" required="false" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Account Manager Email Address:" style="font-weight: bold;">Customer Service Email Address:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Customer_Service_Email_Address__c}" required="false" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:30%;font-weight: bold;text-align:right;">
+                                            <label for="Customer Service Sales Person Code:" style="font-weight: bold;">Customer Service Sales Person Code:</label>
+                                        </td>
+                                        <td style="width:70%;font-weight: normal;text-align:left;vertical-align: text-top;">
+                                            <apex:inputField value="{!onlineEnq.Customer_Service_Local_Code__c}" required="false" style="width:30%;"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+                            </apex:outputPanel>
+                            
+                        </apex:outputPanel>
+                        
+        <apex:outputPanel id="selectTablePanel" rendered="{!isAddProduct==true}">
+           <apex:pageBlock >
+                <apex:pageBlockSection >
+                    <apex:outputPanel id="searchfields">
+                         <table border="0" style="width:1000px;background: #f2f2f2;background-color: #f8f8f8;border:0;border-color:#000000;">
+                            <tbody>
+                                <tr>
+                                   <td>
+                                      <label for="{!modelName}" style="font-weight: bold;">Model</label>
+                                   </td>
+                                   <td>
+                                      <apex:inputText id="A" value="{!modelName}"/>
+                                   </td>
+                                   <td>
+                                      <label for="{!productType}" style="font-weight: bold;">Product Type</label>
+                                   </td>
+                                   <!--<td>
+                                      <apex:inputText id="B" value="{!productType}"/>
+                                      </td>-->
+                                   <td>
+                                      <apex:selectList id="ProductTypes" value="{!productType}"
+                                         size="1" required="true">
+                                         <apex:selectOptions value="{!productTypes}"/>
+                                      </apex:selectList>
+                                   </td>
+                                   <td>
+                                      <label for="{!productCategory}" style="font-weight: bold;">Product Category</label>
+                                   </td>
+                                   <td>
+                                      <apex:selectList id="ProductCategories" value="{!productCategory}"
+                                         size="1" required="true">
+                                         <apex:selectOptions value="{!productCategories}"/>
+                                      </apex:selectList>
+                                   </td>
+                                </tr>
+                                <tr>
+                                   <td>
+                                      <label for="{!productFamily}" style="font-weight: bold;">Product Family</label>
+                                   </td>
+                                   <td>
+                                      <apex:selectList id="ProductFamilies" value="{!productFamily}"
+                                         size="1" required="true">
+                                         <apex:selectOptions value="{!productFamilies}"/>
+                                      </apex:selectList>
+                                   </td>
+                                   <td>
+                                      <label for="{!productColor}" style="font-weight: bold;">Color</label>
+                                   </td>
+                                   <!--<td>
+                                      <apex:inputText id="B" value="{!productType}"/>
+                                      </td>-->
+                                   <td>
+                                      <apex:selectList id="ProductColors" value="{!productColor}"
+                                         size="1" required="true">
+                                         <apex:selectOptions value="{!productColors}"/>
+                                      </apex:selectList>
+                                   </td>
+                                   <td>
+                                      <label for="{!productPrint}" style="font-weight: bold;">Sizer Print</label>
+                                   </td>
+                                   <td>
+                                      <apex:selectList id="ProductPrints" value="{!productPrint}"
+                                         size="1" required="true">
+                                         <apex:selectOptions value="{!productSizePrint}"/>
+                                      </apex:selectList>
+                                      <!--<apex:inputText id="B" value="{!productPrint}"/>-->
+                                   </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td align="centre">
+                                        <apex:commandButton value="Search" action="{! search}"/>
+                                        <apex:commandButton value="Clear" action="{! Clear}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            </table>
+                        </apex:outputPanel>
+                </apex:pageBlockSection> 
+            </apex:pageBlock>   
+
+            <apex:outputPanel id="myPanel" rendered="{!isAddProduct==true}">
+                <apex:panelGrid columns="9" cellspacing="10px" style="width:100%">
+                    <apex:pageBlock mode="edit" title="Select Products">
+                        <apex:pageblockbuttons location="top">  
+                            <apex:commandButton action="{!Previous}" title="Previous" value="<" disabled="{!disablePrevious}" reRender="myPanel,myButtons"/>        
+                            <apex:commandButton action="{!Next}" title="Next" value=">" disabled="{!disableNext}" reRender="myPanel,myButtons"/>
+                        </apex:pageblockbuttons>
+                        <apex:pageBlockTable id="prodList" var="product" value="{!priceBookProductsMap}" rows="15">
+                           <apex:column headerValue="" style="">
+                               <!--<a href="#" onclick='selectFun();' style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">Select</a>-->
+                               <apex:commandLink action="{!selectedItem}" value="Select">
+                                   <apex:param assignTo="{!selectedId}" name="rowToBeDeleted" value="{!priceBookProductsMap[product].Id}"/>
+                               </apex:commandLink>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Mainetti Model Code" style="">{! priceBookProductsMap[product].Name}</apex:column>
+                            <apex:column headerValue="Visual" rendered="{!isProdImageToBeDisplayed}">
+                                    <apex:commandLink >
+                                    <a href="#" onclick="return window.open('/apex/ProductImageViewer?id={!priceBookProductsMap[product].Product_Unique_ID__C}', 'Popup2', 'height=500,width=1080,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no');" >
+                                        <apex:image value="/servlet/servlet.FileDownload?file={!productIdAttachMap[priceBookProductsMap[product].Product_Unique_ID__C][0].id}" id="someImage" height="40" width="50"/>
+                                    </a>
+                                    </apex:commandLink>     
+                                </apex:column>
+                            <apex:column headerValue="Color" style="">{! priceBookProductsMap[product].Color__c}</apex:column>
+                            <!--- Tony edit description 2018-5-23--->
+                            <apex:column headerValue="Product Description" style="">{! priceBookProductsMap[product].Description__c}</apex:column>
+                            <!---<apex:column headerValue="Product Description" style="">{! priceBookProductsMap[product].Product_Unique_ID__r.Product_Description__c}</apex:column>-->
+                            <!--<apex:column headerValue="Product Description 2" style="">{! priceBookProductsMap[product].Description__c}</apex:column>-->
+                            <apex:column headerValue="Sizer Print" style="">{! priceBookProductsMap[product].Sizer_Print__c}</apex:column>
+                            <apex:column headerValue="Box Qty(pcs)" style="" rendered="{!isFullBoxEnabled}">
+                                {!IF(priceBookProductsMap[product].BOX_QTY__c !=null, priceBookProductsMap[product].BOX_QTY__c, 0)}
+                                    <!--{!priceBookProductsMap[product].BOX_QTY__c}-->
+                            </apex:column>
+                            
+                            <!--CR 05_JAN_2017 -->
+                            <apex:column headerValue="Price/100 pcs" style="" rendered="{!isShowPriceinOrder}">{! priceBookProductsMap[product].Price_100pcs__c}</apex:column>                          
+                            
+                            <apex:column headerValue="Product Type" style="">{! priceBookProductsMap[product].Product_Unique_ID__r.Product_Type__c}</apex:column>
+                            <apex:column headerValue="Product Family" style="">{! priceBookProductsMap[product].Product_Unique_ID__r.Product_Family__c}</apex:column>
+                            <!--<apex:column headerValue="USD Price/100 pcs" style="">{! product.Price_100pcs__c}</apex:column>
+                            <apex:column headerValue="Freight Terms" style="">{! product.Freight_Terms__c}</apex:column>-->
+                            <apex:column headerValue="Retailer Code" style="">{! priceBookProductsMap[product].Retailer_Code__r.Name}</apex:column>
+                            <apex:column headerValue="Country" style="">{! priceBookProductsMap[product].Country__c}</apex:column>                
+                        </apex:pageBlockTable>
+                    </apex:pageBlock> 
+                </apex:panelGrid>
+            </apex:outputPanel>    
+        </apex:outputPanel>    
+    </apex:form>    
+</apex:page>

@@ -1,0 +1,506 @@
+<apex:page controller="RTS_OrderStatusDisplayPageController" id="pageId">
+    <apex:includeScript value="{!URLFOR($Resource.EUR_CRM_jQuery_Lib, '/libs/jquery/js/jquery-1.9.1.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.EUR_CRM_jQuery_Lib, '/libs/jquery/js/jquery-ui-1.10.3.custom.min.js')}" />
+    <!--<apex:stylesheet value="{!URLFOR($Resource.actionStatus)}"/>-->
+    <apex:includescript value="//cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js" />
+    <apex:stylesheet value="//cdn.datatables.net/1.10.4/css/jquery.dataTables.css" />
+    <apex:stylesheet value="{!URLFOR($Resource.toggleStyle)}"/>
+    <!--<apex:includeScript value="{!URLFOR($Resource.picklistColorScript)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.toggleScript)}"/>-->
+    <style>
+        .overlayStatus
+        {
+            position:fixed;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+            text-align:center;
+            vertical-align: middle;
+            background-color: #dcdcdc;
+            opacity:0.6;
+            filter:alpha(opacity=60);
+            z-index: 20 ;
+        }
+       
+        .loadIMG
+        {
+            display:block;
+            margin-top:20%;
+            margin-left:auto;
+            margin-right:auto;
+            text-align:center;
+            vertical-align: middle;
+        }
+       
+        .loadLabel
+        {
+            font-weight:bold;
+            font-size:14px;
+            color:black;
+        }
+        
+        .tdLabel
+        {
+            color: #4A4A56;
+            font-size: 91%;
+            font-weight: bold;
+            text-align: right;
+        }
+        .btnApprove {
+            background: #E6FFC5 !important;
+        }
+        .btnReject {
+            background: #FFCECD !important;
+        }
+        .btnHold {
+            background: #FFFF66 !important;
+        }
+        .btnClose {
+            background: #C1D5FF !important;
+        }
+    </style>
+    <script>
+        var j$ = jQuery.noConflict();
+
+        /*j$(document).ready( function () {
+            var myTable = j$('[class$="deltaillist list"]').DataTable({ });
+            var lstWrapTable = j$('[id$="lstWrapApproved"]').DataTable({ });
+            var lstWrapOnHoldRequestCancelTable = j$('[id$="lstWrapOnHoldRequestCancel"]').DataTable({ });
+        });*/
+
+        var defaultColor = function() {
+
+            var statusTds = j$(".statusId");
+            // Set Status backgroud colors based on value 
+
+            for(var i=0; i < statusTds.length;i++) {
+
+                var innerValue = j$(statusTds[i]).text();
+
+                if(innerValue.indexOf('On-hold') >= 0) {
+                    j$(statusTds[i]).css('background-color','yellow');
+                }
+                if(innerValue.indexOf('Request for Approval') >= 0) {
+                    j$(statusTds[i]).css('background-color','#B4CFEC');
+                }
+                if(innerValue.indexOf('Cancel Rejected') >= 0) {
+                    j$(statusTds[i]).css('background-color','#FE9A2E');
+                }
+                if(innerValue.indexOf('Approved') >= 0) {
+                    j$(statusTds[i]).css('background-color','#0F0');
+                }
+
+            }
+
+            var selectedvalue2 = j$(".statusId");
+
+            for(var i=0; i<selectedvalue2.length;i++) {
+
+                if(j$(selectedvalue2[i]).val() == 'Request for Approval'){
+                    j$(selectedvalue2[i]).closest('td').next('td').find('.sub').prop('disabled',true);
+                    console.log('&&&&&&&&&&',j$(selectedvalue2[i]).closest('td').next('td').find('.sub').prop('disabled',true));
+                    j$(selectedvalue2[i]).attr("style","background:#2081A1;");
+                    j$(selectedvalue2[i]).parent().attr("style","background:#2081A1;");
+                }
+
+                if(j$(selectedvalue2[i]).val() == 'On-hold')  {
+                    j$(selectedvalue2[i]).closest('td').next('td').find('.sub').prop('disabled',false);
+                    j$(selectedvalue2[i]).attr("style","background:pink;");
+                    j$(selectedvalue2[i]).parent().attr("style","background:pink;");
+                }
+            }
+        }// end of default function
+
+        j$(document).ready(function(event){
+
+            var myTable = j$('[class$="deltaillist list"]')
+                            .on( 'draw.dt',   function () { defaultColor(); } )
+                            .DataTable({ });
+
+            defaultColor();
+
+            j$(".statusId").on("change",function(event){
+                var selectedValue = j$(this).val();
+                var change= j$('select');
+                console.log('change*',change);
+                if(selectedValue === 'Request for Approval') {
+
+                    j$(this).attr("style","background:#2081A1;");
+                    j$(this).closest(".pick").attr("style","background:#2081A1;");
+                    j$(this).closest("#items").attr("style","background:#2081A1;");
+                    j$(this).closest('td').next('td').find('.sub').prop('disabled',true);
+                    j$(this).closest('td').next('td').find('.sub').val('');
+
+                }
+
+                if(selectedValue === 'On-hold') {
+                    j$(this).attr("style","background:pink;");
+                    j$(this).closest(".pick").attr("style","background:pink;");
+                    j$(this).closest("#items").attr("style","background:pink;");
+                    j$(this).closest('td').next('td').find('.sub').prop('disabled',false);
+                }    
+            }); // end of onchange function
+        }); // end of ready function
+
+        function getCheckBoxValue(status, decision){
+
+            if(decision == false) {
+                return;
+            }
+
+            var data = [];
+            var data1 = [];
+            var data2 = [];
+            var data3=[];
+        
+            j$(".getcheckbox:checked").each(function(i) {
+                var Id = j$(this).closest('tr').attr('Id');
+                /*var parentVar = j$(this).parent();
+                var placementStatus = parentVar.siblings()[7];
+                var selectedValue = j$(placementStatus).children().val();
+                var subStatus =  parentVar.siblings()[8];
+                var subStatusSelected = j$(subStatus).children().val();
+                var comment = parentVar.siblings()[9];
+                var remark = j$(comment).children().val();*/
+
+                data.push(Id); // push id in array
+                /*data1.push(selectedValue ); // push selected values in array
+                data2.push(subStatusSelected ); // push selected sub status in array
+                data3.push(remark); // push comments in array*/
+            }); // end of checkbox function
+             
+            if(data.length == 0) {
+                
+                alert('{!($Label.Select_an_order)}');
+                return false;
+            }
+            else {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.RTS_OrderStatusDisplayPageController.getApprovedOrders}',
+                data,
+                status,
+                function(result, event){
+                    console.log('in callback');
+                    if (event.status) {
+                        console.log('success');
+                     
+                    console.log(result);
+                        for (var recordId in result){
+                            console.log('record Id '+recordId );
+                           
+                                var res = result[recordId] ;
+                                console.log('**** '+res[0]); // if updated or not
+                                console.log('**** '+res[1]); //if not updated what is the reason
+                                //alert('recordId **********'+recordId );
+                                
+                        }
+                        rejectOrder();
+                        if(status == 'Approved' || status == 'Rejected') {
+                            console.log('In approved status!');
+                            approve();
+                        } else if(status == 'Cancel Approved' || status == 'Cancel Rejected') {
+                            cancelOrder();
+                        } else if(status == 'Closed') {
+                            closedOrder();
+                        }
+                        // window.location.reload();
+                        console.log(status); 
+                    } 
+                    else if (event.type === 'exception') {
+                          console.log('failure');
+                    }
+                }
+            );
+            }
+        }
+
+        function confirmAction(decider,status) {
+
+            var decision;
+
+            if(decider == 1) {
+                decision = confirm("The selected lines will be " + status + ". Do you want to proceed?");
+            } else if(decider == 2) {
+                decision = confirm("The selected lines will be " + status + ". Do you want to proceed?");
+                console.log(' Entered IF and decision is ' + decision);
+                if(decision == true) {
+                     redirectRR();
+                }
+            } else if(decider == 3) {
+                decision = confirm("The selected lines will be " + status + ". Do you want to proceed?");
+            } else if(decider == 4) {
+                decision = confirm("The selected lines will be " + status + ". Do you want to proceed?");
+            }
+
+            if(decision == true && decider != 2) {
+                getCheckBoxValue(status, decision);
+            }
+
+            return decision;
+        }
+    </script>
+
+    <apex:form id="form">
+        <apex:actionFunction name="disableSubItems" action="{!changeSubStatus}"/>
+        <apex:actionFunction name="approve" action="{!getOnHoldAndRequestedRecords}"/>
+        <apex:actionFunction name="closedOrder" action="{!getApprovedRecords}" />
+        <apex:actionFunction name="cancelOrder" action="{!getCancelRecords}" />
+        <apex:actionFunction name="rejectOrder" action="{!getRejectedRecords}" />
+<!--         <apex:actionFunction name="closedMessage" action="{!closedMessage}" /> -->
+        <apex:actionFunction name="redirect" action="{!substatusPage}" />
+        <apex:actionFunction name="redirectRR" action="{!rejectReasonPage}" />
+
+        <apex:outputPanel >
+
+            <apex:actionStatus id="actStatusId" layout="block">
+                <apex:facet name="start">
+                    <apex:outputPanel styleClass="overlayStatus" >
+                        <apex:image value="/img/loading32.gif" styleClass="loadIMG"/>
+                        <apex:outputLabel value="Processing..." styleClass="loadLabel"/>
+                    </apex:outputPanel>
+                </apex:facet>
+                <apex:facet name="stop"/>
+            </apex:actionstatus>
+
+            <apex:tabPanel switchType="server"  value="{!selectedTab}" id="theTabPanel">
+                <apex:tab label="Cancel Orders" name="name1" id="tabCancelOrders">
+                    <apex:pageBlock >
+
+                        <apex:pageblockButtons location="top">
+<!--                      onComplete="cancelOrder();" -->
+<!--  onComplete = "redirectRR();" -->
+                            <apex:commandButton styleClass="btnApprove" value="Approve" onclick="confirmAction(1, 'Cancel Approved'); return false;" status="actStatusId" reRender=""/>
+                            <apex:commandButton styleClass="btnReject" value="Reject" onclick="confirmAction(2, 'Cancel Rejected'); return false;" status="actStatusId" reRender=""/>
+                        </apex:pageblockButtons>
+
+                        <apex:pageBlockSection columns="1" collapsible="true">
+                            <apex:outputPanel id="canceltablePanel" >
+                                <table class="deltaillist list" id = "lstWrap"
+                                       style="border: 0 !important; border-spacing: 0 !important">
+                                    <thead class="rich-table-thead">
+                                        <tr class="headerRow">
+                                            <th>Order Number</th>
+                                            <th>Order to Company</th>
+                                            <th>Ship to Country</th>
+                                            <th>Placement Date</th>
+                                            <th>Bill to Company</th>
+                                            <th>Inventory Type</th>
+                                            <th>Order Inventory</th>
+                                            <th>Model</th>
+                                            <th>Local System SKU</th>
+                                            <th>Available Stock Quantity</th>
+                                            <th>Quantity</th>
+                                            <th>Expected Ship Date</th>
+                                            <th>Status</th>
+                                            <th>Sub-Status</th>
+                                            <th></th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                    <apex:repeat value="{!lstWrap}" var="wrap">
+                                        <tr class="objectiveRow" Id="{!wrap.placementDetail.Id}">
+                                            <td><apex:outputField value="{!wrap.placementDetail.RTS_Placement__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.RTS_Placement__r.Order_To_Company__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.RTS_Placement__r.Ship_To_Country__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.RTS_Placement__r.Placement_Date__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.RTS_Placement__r.Bill_To_Company__c}" /></td>
+                                            <td ><apex:outputField value="{!wrap.placementDetail.RTS_Placement__r.Inventory_Type__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.RTS_Product_ID__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.Model__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.Local_System_SKU__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.RTS_Product_ID__r.Available_Stock_Balance__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.Quantity__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.Expected_Ship_Date__c}" /></td>
+                                            <td class ="statusId"><apex:outputField value="{!wrap.placementDetail.Order_Line_Status__c}" /></td>
+                                            <td><apex:outputField value="{!wrap.placementDetail.Order_Line_Sub_Status__c}" /></td>
+                                            <td><apex:inputCheckBox styleClass="getcheckbox" value="{!wrap.isChecked}" /></td>
+                                        </tr>
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                        </apex:outputPanel>
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+            </apex:tab>
+            <apex:tab label="Request For Approval Orders" name="name2" id="RequestForOrders">
+                <apex:pageBlock >
+               <!-- <apex:outputPanel id="mg"  >
+                 <apex:pageMessage summary="Please don't forget to save the record" severity="warning" rendered="{!blnShowMsg}"/>
+                    </apex:outputPanel>-->
+                    <apex:pageblockButtons location="top">
+<!--                     onComplete="approve();" -->
+                        <apex:commandButton styleClass="btnApprove" value="Approve" onclick="confirmAction(1, 'Approved'); return false;" status="actStatusId" reRender=""/>
+<!--                          onComplete = "redirectRR();" -->
+                        <apex:commandButton styleClass="btnReject" value="Reject" onclick="confirmAction(2, 'Rejected'); return false;" status="actStatusId" reRender=""/>
+<!--                         onclick="getCheckBoxValue('On-hold', true);" -->
+                        <apex:commandButton styleClass="btnHold" value="On-Hold" onComplete="redirect();" />
+<!--                         action="{!subStatusPage}" -->
+                    </apex:pageblockButtons>
+                    <apex:pageBlockSection columns="1" collapsible="true">
+                        <apex:outputPanel id="tablePanel">
+                            <table class="deltaillist list" id = "lstWrapOnHoldRequestCancel"
+                                style="border: 0 !important; border-spacing: 0 !important;" >
+                                <thead class="rich-table-thead">
+                                    <tr class="headerRow">
+                                        <th>Order Number</th>
+                                        <th>Order to Company</th>
+                                        <th>Ship to Country</th>
+                                        <th>Placement Date</th>
+                                        <th>Bill to Company</th>
+                                        <th>Inventory Type</th>
+                                        <th>Order Inventory</th>
+                                        <th>Model</th>
+                                        <th>Local System SKU</th>
+                                        <th>Available Stock Quantity</th>
+                                        <th>Quantity</th>
+                                        <th>Expected Ship Date</th>
+                                        <th>Status</th>
+                                        <th>Sub-Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <apex:repeat value="{!lstWrapOnHoldRequestCancel}" var="wrapOnHold">
+                                        <tr class="objectiveRow" Id="{!wrapOnHold.placementDetail.Id}">
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.RTS_Placement__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.RTS_Placement__r.Order_To_Company__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.RTS_Placement__r.Ship_To_Country__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.RTS_Placement__r.Placement_Date__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.RTS_Placement__r.Bill_To_Company__c}" /></td>
+                                            <td ><apex:outputField value="{!wrapOnHold.placementDetail.RTS_Placement__r.Inventory_Type__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.RTS_Product_ID__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.Model__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.Local_System_SKU__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.RTS_Product_ID__r.Available_Stock_Balance__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.Quantity__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.Expected_Ship_Date__c}" /></td>
+                                            <td class ="statusId"><apex:outputField value="{!wrapOnHold.placementDetail.Order_Line_Status__c}" /></td>
+                                            <td><apex:outputField value="{!wrapOnHold.placementDetail.Order_Line_Sub_Status__c}" /></td>
+                                            <td><apex:inputCheckBox styleClass="getcheckbox" value="{!wrapOnHold.isChecked}" /></td>
+                                        </tr>
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                        </apex:outputPanel>
+                    </apex:pageBlockSection>
+
+                </apex:pageBlock>
+            </apex:tab>
+
+<!-- Approved  -->
+            <apex:tab label="Approved Orders" name="name3" id="ApprovedOrders">
+                <apex:pageBlock >
+                    <apex:pageblockButtons location="top">
+                        <!--<apex:commandButton value="Approve" onclick="getCheckBoxValue('Approved');" />
+                        <apex:commandButton value="Reject" onclick="getCheckBoxValue('Rejected');"/>-->
+<!--                         oncomplete="closedOrder();"  -->
+                        <apex:commandButton styleClass="btnClose" value="Close" onclick="confirmAction(3, 'Closed'); return false;" status="actStatusId" reRender=""/>
+                    </apex:pageblockButtons>
+                <apex:pageBlockSection columns="1" collapsible="true">
+                        <apex:outputPanel Id="approvetablePanel">
+                            <table class="deltaillist list" id = "lstWrapApproved"
+                                style="border: 0 !important; border-spacing: 0 !important">
+                                <thead class="rich-table-thead">
+                                    <tr class="headerRow">
+                                        <th>Order Number</th>
+                                        <th>Order to Company</th>
+                                        <th>Ship to Country</th>
+                                        <th>Placement Date</th>
+                                        <th>Bill to Company</th>
+                                        <th>Inventory Type</th>
+                                        <th>Order Inventory</th>
+                                        <th>Model</th>
+                                        <th>Local System SKU</th>
+                                        <th>Available Stock Quantity</th>
+                                        <th>Quantity</th>
+                                        <th>Expected Ship Date</th>
+                                        <th>Status</th>
+                                        <th>Sub-Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <apex:repeat value="{!lstWrapApproved}" var="wrapApproved">
+                                        <tr class="objectiveRow" Id="{!wrapApproved.placementDetail.Id}">
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.RTS_Placement__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.RTS_Placement__r.Order_To_Company__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.RTS_Placement__r.Ship_To_Country__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.RTS_Placement__r.Placement_Date__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.RTS_Placement__r.Bill_To_Company__c}" /></td>
+                                            <td ><apex:outputField value="{!wrapApproved.placementDetail.RTS_Placement__r.Inventory_Type__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.RTS_Product_ID__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.Model__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.Local_System_SKU__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.RTS_Product_ID__r.Available_Stock_Balance__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.Quantity__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.Expected_Ship_Date__c}" /></td>
+                                            <td class ="statusId"><apex:outputField value="{!wrapApproved.placementDetail.Order_Line_Status__c}" /></td>
+                                            <td><apex:outputField value="{!wrapApproved.placementDetail.Order_Line_Sub_Status__c}" /></td>
+                                            <td><apex:inputCheckBox styleClass="getcheckbox" value="{!wrapApproved.isChecked}" /></td>
+                                        </tr>
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                        </apex:outputPanel>
+                    </apex:pageBlockSection>
+
+                </apex:pageBlock>
+            </apex:tab>
+
+             <apex:tab label="Remaining Rejected Order Lines" name="name4" id="rejectedOrders">
+                 <apex:pageBlock >
+                 <apex:pageBlockSection columns="1" collapsible="true">
+                         <apex:outputPanel Id="rejecttablePanel">
+                             <table class="deltaillist list" id = "lstWrapRejected"
+                                 style="border: 0 !important; border-spacing: 0 !important;">
+                                 <thead class="rich-table-thead">
+                                     <tr class="headerRow">
+                                         <th>Order Number</th>
+                                         <th>Order to Company</th>
+                                         <th>Ship to Country</th>
+                                         <th>Placement Date</th>
+                                         <th>Bill to Company</th>
+                                         <th>Inventory Type</th>
+                                         <th>Order Inventory</th>
+                                         <th>Model</th>
+                                         <th>Local System SKU</th>
+                                         <th>Available Stock Quantity</th>
+                                         <th>Quantity</th>
+                                         <th>Expected Ship Date</th>
+                                         <th>Status</th>
+                                         <th>Sub-Status</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody>
+                                     <apex:repeat value="{!lstWrapRejected}" var="wrapRejected">
+                                         <tr class="objectiveRow" Id="{!wrapRejected.placementDetail.Id}">
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.RTS_Placement__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.RTS_Placement__r.Order_To_Company__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.RTS_Placement__r.Ship_To_Country__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.RTS_Placement__r.Placement_Date__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.RTS_Placement__r.Bill_To_Company__c}" /></td>
+                                             <td ><apex:outputField value="{!wrapRejected.placementDetail.RTS_Placement__r.Inventory_Type__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.RTS_Product_ID__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.Model__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.Local_System_SKU__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.RTS_Product_ID__r.Available_Stock_Balance__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.Quantity__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.Expected_Ship_Date__c}" /></td>
+                                             <td class ="statusId"><apex:outputField value="{!wrapRejected.placementDetail.Order_Line_Status__c}" /></td>
+                                             <td><apex:outputField value="{!wrapRejected.placementDetail.Order_Line_Sub_Status__c}" /></td>
+<!--                                               <td><apex:inputCheckBox styleClass="getcheckbox" value="{!wrapRejected.isChecked}" /></td> -->
+                                         </tr>
+                                     </apex:repeat>
+                                 </tbody>
+                             </table>
+                         </apex:outputPanel>
+                     </apex:pageBlockSection>
+
+                 </apex:pageBlock>
+             </apex:tab>
+
+        </apex:tabPanel>
+        </apex:outputPanel>
+          </apex:form>
+</apex:page>

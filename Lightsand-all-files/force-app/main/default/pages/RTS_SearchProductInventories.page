@@ -1,0 +1,12 @@
+<apex:page controller="RTS_SearchProductInventoriesController" >
+<apex:includescript value="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" />
+<script>
+    j$ = jQuery.noConflict();
+
+    j$(document).ready( function () {
+        window.location.assign('{!$Label.RTS_SearchProductInventoryUrl}');
+    });
+
+</script>
+
+</apex:page>

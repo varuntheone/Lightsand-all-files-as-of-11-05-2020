@@ -1,0 +1,88 @@
+<!--***************************************************************************************
+ * Description: Page to display Manage All Placement Orders and Manage All Replacement Orders
+ *
+  Version History
+ 
+ * Version       Date              Author                 Comments 
+ *------------ ---------------  --------------------  --------------------------------------------------------------------------------
+ *  1.0             2015-11-03        Neha Sonawane        Created   
+*****************************************************************************************-->
+
+
+<apex:page standardController="RTS_Placement_Detail__c"
+    extensions="RTS_MangeAllPlacementDetailsController"
+    recordSetVar="RTSPlacementDetails">
+
+    <script type='text/javascript'>
+        function keypress(eventInstance) {
+            if (window.event && window.event.keyCode == 13 || eventInstance.which == 13) {
+                search();
+                return false;
+            } else {
+                return true;
+            }
+        }
+    </script>
+
+
+    <apex:form id="pageMainForm">
+
+        <apex:actionfunction name="search" action="{!FilterMoulds}" reRender="selectTablePanel" status="statusFilter" />
+
+        <apex:outputPanel id="massCreateAndUpdate" >
+            <c:ASI_KOR_MassCreateAndUpdate id="massCreateAndUpdateC"
+                sObjectType="RTS_Placement_Detail__c"
+                displayFields="RTS_Product_ID__c&read=A,Sys_Model__c&read=A,Local_System_SKU__c&read=A,Sys_Color__c&read=A,Sys_Logo__c&read=A,Quantity__c&req=T,Remark__c&req=F,Expected_Ship_Date__c&req=T,Description1__c&read=A,Description2__c&read=A"
+                whereStatement="RTS_Placement__c = '{!mouldActionFormId}'"
+                pageBlockTitle="RTS Placement Detail Actions"
+                successLink="/{!mouldActionFormId}"
+                cancelLink="/{!mouldActionFormId}" mode="EDIT" disableClone="true"
+                disableAddNew="true" showAllRT="true" firstRowForNew="false"
+                actionColWidth="70px"
+                rowActionRenderList="{!$Component.pageMainForm}"
+                pageBlockActionRenderList="{!$Component.pageMainForm}"
+                pageController="{!thisController}"
+                componentKey="massCreateAndUpdate" />
+<!--                 fieldToURLParam="Expected_Ship_Date__c => param1" /> -->
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!isOriginalPlacement}">
+        <apex:outputPanel id="selectTablePanel" >
+
+            <c:ASI_KOR_SFObjSelectTable id="selectTableC"
+                sObjectType="RTS_Product_Inventory__c"
+                displayFields="Model__c, Product_Family__c, Local_System_SKU__c, Available_Stock_Balance__c,UOM__c,Add_on__c,Color__c,Hook_Type__c,Logo__c,Description1__c,Description2__c"
+                defWhereStatm="{!init_search}"
+                pageBlockTitle="Available Product Inventory" orderByFields="name"
+                rowActionRenderList="{!$Component.massCreateAndUpdateC.mcau.pageBlock.wholeDataPanel}"
+                defNumOfRow="8" pageController="{!thisController}"
+                componentKey="selectTable">
+
+                <apex:outputPanel >
+                    <apex:panelGrid columns="8" cellspacing="10px">
+                        <apex:outputLabel value=" Model: " style="font-weight:bold" />
+                        <apex:inputText value="{!modelName}" onkeypress="return keypress(event);"/>
+                        <apex:outputLabel value=" Description 1: " style="font-weight:bold" />
+                        <apex:inputText value="{!description1}" onkeypress="return keypress(event);"/>
+                        <apex:outputLabel value=" Description 2: " style="font-weight:bold" />
+                        <apex:inputText value="{!description2}" onkeypress="return keypress(event);"/>
+<!--                         <apex:outputLabel value=" Available" style="font-weight:bold" /> -->
+<!--                         <apex:inputCheckBox value="{!available}" /> -->
+                        <apex:outputLabel value=" Color: " style="font-weight:bold" />
+                        <apex:selectList value="{!selectedColor}" size="1">
+                            <apex:selectOptions value="{!colorOptions}" />
+                        </apex:selectList>
+                        <apex:outputLabel value=" Logo: " style="font-weight:bold" />
+                        <apex:selectList value="{!selectedLogo}" size="1">
+                            <apex:selectOptions value="{!logoOptions}" />
+                        </apex:selectList>
+                        <apex:commandButton action="{!FilterMoulds}" value="Search"
+                            reRender="selectTablePanel" status="statusFilter" />
+                    </apex:panelGrid>
+                    <apex:actionStatus id="statusFilter" startText="Searching..."
+                        startStyle="font-weight:bold;font-size:100%;" />
+                </apex:outputPanel>
+            </c:ASI_KOR_SFObjSelectTable>
+        </apex:outputPanel>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

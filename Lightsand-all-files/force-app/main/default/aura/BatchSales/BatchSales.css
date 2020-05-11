@@ -1,0 +1,90 @@
+.THIS .box {
+    margin-left:0px;
+    padding:10px;
+}
+.THIS.searchBox {
+    margin-left:450px;
+}
+.THIS .boxx {
+     padding:20px;
+    width:100%;
+}
+.THIS .row th{
+    background-color:#16325c;
+    color: white;
+}
+.THIS .dietCSSClass {
+	background-color:green;
+}
+.THIS .missingField{
+    background-color:#d4af0b;
+    color: white;
+}
+.THIS .masterDataNotFound{
+    background-color:#708eb5;
+    color: white;
+}
+.THIS .validationFailed{
+    background-color:#350c82;
+    color: white;
+}
+.THIS .warning{
+    background-color:red;
+    color: white;
+}
+.THIS .calculationFail{
+    background-color:#FF7F50;
+    color: white;
+}	
+.THIS .legend{
+    margin-right:150px;
+    font-family: Monospace, Courier New, Lucida Console;
+    font-weight: bold;
+}
+.THIS .cols thead th span {
+background-color: #16325c;
+color: white
+}
+.THIS .Remarks{
+    word-break: break-all;
+}
+.THIS.slds-page-header{
+    background-color:#16325c;
+    color: white;
+    border-radius: 20px;   
+}
+.THIS.slds-spinner_container {
+  z-index: 10000;
+  position: fixed;   
+}
+.THIS .remarks{
+    font-weight: bold;
+    font-size: 9px;
+}
+.THIS .successFamily{
+    position:relative;
+    width:50%;
+    height:60px;
+    background:white;
+}
+.THIS .errorMissing
+{
+    background-color:white;
+    color : red;
+}
+.THIS .dateMismatch{
+    background-color:#77e68d;
+    color: white;
+}
+.THIS .wk_success {
+    background : #66D3FA !important;
+}
+.THIS .leftPaddingClass {
+    padding-left: 2rem;
+}
+.THIS .pillSize{
+ width:100%;
+}
+.THIS .inputSel{
+    width:5%;
+}

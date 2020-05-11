@@ -1,0 +1,2 @@
+<apex:page standardController="Mould_Action_Form__c" extensions="MouldActionFormRedirect" action="{!redirect}">
+</apex:page>

@@ -1,0 +1,351 @@
+<aura:component controller="uploadInventry" implements="force:AppHostable,flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader,forceCommunity:availableForAllPageTypes" access="global">
+    
+    <aura:attribute name="vfHost" type="String" default="https://mainetti--sandbox03--c.cs76.visual.force.com"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!-- Imports -->
+    
+    <ltng:require scripts="{!$Resource.papaparse}"/>
+    <!--<ltng:require scripts="{!$Resource.jQueryv341}"/>-->
+    
+    <!-- attributes -->    
+    <aura:attribute name="fromdate" type="Date" default=""/>
+    <aura:attribute name="todate" type="Date" default=""/>
+    
+    <aura:attribute name="data" type="object"/>
+    <aura:attribute name="errordata" type="object"/>
+    <aura:attribute name="flag" type="Boolean" default="false"/>
+    
+    
+    <aura:attribute name="toggleSpinner" type="boolean" default="false"/>
+    
+    <aura:attribute name="mainettiCompanyMap" type="Map"/>
+    <aura:attribute name="selectedMainettiCompany" type="string"/>
+    <aura:attribute name="cmp" type="Partner__c" default="{'sobjectType':'Partner__c',  
+                                                          'Name': ''}"/>
+    
+    <aura:attribute name="recordStatusMap" type="Map"/>
+    <aura:attribute name="batchStatusMap" type="Map"/>
+    
+    <aura:attribute name="record" type="Inventory_Transaction_Master__c" default="{'sobjectType':'Inventory_Transaction_Master__c',  
+                                                                                  'Record_Type__c': '',
+                                                                                  'Batch_Status__c': '' }"/>
+    
+    
+    
+    <!-- Record Status Attributes  Started -->
+    <aura:attribute name="selectedRecordType" type="string"/>
+    <!--<aura:attribute name="recordStatusMap" type="Map"/>-->
+    <aura:attribute name="itm" type="Inventory_Transaction_Master__c" default="{'sobjectType':'Inventory_Transaction_Master__c',  
+                                                                               'Record_Type__c': ''}"/>
+    <!-- Record Status Attributed Ended -->   
+    
+    <aura:attribute name="options" type="List" />
+    <aura:attribute name="selectedValue" type="String" />
+    
+    <!-- 'fileName' attribute for display the selected file name -->  
+    <aura:attribute name="fileName" type="String" default="No File Selected.." />
+    <aura:attribute name="fileSize" type="String" />
+    <aura:attribute name="reuploadBatchNo" type="string"/>
+    
+    <!-- handlers -->
+    <aura:method name="rerenderList" action="{! c.show}" />
+    <aura:handler name="init" value="{!this}" action="{!c.show}" /> 
+    <!--<aura:handler name="initRecordType" value="{!thiss}" action="{!c.initRecordType}" />-->
+    
+    <!-- Page Header -->
+    <div class="slds-page-header" role="banner">
+        <div class="slds-grid">
+            <div class="slds-col slds-has-flexi-truncate">
+                <!-- HEADING AREA -->
+                <h1 class="slds-page-header__title slds-truncate" title="Inventory Transaction Master">Inventory Transaction</h1>
+                <!-- / HEADING AREA -->
+            </div>
+            <div class="slds-col slds-no-flex slds-grid slds-align-top">
+                <button class="slds-button slds-button_brand" name = "inventoryModal" onclick="{!c.newUpload}">Uplod File</button>
+            </div>
+        </div>
+    </div>
+    <!-- Page Header -->
+    <!-- Modal PopUp -->
+    <div>
+        <section aura:id="inventoryModal" role="dialog" tabindex="-1" aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" class="slds-modal">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                    <h1 id="customerdata" class="slds-text-heading_medium slds-hyphenate">File Upload</h1>
+                </header>
+                
+                <div class="slds-modal__content slds-p-around_medium" id="customerBody">
+                    
+                    <lightning:select aura:id="recordStatusPicklist" value="{!v.itm.Record_Type__c}" onchange="{!c.handleRecordStatusOnChange}" name="recordStatusPicklist" label="Record Type" required="true">
+                        <option value = "">Select Record Type</option>
+                        <aura:iteration items="{!v.recordStatusMap}" var="itms" indexVar="key">
+                            <option text="{!itms.value}" value="{!itms.key}" selected="{!itms.key==v.itm.Record_Type__c}" />
+                        </aura:iteration>
+                    </lightning:select>
+                    <lightning:select aura:id="mainettiCompanyPicklist" value="{!v.cmp.Name}" onchange="{!c.handleMainettiCmpOnChange}" name="mainettiCompanyPicklist" label="Mainetti Company" required="true">
+                        <option value = "">Select Mainetti Company</option>
+                        <aura:iteration items="{!v.mainettiCompanyMap}" var="itms" indexVar="key">
+                            <option text="{!itms.key}" value="{!itms.key}" selected="{!itms.key==v.cmp.Name}" />
+                        </aura:iteration>
+                    </lightning:select>
+                    <br/>
+                    <input aura:id="file" type="file" accept=".csv" label="Upload Attachment"/>
+                    <input aura:id="batchNo" type="hidden" label="Upload Attachment"/>
+                    <lightning:button variant="brand" label="Upload" aura:id="" onclick="{!c.handleParseClick}" />                     
+                </div>
+                
+            </div>
+        </section>
+        <div aura:id="inventoryModalBackdrop" class="slds-backdrop"></div>
+    </div>
+    <!-- Modal PopUp -->
+    
+    <!-- error validation Modal PopUp -->
+    <div>
+        <section aura:id="inventoryErrorModal" role="dialog" tabindex="-1" aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" class="slds-modal">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeErrorModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                    <h3 id="customerdata">Error in Format of the data File Uploaded / Please click the 'Error Details' link</h3>
+                </header>        
+            </div>
+        </section>
+        <div aura:id="inventoryErrorModalBackdrop" class="slds-backdrop"></div>
+    </div>
+    <!--error validation Modal PopUp -->
+    <!-- Reduce Modal-Pop Starting -->
+    <aura:html tag="style">
+        .slds-modal__container{ 
+        height : auto; width: 80%; max-width: 70vh; 
+        } 
+    </aura:html>
+    <!-- Reduce Modal-Pop Ending -->
+    <lightning:layoutItem class="searchBox" padding="around-small" size="4">
+        <table align = "center">
+            <tr>
+                <td><lightning:input aura:id="frmDate" value="{!v.fromdate}" type="date" label="From"></lightning:input></td>
+                <td><lightning:input aura:id="toDate" value="{!v.todate}" type="date" label="To"></lightning:input></td>
+                
+                <td valign="bottom">&nbsp; &nbsp;<lightning:button variant="brand" label="Search" aura:id="" onclick="{!c.handleSearchClick}" /></td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            
+            <tr>
+                <td>
+                    <lightning:select aura:id="recordStatusPicklist" value="{!v.record.Record_Type__c}" name="recordStatusPicklist" label="Record Type" required="true">
+                        <option value = "">Select Record Type</option>
+                        <aura:iteration items="{!v.recordStatusMap}" var="itms" indexVar="key">
+                            <option text="{!itms.value}" value="{!itms.key}" selected="{!itms.key==v.record.Record_Type__c}" />
+                        </aura:iteration>
+                    </lightning:select>
+                </td>
+                <td>
+                    <lightning:select aura:id="batchStatusPicklist" value="{!v.record.Batch_Status__c}" name="recordStatusPicklist" label="Batch Status" required="true">
+                        <option value = "">Select Batch Status</option>
+                        <option value="1 - Migration Success">1 - Migration Success</option>
+                        <option value="2 - Migration Fail">2 - Migration Fail</option>     
+                    </lightning:select>
+                </td>
+                <td><lightning:select aura:id="mainettiCompanyPicklist" value="{!v.cmp.Name}" name="mainettiCompanyPicklist" label="Mainetti Company" required="true">
+                    <option value = "">Select Mainetti Company</option>
+                    <aura:iteration items="{!v.mainettiCompanyMap}" var="itms" indexVar="key">
+                        <option text="{!itms.key}" value="{!itms.key}" selected="{!itms.key==v.cmp.Name}" />
+                    </aura:iteration>
+                    </lightning:select>
+                </td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                
+            </tr>
+            
+        </table>
+    </lightning:layoutItem>
+    
+    <br/>
+    <lightning:layout multipleRows="True">
+        <lightning:accordion aura:id="accordion" activeSectionName="A">
+            <lightning:accordionSection name="A" label="Inventory Transaction Master">
+                <aura:if isTrue="{!v.toggleSpinner}">
+                    <div class="slds-spinner_container">
+                        <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                            <span class="slds-assistive-text">Loading</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                </aura:if> 
+                <lightning:layoutItem class="box" padding="around-small" size="12">
+                    <lightning:card title="Inventory Transaction Master" >
+                        <div  style="height:200px;">
+                            <div class="slds-scrollable_y" style="height:100%;">
+                                <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+                                    <thead class="row">
+                                        <tr>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Batch_No">Batch No</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Uploaded_By">Uploaded By</div></th>
+                                            <!--<th scope="col"><div align = "center" class="slds-truncate" title="Batch_Status">Batch Status</div></th>-->
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Mainetti_Company">Mainetti Company</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Record_Type">Record Type</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Total_Row_Count">Total Row Count</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Uploaded_Total_Stock_In_Qty__c">Total Stock In Qty</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Actions">Action</div></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration items="{!v.data}" var="data">
+                                            <tr>
+                                                <td><div align="center" class="slds-truncate">{!data.Batch_No__c}&nbsp;</div></td>
+                                                <td><div align="center" class="slds-truncate">{!data.File_Uploaded_By__c}&nbsp;</div></td>
+                                                <!--<td><div align="center" class="slds-truncate">{!data.Batch_Status__c}&nbsp;</div></td>-->
+                                                <td><div align="center" class="slds-truncate">{!data.Mainetti_Company__c}&nbsp;</div></td>
+                                                <td><div align="center" class="slds-truncate">{!data.Record_Type__c}&nbsp;</div></td>
+                                                <td><div align="center" class="slds-truncate">{!data.Total_Row_Count__c}&nbsp;</div></td>
+                                                <td><div align="center" class="slds-truncate">{!data.Uploaded_Total_Stock_In_Qty__c}&nbsp;</div></td>
+                                                <td>
+                                                    <aura:if isTrue="{!data.Batch_Status__c != '8 - Migration Success'}">
+                                                        <div align="center">
+                                                            <lightning:button class="slds-button_text-destructive" label="View Error" aura:id="{!data.Id}" name="{!data.Id}" onclick="{!c.viewError}" />
+                                                            <lightning:button class="slds-button_text-destructive" label="Re-Upload" aura:id="{!data.Id}" name="{!data.Id}" onclick="{!c.reuploadfile}" />
+                                                        </div>
+                                                        <aura:set attribute="else">
+                                                            <div align="left">
+                                                                <a id="{!data.Id}" class="slds-button slds-button_success" href="{!data.Azure_File_Link__c}" target="_blank">View File</a>
+                                                            </div>
+                                                        </aura:set>
+                                                    </aura:if>
+                                                </td>
+                                            </tr>
+                                        </aura:iteration>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </lightning:card>
+                </lightning:layoutItem>
+            </lightning:accordionSection>
+        </lightning:accordion>
+        
+        <lightning:layoutItem class="boxx" padding="around-small" >           
+            <aura:if isTrue="{!v.flag}">
+                <!-- <lightning:accordionSection name="B" label="Inventory Transaction stage">-->
+                <lightning:card title="Inventory Transaction stage"  >
+                    <div class="legend" align = "right">
+                        <lightning:icon class="missingField" size="small"/>&nbsp;Missing Data
+                        <lightning:icon class="masterDataNotFound" size="small"/>&nbsp;Master Data Not Found
+                        <lightning:icon class="modelNotFound" size="small"/>&nbsp;Model Not Found
+                    </div>
+                    <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+                        <col width="80px"></col>
+                        <col width="110px"></col>
+                        <col width="250px"></col>
+                        <col width="100px"></col>
+                        <col width="80px"></col>
+                        <col width="80px"></col>
+                        <col width="200px"></col>
+                        <col width="80px"></col>
+                        <col width="80px"></col>
+                        <col width="100px"></col>
+                        <col width="80px"></col>
+                        <col width="200px"></col>
+                        <thead class="row">
+                            <tr>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Row No</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Retailer_Code">Retailer Code</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Mainetti_Company">Mainetti Company</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Inventory_Model">Inventory Model</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Color">Color</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Sizer_Print">Sizer Print</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Warehouse">Warehouse</div></th>                                        
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Local_System_SKU">Local System SKU</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Source">Source</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Stock_In_Date">Stock In Date</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Stock_In_Qty">Stock In Qty</div></th>
+                                <th scope="col"><div align = "center" class="slds-truncate" title="Remarks">Remarks</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Use the Apex model and controller to fetch server side data -->
+                            <aura:iteration items="{!v.errordata}" var="err">
+                                <tr>
+                                    <td><div align="center" class="slds-truncate">{!err.Row_No__c}</div></td>
+                                    <td>
+                                        <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">                                                
+                                            <div align ="center" class="{!err.Retailer_Code_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Retailer_Code_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Retailer_Code__c} 
+                                                </div>                                         
+                                            </div>                                            
+                                        </div>                                        
+                                    </td> 
+                                    <td>
+                                        <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">                                                
+                                            <div align ="center" class="{!err.MC_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Manitte_Company_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Mainetti_Company__c} 
+                                                </div>                                         
+                                            </div>                                            
+                                        </div>                                        
+                                    </td>
+                                    <td>
+                                        <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">                                                
+                                            <div align ="center" class="{!err.Inventory_Model_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Inventory_Model_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Inventory_Model__c}                                          
+                                                </div>                                            
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">              
+                                            <div align ="center" class="{!err.Color_NF__c? 'masterDataNotFound' : ''}">
+                                                <div align ="center" class="{!err.Color_FB__c? 'missingField' : ''}">                                                        
+                                                    &nbsp;{!err.Color__c} 
+                                                </div>                                         
+                                            </div>                                            
+                                        </div>                                        
+                                    </td>
+                                    <td>                                            
+                                        <aura:if isTrue="{!err.Retailer_Code__c=='LOJAS RENNER'}">
+                                            <div align ="center" class="{!err.Price_Book_Spec_NF__c? 'modelNotFound' : ''}">                                                
+                                                <div align ="center" class="{!err.Sizer_Print_NF__c? 'masterDataNotFound' : ''}">
+                                                    <div align ="center" class="{!err.Sizer_Print_FB__c? 'missingField' : ''}">
+                                                        &nbsp;{!err.Sizer_Print__c}                                                             
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <aura:set attribute="else">
+                                                <div align ="center" class="{!err.Sizer_Print_FB__c? 'missingField' : ''}">                                                    
+                                                    &nbsp;{!err.Sizer_Print__c}                                                         
+                                                </div> 
+                                            </aura:set>
+                                        </aura:if>                                                             
+                                    </td>                      
+                                    <td>
+                                        <div align ="center" class="{!err.Warehouse_NF__c? 'masterDataNotFound' : ''}">
+                                            <div align ="center" class="{!err.Warehouse_FB__c? 'missingField' : ''}">                                                    
+                                                &nbsp;{!err.Warehouse__c}                                      
+                                            </div>                                            
+                                        </div>                                        
+                                    </td> 
+                                    
+                                    <td><div align="center" class="slds-truncate">{!err.Local_System_SKU__c}</div></td>
+                                    <td><div align ="center" class="{!err.Source_FB__c? 'missingField' : ''}">{!err.Source__c}&nbsp;</div></td>                                                                   
+                                    <td><div align ="center" class="{!err.Stock_In_Date_FB__c? 'missingField' : ''}">{!err.Stock_In_Date__c}&nbsp;</div></td>                                                                   
+                                    <td><div align ="center" class="{!err.Stock_In_Qty_FB__c? 'missingField' : ''}">{!err.Stock_In_Qty__c}&nbsp;</div></td>
+                                    <td><div align ="center" class="slds-scope slds-truncate">{!err.Remarks__c}&nbsp;</div></td>
+                                </tr>
+                            </aura:iteration>                
+                            
+                        </tbody>
+                    </table>
+                </lightning:card>
+                <!--</lightning:accordionSection>-->
+            </aura:if>
+        </lightning:layoutItem>
+        
+        <!--</lightning:accordion>-->
+    </lightning:layout>
+</aura:component>

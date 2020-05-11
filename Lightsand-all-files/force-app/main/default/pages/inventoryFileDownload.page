@@ -1,0 +1,70 @@
+<apex:page standardController="Inventory_Transaction_Master__c" extensions="inventoryFileDownloadController" showHeader="false" sidebar="false"> 
+    <apex:includeScript value="{!$Resource.AzureCommon}"/>
+    <apex:includeScript value="{!$Resource.AzureBlob}"/>
+    
+    <script type="text/javascript">
+    var containerName;
+    function changeUrl(){
+        var accessPolicy = generateAccessPolicy();
+        var fileName = '{!invTransMast.upload_file_name__c}';
+        var token = blobService.generateSharedAccessSignature(containerName,fileName, accessPolicy);
+        var downloadLink = blobService.getUrl(containerName, fileName, token);
+        window.location.href=downloadLink ;
+        //window.close();
+    }
+    function initBlobService(storage) {
+        
+        if (AzureStorage) {
+            blobUri = 'https://' + storage.storageName + '.blob.core.windows.net';
+            blobService = AzureStorage.createBlobService(storage.storageName, storage.storageKey);
+            containerName = storage.containerName;
+        } else {
+            alert('Azure service not found');
+        }
+        
+    }
+    function generateAccessPolicy(){
+        var startDate = new Date();
+        var expiryDate = new Date(startDate);
+        expiryDate.setMinutes(startDate.getMinutes() + 100);
+        startDate.setMinutes(startDate.getMinutes() - 100);
+        return sharedAccessPolicy = {
+            AccessPolicy: {
+                Permissions: AzureStorage.BlobUtilities.SharedAccessPermissions.READ,
+                Start: startDate,
+                Expiry: expiryDate
+            }
+        };
+        
+    }
+    
+    function getContainerInfo() {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.inventoryFileDownloadController.storageDetails}',
+            function(result, event) {
+                if (event.status) {
+                    initBlobService(result);                
+                    changeUrl();
+                } else if (event.type === 'exception') {
+                    console.log(event.message);
+                } else {
+                    console.log(event.message);
+                }
+            }, {
+                escape: true
+            }
+        );
+    }
+    
+    
+    </script>
+    
+    <script type="text/javascript">
+    // Any js placed here will be fired when output panel is rerendered
+    
+    document.write('Downloading File..... ');
+    getContainerInfo();
+    
+    
+    </script>     
+</apex:page>

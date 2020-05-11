@@ -1,0 +1,8 @@
+<aura:component controller="AddRemoveCartonfromTransferNote" implements="flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes" access="global" >
+	 <aura:attribute name="transferNote" type="Transfer_Note__c" default="{ 'sobjectType': 'Transfer_Note__c','Name': '','Total_Carton_Send__c': 0,'Status__c':''}"/>
+    
+     <aura:handler name="init" value="{!this}" action="{!c.checkTransferNoteStatus}"/>
+    
+  <h1 class="slds-hide">  {!v.transferNote.Status__c} </h1>
+    
+</aura:component>

@@ -1,0 +1,908 @@
+<aura:component controller="uploadInventry">
+    <aura:method name="batchSales" action="{!c.viewError}" description="Batch Detail Method with BatchId as parameter"> 
+        <aura:attribute name="batchId" type="String" default="parameter1"/>        
+    </aura:method>    
+    <aura:attribute name="data" type="object"/>
+    <aura:attribute name="listItems" type="list" default="['Family' , 'Vendor']"/>
+    <aura:attribute name="errordata" type="Sales_Transaction_Stage__c[]" default="{'sobjectType':'Sales_Transaction_Stage__c','ErrorMapData__c': ''}"/>
+    <aura:attribute name="flag" type="Boolean" default="false"/>
+    <aura:attribute name="erroMapFlag" type="Boolean" default="false"/>
+    <aura:method name="rerenderList" action="{!c.viewError}" description="Using this method to refresh the component"/>
+    <aura:attribute name="salesProceedBatchId" type="String"/>
+    <aura:attribute name="proceedStatus" type="boolean" default="false"/>
+    <aura:attribute name="recordIdForRefresh" type="String"/>
+    <aura:attribute name="noRows" type="boolean" default="false"/>
+    <aura:attribute name="companyWeekStatus" type="boolean" default="false"/>
+    <aura:attribute name="messageProceedStatus" type="boolean" default="false"/>
+    <aura:attribute name="openFileDataSubmitted" type="Boolean" default="false"/>
+    
+    <aura:registerEvent name="updateCommunication" type="c:batchMasterSalesCommunication"/>
+    <!--declare attributes--> 
+    <aura:attribute name="selectedRecord" type="Sales_Error_Mapping__c" default="{}" description="Use,for store SELECTED sObject Record"/>
+    <aura:attribute name="listOfSearchRecords" type="Sales_Error_Mapping__c[]" description="Use,for store the list of search records which returns from apex class"/>
+    <aura:attribute name="SearchKeyWord" type="string"/>
+    <aura:attribute name="Message" type="String" default="Search Result.."/>
+    <!--declare events hendlers-->  
+    <aura:handler name="osalesErrorMapByEvent" event="c:selectedProductEvent" action="{!c.handleComponentEvent}"/>
+    
+    <!-- Pagination Starting -->
+    <aura:attribute name="PageNumber" type="integer" default="1"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>     
+    <!-- Pagination Ending -->
+    
+    <!-- Edit Button  Modal PopUp Starting -->  
+    <div>
+        <section aura:id="inLineEditModal" role="dialog" tabindex="-1" aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" class="slds-modal">
+            <div class="slds-modal__container">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+                <header class="slds-modal__header" style="background-color:#66D3FA;">
+                    <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeEdit}" variant="bare-inverse" size="large"></lightning:buttonIcon>                    
+                    <h1 id="customerdataLabel" class="slds-text-heading_medium slds-hyphenate"></h1>
+                </header>
+                <div  align='center' class="errorMissing" id="errorMissing"></div>                
+                <div class="slds-modal__content slds-p-around_medium" id="customerBody">
+                    <div class="slds-form-element slds-form-element_horizontal">
+                        <label class="slds-form-element__label" for="horizontal-input-id-01">Map From Value</label>                        
+                        <div class="slds-form-element__control">
+                            <input type="text" Id="display" disabled="true" placeholder="Placeholder Text" size="25" value = "" class="slds-input"/>
+                        </div>
+                        <div onmouseleave="{!c.onblur}" aura:id="searchRes" class="slds-form-element slds-lookup slds-is-close" data-select="single">
+                            <label class="slds-form-element__label" for="horizontal-input-id-01">Map To Value</label>                        
+                            <div class="slds-form-element__control">
+                                <div class="slds-input-has-icon slds-input-has-icon--right">
+                                    <div aura:id="lookup-pill" class="slds-pill-container slds-hide">
+                                        <lightning:pill class="pillSize" label="{!v.selectedRecord.Map_To_Value__c}" name="{!v.selectedRecord.Map_To_Value__c}" onremove="{! c.clear }">
+                                            <aura:set attribute="media">
+                                                <lightning:icon iconName="standard:account" size="x-small" alternativeText="close"/>
+                                            </aura:set>
+                                        </lightning:pill>
+                                    </div>
+                                    <input type="hidden" id="errorMapFields" value=""/>
+                                    <div aura:id="lookupField" class="slds-show">
+                                        <lightning:icon class="slds-input__icon slds-show" iconName="standard:search" size="x-small" alternativeText="search"/>
+                                        <span class="slds-icon_container  slds-combobox__input-entity-icon" title="record">
+                                            <lightning:icon class="slds-icon slds-icon slds-icon_small slds-icon-text-default" iconName="standard:account" size="x-small" alternativeText="icon"/>
+                                            <span class="slds-assistive-text"></span>
+                                        </span>
+                                        <ui:inputText  aura:id="searchValue" size="25"   updateOn="keyup" keyup="{!c.keyPressController}" class="slds-lookup__search-input slds-input leftPaddingClass" value="{!v.SearchKeyWord}" placeholder="search.." />
+                                        <input type="hidden"  id='valueHolder'  name = "" value = ""  />          
+                                    </div>                                                
+                                </div>
+                                <!--This part is for Display typehead lookup result List-->
+                                <ul style="min-height:40px;width:291px;margin-left:68px;" class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid slds-lookup__menu slds" role="listbox">
+                                    <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="mySpinner"/>
+                                    <center> {!v.Message}</center>
+                                    <aura:iteration items="{!v.listOfSearchRecords}" var="singleRec">
+                                        <c:customLookupForFamily oProduct="{!singleRec}" IconName="standard:account"  />
+                                    </aura:iteration>
+                                </ul>
+                            </div>
+                            <table>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td></tr>
+                                <tr><td>&nbsp;</td></tr>
+                                <tr><td>&nbsp;</td></tr>
+                                <tr><td>&nbsp;</td></tr>
+                            </table>                      
+                        </div>
+                    </div>                    
+                </div>                
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral"
+                                      label="Cancel"
+                                      title="Cancel"
+                                      onclick="{! c.closeEdit }"/>
+                    <lightning:button variant="brand"
+                                      aura:id="hideButton"                                      
+                                      label="Save"                           
+                                      title="Save"
+                                      onclick="{!c.saveErrorMap}"/>
+                </footer>                
+            </div>
+        </section>
+        <div aura:id="inLineEditModalBackdrop" class="slds-backdrop"></div>
+    </div>    
+    <!-- Edit Button  Modal PopUp Ending -->
+    <!-- Error Message Modal PopUp Starting -->
+    <div>
+        <section aura:id="salesErrorModal" role="dialog" tabindex="-1" aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" class="slds-modal">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header" style="background-color:red;">                
+                    <table>
+                        <tr>
+                            <td align="center"> <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeErrorModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                                <h3 id="customerdata" style="text-align:center;color:white;font-family: Arial, sans-serif;">Error In Saving Record....</h3></td>
+                        </tr>
+                    </table>  
+                </header>
+            </div>
+        </section>
+        <div aura:id="salesErrorBackdrop" class="slds-backdrop"></div>
+    </div>
+    <!-- Error Message Modal PopUp Ending -->
+    <!-- Success Message Modal PopUp Starting -->
+    <div>
+        <section aura:id="salesSuccessModal" role="dialog" tabindex="-1" aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" class="slds-modal">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header" style="background-color:#66D3FA;">
+                    <table>
+                        <tr>
+                            <td align="center"> <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeSuccessModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                                <h3 id="customerdata" style="text-align:center;color:white;font-family: Arial, sans-serif;">Record Inserted Successfully</h3></td>
+                        </tr>
+                    </table>                   
+                </header>        
+            </div>
+        </section>
+        <div aura:id="salesSuccessBackdrop" class="slds-backdrop"></div>
+    </div> 
+    <!-- Success Message Modal PopUp Ending -->
+    <!-- Modal PopUp For Warning Starting -->
+    <div>
+        <section aura:id="salesModal" role="dialog" tabindex="-1" aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" class="slds-modal">
+            <div class="slds-modal__container"> 
+                <header class="slds-modal__header">
+                    <div align="center">
+                        <tr>
+                            <td><lightning:icon iconName="utility:warning" size="medium" alternativeText="Warning!" variant="warning"/></td>
+                            <td><h1 class="slds-text-heading_medium slds-hyphenate">Warning</h1></td>
+                        </tr>
+                    </div>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="customerBody">
+                    <div class="slds-scrollable_x">
+                        <table>
+                            <aura:if isTrue="{!v.messageProceedStatus}">
+                                <tr>
+                                    <td colspan="2"><h3 id="customerdata">Few of the records either do not have "Model" or "Unit sold is 0". Click on "Proceed" button on the screen if you wish to continue.</h3></td>
+                                </tr>
+                            </aura:if>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <aura:if isTrue="{!v.companyWeekStatus}">
+                                <tr>
+                                    <td colspan="2"><h3 id="customerdata">Few of the companies do not have proper data for all the weeks. Click on link to view companies with missing week details<a href='' onclick = "{!c.sendingEvent}">&nbsp;view</a>. Click on "Proceed" button on the screen if you wish to continue.</h3></td>
+                                </tr>
+                            </aura:if>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>                       
+                        </table>  
+                    </div>
+                </div>  
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral" class="slds-button_text-brand" label="Cancel" onclick="{!c.closeWarningCanecelModal}"></lightning:button>
+                    <lightning:button variant="neutral" class="slds-button_text-brand" label="Continue" onclick="{!c.closeWarningModal}"></lightning:button>
+                </footer>
+            </div>
+        </section>
+        <div aura:id="salesModalBackdrop" class="slds-backdrop"></div>
+    </div>
+    <!-- Modal PopUp for Warning Ending -->
+    <lightning:layout>        
+        <lightning:layoutItem class="boxx" padding="around-small" >           
+            <aura:if isTrue="{!v.flag}">
+                <lightning:card title="Sales Transaction stage">
+                    <!-- Added by Sai for Pagination Starting 16-01-2020 -->
+                 <!--   <div class="slds-m-around_small">
+                        <div class="slds-page-header"> 
+                            <p class="slds-page-header__title">{!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} | Page {!v.PageNumber} of {!v.TotalPages}</p>
+                            <ui:inputSelect class="inputSel" aura:id="pageSize" label="Display Records Per Page: " change="{!c.onSelectChange}">
+                                <ui:inputSelectOption text="10" label="10" value="true"/>
+                                <ui:inputSelectOption text="15" label="15"/>
+                                <ui:inputSelectOption text="20" label="20"/>
+                                <ui:inputSelectOption text="50" label="50"/>
+                                <ui:inputSelectOption text="100" label="100"/>
+                                <ui:inputSelectOption text="500" label="500"/>
+                                <ui:inputSelectOption text="1000" label="1000"/>
+                            </ui:inputSelect>
+                        </div> 
+                    </div> -->
+                    <!-- Added by Sai for Pagination Ending 16-01-2020 -->
+                    <aura:if isTrue="{!v.proceedStatus}">
+                        <lightning:button  variant="success" aura:id ="cursor" label="Proceed" onclick="{!c.proceedClick}" />
+                    </aura:if>&nbsp;&nbsp;
+                    <lightning:button  variant="brand" aura:id ="salesError" label="View Error Data" onclick="{!c.viewSalesErrorData}" />
+                    <br/>
+                  <!--  <lightning:icon class="missingField" size="small"/>&nbsp;Missing data
+                    <lightning:icon class="masterDataNotFound" size="small"/>&nbsp;Data not found
+                    <lightning:icon class="validationFailed" size="small"/>&nbsp;Validation failed
+                    <lightning:icon class="warning" size="small"/>&nbsp;Warning
+                    <lightning:icon class="calculationFail" size="small"/>&nbsp;Calculation failed
+                    <lightning:icon class="dateMismatch" size="small"/>&nbsp;Date mismatch -->
+                  <!--  <div style="height:400px;">
+                        <div class="slds-scrollable_y" style="height:100%;">
+                            <div class="slds-scrollable_x" style="width:110rem">
+                                <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_col-bordered slds-table_fixed-layout" >
+                                    <col width="60px"></col>
+                                    <col width="160px"></col>
+                                    <col width="90px"></col>
+                                    <col width="90px"></col>
+                                    <col width="70px"></col>
+                                    <col width="160px"></col>
+                                    <col width="130px"></col>
+                                    <col width="80px"></col>
+                                    <col width="80px"></col>
+                                    <col width="80px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="180px"></col>
+                                    <col width="180px"></col>
+                                    <col width="100px"></col>
+                                    <col width="200px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="150px"></col>
+                                    <col width="150px"></col>
+                                    <col width="150px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="175px"></col>
+                                    <col width="175px"></col>
+                                    <col width="175px"></col>
+                                    <col width="200px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="150px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>                            
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="100px"></col>
+                                    <col width="150px"></col>
+                                    <col width="150px"></col>
+                                    <col width="210px"></col>                                            
+                                    <thead class="row">
+                                        <tr>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Row No</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Company">Company</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Year">Year</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Week">Week</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Month">Month</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Item_Code">Item Code</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Material">Material</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Source">Source</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Model">Model</div></th> 
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Printed_Logo">Printed Logo</div></th>                                
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Color">Color</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Customer">Customer</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Customer_Local_Name">Customer Local Name</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Category">Category</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Sub_Category">Sub-Category</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Family">Family</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Order_Type">Order Type</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Unit_Sold">Unit Sold</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Unit_Price/100(EUR)">Unit Price/100(EUR)</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Unit_Price/100(USD)">Unit Price/100(USD)</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Net_Unit_Price/100">Net Unit Price/100</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Sales_EUR">Sales EUR</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Sales_USD">Sales USD</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Transaction_Currency">Transaction Currency</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Exchange_Rate_to_1 _EUR">Exchange Rate to 1 EUR</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Exchange_Rate_to_1 USD">Exchange Rate to 1 USD</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Local_Net_Unit_Pirce/100">Local Net Unit Pirce/100</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Sales_(Transaction Currency)">Sales (Transaction Currency)</div></th>    
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Shipped_To-Factory">Shipped To - Factory</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Shipped_To-Country">Shipped To - Country</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Label">Label</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="End_user">End-user</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Vendor">Vendor</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Division">Division</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Retailer_Brand">Retailer Brand</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Royalty_Rate">Royalty Rate</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Market">Market</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Remark">Remark</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="LOB">LOB</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="SO Number">SO Number</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Production_Country">Production Country</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Gross Sales (USD)">Gross Sales (USD)</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Freight Charge (USD)">Freight Charge (USD)</div></th>
+                                            <th scope="col"><div align = "center" class="slds-truncate" title="Remarks">Remarks</div></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody> -->
+                                        <!-- Use the Apex model and controller to fetch server side data -->
+                                      <!--  <aura:iteration items="{!v.errordata}" var="err" indexVar="index">
+                                            <tr>
+                                                <td><div align="center" class="slds-truncate">{!err.Row_No__c}</div></td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Company_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.Company_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Company__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>                                            
+                                                    <div align ="center" class="{!err.wrong_date__c? 'dateMismatch' : ''}">
+                                                        <div align ="center" class="{!err.selected_ui_values__c? 'validationFailed' : ''}">
+                                                            <div align ="center" class="{!err.Year_FB__c? 'missingField' : ''}">                                                    
+                                                                &nbsp;{!err.Year__c}   
+                                                                <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                    <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Year">
+                                                                        <div align ="center" class="masterDataNotFound">
+                                                                            <div align="center">
+                                                                                <input type="hidden" Id="{!'Year#'+err.Id}" name="{!'Year#'+err.Company__c}" value="{!err.Year__c}"></input>                                                    
+                                                                                <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Year#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                            </div> 
+                                                                        </div>
+                                                                    </c:auraIfContains>
+                                                                </aura:if>
+                                                            </div>                                            
+                                                        </div> 
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.wrong_date__c? 'dateMismatch' : ''}">
+                                                        <div align ="center" class="{!err.Week_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Week__c}
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Week">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'Week#'+err.Id}" name="{!'Week#'+err.Company__c}" value="{!err.Week__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Week#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>                                            
+                                                    </div>                                       
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.wrong_date__c? 'dateMismatch' : ''}">
+                                                        <div align ="center" class="{!err.selected_ui_values__c? 'validationFailed' : ''}">
+                                                            <div align ="center" class="{!err.Month_FB__c? 'missingField' : ''}">                                                    
+                                                                &nbsp;{!err.Month__c}  
+                                                                <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                    <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Month">
+                                                                        <div align ="center" class="masterDataNotFound">
+                                                                            <div align="center">
+                                                                                <input type="hidden" Id="{!'Month#'+err.Id}" name="{!'Month#'+err.Company__c}" value="{!err.Month__c}"></input>                                                    
+                                                                                <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Month#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                            </div> 
+                                                                        </div>
+                                                                    </c:auraIfContains>
+                                                                </aura:if>
+                                                            </div>                                            
+                                                        </div> 
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Item_code_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Item_code__c}  
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="ItemCode">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'ItemCode#'+err.Id}" name="{!'ItemCode#'+err.Company__c}" value="{!err.Item_code__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'ItemCode#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                                         
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Material_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Material__c}   
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Material">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'Material#'+err.Id}" name="{!'Material#'+err.Company__c}" value="{!err.Material__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Material#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                                         
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Source_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.Source_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Source__c}   
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Source">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'Source#'+err.Id}" name="{!'Source#'+err.Company__c}" value="{!err.Source__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Source#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>                                            
+                                                    </div>                                       
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Model_NF__c? 'validationFailed' : ''}">
+                                                    <div align ="center" class="{!err.Model_FB__c? 'missingField' : ''}"> 
+                                                        <div align ="center" class="{!err.warning_consolidate_key__c? 'warning' : ''}">
+                                                            &nbsp;{!err.Model__c}
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Model">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'Model#'+err.Id}" name="{!'Model#'+err.Company__c}" value="{!err.Model__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Model#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>                                                    
+                                                    </div>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td>
+                                                    <div align ="center">
+                                                        &nbsp;{!err.Printed_Logo__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="PrintedLogo">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'PrintedLogo#'+err.Id}" name="{!'PrintedLogo#'+err.Company__c}" value="{!err.Printed_Logo__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'PrintedLogo#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>
+                                                </td>                                         
+                                                
+                                                <td>
+                                                    <div align ="center" class="{!err.Color_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.Color_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Color__c}  
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Color">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'Color#'+err.Id}" name="{!'Color#'+err.Company__c}" value="{!err.Color__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Color#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>                                            
+                                                    </div>                                       
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Customer_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Customer__c}   
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Customer">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'Customer#'+err.Id}" name="{!'Customer#'+err.Company__c}" value="{!err.Customer__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Customer#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center">
+                                                        &nbsp;{!err.Customer_local_name__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="LocalName">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'LocalName#'+err.Id}" name="{!'LocalName#'+err.Company__c}" value="{!err.Customer_local_name__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'LocalName#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Category_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Category__c}   
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Category">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'Category#'+err.Id}" name="{!'Category#'+err.Company__c}" value="{!err.Category__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Category#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Sub_Category_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Sub_Category__c} 
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="SubCategory">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'SubCategory#'+err.Id}" name="{!'SubCategory#'+err.Company__c}" value="{!err.Sub_Category__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'SubCategory#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div> 
+                                                </td>
+                                                <td align="center">
+                                                    <div align ="center"  class="{!err.Family_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Family__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Family">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'FAM#'+err.Id}" name="{!'Family#'+err.Company__c}" value="{!err.Family__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'FAM#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                                                                                
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Order_Type_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Order_Type__c}   
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="OrderType">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'OrderType#'+err.Id}" name="{!'OrderType#'+err.Company__c}" value="{!err.Order_Type__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'OrderType#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                              
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.unit_sold_warning__c? 'warning' : ''}">
+                                                        <div align ="center" class="{!err.Unit_Sold_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Unit_Sold__c}                                                         
+                                                        </div>                                            
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Calculation_Failed__c? 'calculationFail' : ''}">
+                                                        <div align ="center" class="{!err.Unit_Price_100_EUR_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Unit_Price_100_EUR__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Calculation_Failed__c? 'calculationFail' : ''}">
+                                                        <div align ="center" class="{!err.Unit_Price_100_USD_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Unit_Price_100_USD__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Net_Unit_Price_100_NF__c? 'masterDataNotFound' : ''}">
+                                                        <div align ="center" class="{!err.Net_Unit_Price_100_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Net_Unit_Price_100__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Calculation_Failed__c? 'calculationFail' : ''}">
+                                                        <div align ="center" class="{!err.Sales_EUR_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Sales_EUR__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Calculation_Failed__c? 'calculationFail' : ''}">
+                                                        <div align ="center" class="{!err.Sales_USD_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Sales_USD__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>                
+                                                <td>
+                                                    <div align ="center" class="{!err.Transaction_Currency_NF__c? 'masterDataNotFound' : ''}">
+                                                        <div align ="center" class="{!err.Transaction_Currency_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Transaction_Currency__c}                                                             
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>                                        
+                                                <td>
+                                                    <div align ="center" class="{!err.ExRate_to_EUR_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.ExRate_to_EUR_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.ExRate_to_EUR__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.ExRate_to_USD_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.ExRate_to_USD_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.ExRate_to_USD__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Local_Net_Unit_Pirce_NF__c? 'masterDataNotFound' : ''}">                                                                                                          
+                                                        &nbsp;{!err.Local_Net_Unit_Pirce_100__c}                                                    
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.STC_NF__c? 'calculationFail' : ''}">
+                                                        <div align ="center" class="{!err.STC_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Sales_Transaction_Currency__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Shipped_To_Factory_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Shipped_To_Factory__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="ShippedToFactory">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'ShippedToFactory#'+err.Id}" name="{!'ShippedToFactory#'+err.Company__c}" value="{!err.Shipped_To_Factory__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'ShippedToFactory#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                                   
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Shipped_To_Country_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Shipped_To_Country__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="ShippedToCountry">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'ShippedToCountry#'+err.Id}" name="{!'ShippedToCountry#'+err.Company__c}" value="{!err.Shipped_To_Country__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'ShippedToCountry#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Label_FB__c? 'missingField' : ''}" >
+                                                        &nbsp;{!err.Label__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Label">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'Label#'+err.Id}" name="{!'Label#'+err.Company__c}" value="{!err.Label__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Label#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center">
+                                                        &nbsp;{!err.End_user__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="EndUser">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'EndUser#'+err.Id}" name="{!'EndUser#'+err.Company__c}" value="{!err.End_user__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'EndUser#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Vendor_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.Vendor_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Vendor__c}
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Vendor">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'Vendor#'+err.Id}" name="{!'Vendor#'+err.Company__c}" value="{!err.Vendor__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Vendor#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>
+                                                    </div>                                         
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Division_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Division__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Division">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'Division#'+err.Id}" name="{!'Division#'+err.Company__c}" value="{!err.Division__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Division#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                                         
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Retailer_Brand_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.Retailer_Brand_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Retailer_Brand__c}   
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="RetailerBrand">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'RetailerBrand#'+err.Id}" name="{!'RetailerBrand#'+err.Company__c}" value="{!err.Retailer_Brand__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'RetailerBrand#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>                                            
+                                                    </div>                                   
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Royalty_Rate_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Royalty_Rate__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="RoyaltyRate">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'RoyaltyRate#'+err.Id}" name="{!'RoyaltyRate#'+err.Company__c}" value="{!err.Royalty_Rate__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'RoyaltyRate#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                                      
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Market_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.Market_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Market__c}
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Market">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'Market#'+err.Id}" name="{!'Market#'+err.Company__c}" value="{!err.Market__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Market#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>
+                                                        <div  Id="{!'DMK#'+err.Id}" name = "{!err.Market__c}"></div>
+                                                    </div>                                       
+                                                </td>
+                                                <td>
+                                                    <div align ="center" >
+                                                        &nbsp;{!err.Remark__c}
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="Remark">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'Remark#'+err.Id}" name="{!'Remark#'+err.Company__c}" value="{!err.Remark__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'Remark#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.LOB_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.LOB_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.LOB__c}   
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="LOB">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'LOB#'+err.Id}" name="{!'LOB#'+err.Company__c}" value="{!err.LOB__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'LOB#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>                                            
+                                                    </div>                                      
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.SO_Number_NF__c? 'validationFailed' : ''}">
+                                                        <div align ="center" class="{!err.SO_Number_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.SO_Number__c}
+                                                            <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                                <c:auraIfContains items="{!err.ErrorMapData__c}"  element="SONumber">
+                                                                    <div align ="center" class="masterDataNotFound">
+                                                                        <div align="center">
+                                                                            <input type="hidden" Id="{!'SONumber#'+err.Id}" name="{!'SONumber#'+err.Company__c}" value="{!err.SO_Number__c}"></input>                                                    
+                                                                            <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'SONumber#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                        </div> 
+                                                                    </div>
+                                                                </c:auraIfContains>
+                                                            </aura:if>
+                                                        </div>                                            
+                                                    </div>                                         
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Production_Country_FB__c? 'missingField' : ''}">                                                    
+                                                        &nbsp;{!err.Production_Country__c} 
+                                                        <aura:if isTrue="{!err.ErrorMapData__c != null}">
+                                                            <c:auraIfContains items="{!err.ErrorMapData__c}"  element="ProductionCountry">
+                                                                <div align ="center" class="masterDataNotFound">
+                                                                    <div align="center">
+                                                                        <input type="hidden" Id="{!'ProductionCountry#'+err.Id}" name="{!'ProductionCountry#'+err.Company__c}" value="{!err.Production_Country__c}"></input>                                                    
+                                                                        <lightning:buttonIcon iconName="utility:edit"  value="{!err.ErrorMapData__c}" aura:id="editButton" name="{!'ProductionCountry#'+err.Id}"  variant="border" onclick="{! c.inLineEdit }" alternativeText="Edit" />                                         
+                                                                    </div> 
+                                                                </div>
+                                                            </c:auraIfContains>
+                                                        </aura:if>
+                                                    </div>                                            
+                                     ///////////////DIV ENDING
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Gross_Sales_USD_NF__c? 'masterDataNotFound' : ''}"> 
+                                                        <div align ="center" class="{!err.Gross_Sales_USD_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Gross_Sales_USD__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td>
+                                                    <div align ="center" class="{!err.Freight_Charge_USD_NF__c? 'masterDataNotFound' : ''}">
+                                                        <div align ="center" class="{!err.Freight_Charge_USD_FB__c? 'missingField' : ''}">                                                    
+                                                            &nbsp;{!err.Freight_Charge_USD__c}                                      
+                                                        </div>                                            
+                                                    </div>                                        
+                                                </td>
+                                                <td><div align ="center" ><textarea cols="24">{!err.Remarks__c}</textarea></div></td>
+                                            </tr>
+                                        </aura:iteration>
+                                        <aura:if isTrue="{!v.noRows}">
+                                            <div align ="center">
+                                                <tr >
+                                                    <td colspan='41' align="center">No Rows uploaded</td>
+                                                </tr>
+                                            </div>
+                                        </aura:if>
+                                    </tbody> 
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                   // Buttons For Pagination Starting 
+                    <div class="slds-align_absolute-center">             
+                        <lightning:button disabled="{!v.PageNumber == 1}" variant="brand" aura:id="prevPage" label="Prev" onclick="{!c.handlePrev}" />            
+                        <lightning:button disabled="{!v.PageNumber == v.TotalPages}" aura:id="nextPage" variant="brand" label="Next" onclick="{!c.handleNext}"/>
+                    </div> 
+                    // Buttons For Pagination Ending -->
+                </lightning:card>
+            </aura:if>
+             <aura:if isTrue="{!v.openFileDataSubmitted}">
+                 <div>
+                     <section aura:id="openFileDataSubmitted" role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                         <div class="slds-modal__container">
+                             <!-- Modal/Popup Box Header Starts here-->
+                             <header class="slds-modal__header">
+                                 <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeModalopenFileDataSubmittedModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                                 <h3 id="customerdata" style="text-align:center;color:black;font-family: Arial, sans-serif;"><b>Your request for Sales Upload has been submitted Successfully.Your data is getting processed in the background.Once file processing is completed you will receive an email Notification on the Batch Status'</b></h3>
+                             </header>                
+                         </div>
+                     </section>
+                     <div aura:id="openFileDataSubmittedBackdrop" class="slds-backdrop slds-backdrop_open"></div>
+                 </div>
+       </aura:if>
+        </lightning:layoutItem>
+    </lightning:layout>
+</aura:component>

@@ -1,0 +1,62 @@
+<apex:component id="sobjst" controller="ASI_KOR_SFObjSelectTableController" allowDML="true">
+	<apex:attribute name="pageController" description="The parent page controller" type="ASI_KOR_PageInterface" required="true" assignTo="{!pageController}"/>
+	<apex:attribute name="componentKey" description="The key to identify this component" type="String" required="false" assignTo="{!componentKey}"/>
+	<apex:attribute name="sObjectType" description="The object type" type="String" required="true" assignTo="{!sObjTypeStr}"/>
+	<apex:attribute name="displayFields" description="The list of fields to display in table. Format: field1, field2__c" type="String" required="true" assignTo="{!displayFieldsStr}"/>
+	<apex:attribute name="defWhereStatm" description="Default where statement to query data" type="String" required="false" assignTo="{!defWhereStatmStr}"/>
+	<apex:attribute name="orderByFields" description="The field to order by. Format1: Name Format2: Name DESC" type="String" required="false" assignTo="{!defOrderByStr}"/>
+	<apex:attribute name="rowActionRenderList" description="List of render items when selecting object" type="String" default="emptyPanel" required="false"/>
+	<apex:attribute name="rowActionStatus" description="Update status when selecting object" type="String" default="statusLoading" required="false"/>
+	<apex:attribute name="pageBlockTitle" description="The title of pageBlock" type="String" required="false" assignTo="{!pageBlockTitleStr}"/>
+	<apex:attribute name="defNumOfRow" description="Default number of rows per page" type="Integer" default="25" required="false" assignTo="{!numOfRowInTable}"/>
+	
+	<script type="text/javascript">
+		var isFirstOnblur = true;
+	</script>
+	<input type="text" style="visibility:hidden" />
+	<apex:inputHidden value="{!initDummyVar}" id="initVar"/>
+	<apex:pageBlock id="pageBlock" title="{!pageBlockTitleStr}">
+		<apex:componentBody id="compBody"/>
+		<apex:outputPanel id="statusHeadPanel" layout="block" style="height:23px">
+			<apex:actionStatus id="statusLoading" startText="Loading..." startStyle="font-weight:bold;font-size:100%;" />
+		</apex:outputPanel>
+		<apex:pageBlockTable id="pbTable" value="{!tableEleList}" var="tableEle">
+			<apex:column >
+				<apex:facet name="header">Action</apex:facet>
+				<apex:outputPanel id="btnPanel">
+					<apex:repeat id="btnRepeat" value="{!actionBtnList}" var="btn">
+						<apex:commandLink rendered="{!NOT(btn.isDisableList[tableEle.btnStage[btn.id]])}" action="{!triggerRowAction}" value="{!btn.labels[tableEle.btnStage[btn.id]]}"
+							reRender="btnPanel,{!BLANKVALUE(rowActionRenderList, 'emptyPanel')}" status="{!rowActionStatus}">
+							<apex:param name="PARAM_BTN_ID" value="{!btn.id}" />
+							<apex:param name="PARAM_SOBJ_ID" value="{!tableEle.sObj['Id']}" />
+						</apex:commandLink>
+						<apex:outputText rendered="{!btn.isDisableList[tableEle.btnStage[btn.id]]}" value="{!btn.labels[tableEle.btnStage[btn.id]]}"/>
+					</apex:repeat>
+				</apex:outputPanel>
+			</apex:column>
+			<apex:repeat value="{!displayFieldList}" var="field">
+				<apex:column value="{!tableEle.sObj[field.name]}">
+					<apex:facet name="header">{!field.label}</apex:facet>
+				</apex:column>
+			</apex:repeat>
+		</apex:pageBlockTable>
+		<apex:outputPanel id="tableBelow" layout="block" style="width:100%;margin:0px;position:relative;text-align:center;">
+			<apex:outputPanel style="width:150px;margin:0px auto;" layout="block">
+				<apex:commandLink action="{!firstPage}" value="<<" reRender="pbTable,tableBelow" />
+				<span style="height:1px">&nbsp;&nbsp;</span>
+				<apex:commandLink action="{!prevPage}" value="< Previous" reRender="pbTable,tableBelow" />
+				<span style="height:1px">&nbsp;</span>
+				<apex:commandLink action="{!nextPage}" value="Next >" reRender="pbTable,tableBelow" />
+				<span style="height:1px">&nbsp;&nbsp;</span>
+				<apex:commandLink action="{!lastPage}" value=">>" reRender="pbTable,tableBelow" />
+			</apex:outputPanel>
+			<apex:outputPanel style="position:absolute;top:0px;right:0px;" layout="block">
+				Page
+				<apex:inputText id="pageInputBox" value="{!newPageNum}" size="2" maxlength="4" onmousedown="isFirstOnblur = false;" onblur="if (!isFirstOnblur) {changePage();} isFirstOnblur = false;" tabindex="100" />
+				<apex:actionFunction name="changePage" action="{!changePage}" reRender="pbTable,tableBelow"/>
+				of {!maxPageNum}
+			</apex:outputPanel>
+		</apex:outputPanel>
+	</apex:pageBlock>
+	<apex:outputPanel id="emptyPanel"></apex:outputPanel>
+</apex:component>

@@ -1,0 +1,9 @@
+<apex:page standardController="Opportunity_Item_Master__c">
+<apex:includeScript value="../../soap/ajax/33.0/connection.js"/>
+<script>
+var Item = new sforce.SObject("Opportunity_Item_Master__c");
+Item.id = "{!Opportunity_Item_Master__c.Id}";
+Item.New_Product_Configurator__c = true;
+sforce.connection.update([Item]);
+</script>
+</apex:page>

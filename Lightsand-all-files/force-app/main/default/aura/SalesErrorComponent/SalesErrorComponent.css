@@ -1,0 +1,41 @@
+.THIS.searchBox {
+    margin-left:450px;
+}
+.THIS.tableHeader thead th span {
+    background-color: #585794;
+    color: white;
+}
+
+.THIS .true{
+    background : #10e0dd;
+    color : black;
+}
+.THIS .hello{
+    background : red;
+    color : black;
+}
+
+.THIS .missingField{
+    background-color:#d4af0b;
+    color: black;
+}
+.THIS .dataNotFound{
+    background-color:#708eb5;
+    color: black;
+}
+.THIS .validationFailed{
+    background-color:#350c82;
+    color: black;
+}
+.THIS .warning{
+    background-color:red;
+    color: black;
+}
+.THIS .calculationFail{
+    background-color:#FF7F50;
+    color: black;
+}
+.THIS .dateMismatch{
+    background-color:#77e68d;
+    color: black;
+}

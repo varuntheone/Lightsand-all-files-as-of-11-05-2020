@@ -1,0 +1,44 @@
+<apex:page standardController="Carton_Details__c" extensions="PrintCartonQRcode" renderAs="PDF" recordSetVar="carton" applyBodyTag="false" action="{!updateCartonStatus}" standardStylesheets="false" sidebar="false" showHeader="false" applyHtmlTag="false">
+    <html>
+        <head>            
+            <style>
+                <!-- Printing the Page in the Landscape Orientation on the A4 Page -->
+                @page{
+            size: A4 landscape;
+            }
+                #rotate_container{
+                    -webkit-transform: rotate(90deg);
+                    -moz-transform: rotate(90deg);
+                    -o-transform: rotate(90deg);
+                    -ms-transform: rotate(90deg);
+                    transform: rotate(90deg);
+                    page-break-after:always;
+                	padding-top:10%;
+                }
+                    table { page-break-inside:auto }
+                    tr    { page-break-inside:avoid; page-break-after:auto }
+            </style>
+        </head>
+        <!-- table-layout:fixed; style="width:149mm;height:99mm;"-->
+        <apex:form >
+            <apex:repeat value="{!cartonList}" var="cart">
+                     <table border="0" cellpadding="0" cellspacing="0"  style="width:100%;">                                             
+                        <tr>
+                            <td colspan="2" style="text-align: center;">                                
+                                <apex:outputField value="{!cart.QR_Code__c}" /> 
+                            </td>
+                        </tr>
+                     </table>
+                      <br/>
+          <br/>
+                   <table  border="0" cellpadding="15" cellspacing="0" style="width:100%;font-size:40px;font-family: fantasy;">
+                        <tr>
+                            <td style="width:50%;text-align:right;">Carton ID  :</td><td style="text-align:left;"><apex:outputField value="{!cart.Name}" /> </td>
+                         </tr>
+                         <tr><td style="width:50%;text-align:right;">Company Name : </td><td style="text-align:left;"><apex:outputField value="{!cart.Owner_Warehouse_Name__c}" /></td></tr>
+                         <tr><td style="width:50%;text-align:right;">Registered Date : </td><td style="text-align:left;"><apex:outputField value="{!cart.Registered_Date__c}" /></td></tr>
+                    </table>           
+            </apex:repeat>        
+        </apex:form>
+    </html>
+</apex:page>

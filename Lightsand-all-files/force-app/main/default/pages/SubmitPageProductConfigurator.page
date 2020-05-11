@@ -1,0 +1,7 @@
+<apex:page standardController="Product_Configurator__c" extensions="SubmitPageExtensionProductConfigurator" action="{!init}">
+
+  <!-- Begin Default Content REMOVE THIS -->
+  <h1>Congratulations</h1>
+  This is your new Page
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>

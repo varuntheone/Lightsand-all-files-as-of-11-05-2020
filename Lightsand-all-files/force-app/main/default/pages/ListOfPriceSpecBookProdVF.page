@@ -1,0 +1,31 @@
+<apex:page standardController="Price_Specification_Book_Product__c" extensions="ListOfPriceSpecBookProdExt" showHeader="false" sidebar="false">
+    <script src="{!URLFOR($Resource.JQueryJS)}"></script>
+    <script>
+        var j$ = jQuery.noConflict();
+    //j$(document).ready(function() {
+            //var allModels=top.window.opener.getModelIds();
+            //console.log(allModels);
+    //});
+        function clicked(recordId,recordName,selectPrdtName){
+            //selectPrdtName.siblings().each(function (){alert(j$(this).text());});
+            top.window.opener.lookupPick(recordId,recordName,selectPrdtName.siblings());
+            top.window.opener.closeLookupPopup();
+        }
+    </script>
+        <apex:pageBlock >
+    		<apex:pageBlockTable id="test" var="product" value="{!searchResList}">
+                   <apex:column headerValue="Mainetti Model Code" style="">
+                       <a href="#" onclick='clicked("{! product.Id}","{!product.Name}",j$("a:contains({! product.Name})").parent());' style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{! product.Name}</a>
+					</apex:column>
+                    <apex:column headerValue="Color" style="">{! product.Color__c}</apex:column>
+                	<apex:column headerValue="Product Description" style="">{! product.Product_Unique_ID__r.Product_Description__c}</apex:column>
+                	<apex:column headerValue="Product Type" style="">{! product.Product_Unique_ID__r.Product_Type__c}</apex:column>
+                	<apex:column headerValue="Product Family" style="">{! product.Product_Unique_ID__r.Product_Family__c}</apex:column>
+                	<!--<apex:column headerValue="USD Price/100 pcs" style="">{! product.Price_100pcs__c}</apex:column>
+                	<apex:column headerValue="Freight Terms" style="">{! product.Freight_Terms__c}</apex:column>-->
+                	<apex:column headerValue="Retailer Code" style="">{! product.Retailer_Code__r.Name}</apex:column>
+                	<apex:column headerValue="Country" style="">{! product.Country__c}</apex:column>                
+            </apex:pageBlockTable>
+            </apex:pageBlock>
+      
+</apex:page>

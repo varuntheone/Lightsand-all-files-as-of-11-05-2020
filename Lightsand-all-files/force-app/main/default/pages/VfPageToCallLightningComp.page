@@ -1,0 +1,19 @@
+<apex:page >
+    <apex:includeLightning />
+    <div  id="LightningCompContainer" />   
+    <script>
+        $Lightning.use("c:TestAzureJSUploadCmp", function() {
+            $Lightning.createComponent("c:LightningCompForVF", {
+            VfPageMethod:getMessageFromComp,
+            },
+            "LightningCompContainer",
+            function(cmp) {
+             
+            });
+        });
+    function getMessageFromComp(compMsg)
+    {
+        alert(compMsg);
+    }
+    </script>
+</apex:page>

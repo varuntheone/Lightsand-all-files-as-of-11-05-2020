@@ -1,0 +1,34 @@
+<apex:page standardcontroller="Online_Enquiry__c" extensions="OnlineEnquiryCancellationExtension">
+    <apex:messages />
+    <script src="{!URLFOR($Resource.JQueryJS)}"/>
+    <script>
+        var j$ = jQuery.noConflict();
+        j$( document ).ready(function() {
+            var confrm=confirm("This will cancel your enquiry, do you want to proceed ?");
+            if(confrm){
+                j$("#DynamicSection").show();
+            }else{
+                Cancel_();
+            }
+        });
+        function saveValidation(){
+            Save_();
+        }
+    </script>
+    <div id='DynamicSection' style="display:none;">
+        <apex:form >
+            <apex:pageMessages id="msgs"/>
+            <apex:pageblock mode="edit" title="{!$ObjectType.Online_Enquiry__c.label} Edit">
+                <apex:pageblockbuttons >
+                    <apex:commandbutton value="Save" onclick="saveValidation();" />
+                    <apex:commandbutton value="Cancel" onclick="Cancel_();"/>
+                    <apex:actionFunction name="Cancel_" action="{!Cancel}" reRender="CancelEnquiryId"/>
+                    <apex:actionFunction name="Save_" action="{!Save}" reRender="CancelEnquiryId"/>
+                </apex:pageblockbuttons>
+                <apex:pageblocksection title="Cancel Enquiry" showheader="true" columns="1" id="CancelEnquiryId">
+                    <apex:inputTextarea cols="100" rows="5" required="true" value="{!onlineEnquiryOrder.Cancellation_Remark__c}"/>
+                </apex:pageblocksection>
+            </apex:pageblock>
+        </apex:form>
+    </div>
+</apex:page>

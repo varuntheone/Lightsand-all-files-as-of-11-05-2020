@@ -1,0 +1,109 @@
+<aura:component controller="uploadInventry" implements="force:AppHostable,flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader,forceCommunity:availableForAllPageTypes" access="global">
+    <aura:method name="rerenderList" action="{! c.show}" />
+    <aura:handler name="init" value="{!this}" action="{!c.show}" /> 
+    <aura:attribute name="appName" type="string"/>
+    <aura:attribute name="record" type="Inventory_Transaction_Master__c" default="{'sobjectType':'c',  
+                                                                                  'Record_Type__c': '',
+                                                                                  'Batch_Status__c': '' }"/>
+    <aura:attribute name="cmpsales" type="Partner__c" default="{'sobjectType':'Partner__c',  
+                                                               'Name': ''}"/>   
+    <aura:attribute name="SalesCompanyMap" type="Map"/>
+    <aura:attribute name="selectedSalesCompany" type="string"/>
+    <aura:attribute name="selectedMainettiCompany" type="string"/>    
+    <aura:attribute name="itm" type="Inventory_Transaction_Master__c" default="{'sobjectType':'Inventory_Transaction_Master__c',  
+                                                                               'Record_Type__c': ''}"/>
+    <aura:attribute name="optionss" type="List" />
+    <aura:attribute name="recordTypeSearch" type="string"/>
+    <aura:attribute name="selectedRecordType" type="string"/>
+    <aura:attribute name="selectedMonth" type="string"/>
+    <aura:attribute name="yearList" type="List"/>
+    <aura:attribute name="selectedYear" type="String"/>
+    <aura:attribute name="selectedValues" type="String" />  
+    <aura:attribute name="batchIdExists" type="Boolean" default="false"/>
+    <aura:attribute name="isReupload" type="Boolean" default="false"/>    
+     <aura:attribute name="toggleSpinner" type="boolean" default="false"/>
+    <aura:attribute name="attachBatchRecordId" type="Id" description="Record to which the files should be attached" />
+    <!-- Modal PopUp -->
+    <div>
+        <aura:if isTrue="{!v.toggleSpinner}">
+            <div class="slds-text-body_small slds-text-color_error">Uploading... 
+                <div class="slds-spinner_container">
+                    <div role="status" class="slds-spinner slds-spinner_large slds-spinner_brand">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>                      
+                    </div>
+                </div> 
+            </div>            
+        </aura:if> 
+        <section aura:id="inventoryModal" role="dialog" tabindex="-1"  aria-labelledby="customerdata" aria-modal="true" aria-describedby="customerBody" class="slds-modal">
+            <div class="slds-modal__container">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                    <h1 id="customerdata" class="slds-text-heading_medium slds-hyphenate">Sales File Upload</h1>
+                </header>
+                <div  align='center' class="errorMissing" id="errorMissing"></div>                
+                <div class="slds-modal__content slds-p-around_medium" id="customerBody" >                    
+                    <lightning:select aura:id="recordStatusPicklist" value="{!v.itm.Record_Type__c}" onchange="{!c.handleRecordStatusOnChange}" name="recordStatusPicklist" label="Record Type" required="true">
+                       
+                        <aura:if isTrue="{!v.appName == 'InventoryUpload'}">
+                            <option value = "Inventory">Inventory</option>
+                            <aura:set attribute="else">
+                                <aura:if isTrue="{!v.appName == 'SalesUpload'}">
+                                    <option value = "Sales">Sales</option>
+                                    <aura:set attribute="else">
+                                        <aura:if isTrue="{!v.appName == 'InventorySales'}">
+                                            <option value = "">Select Record Type</option>
+                                            <aura:iteration items="{!v.recordStatusMap}" var="itms" indexVar="key">
+                                                <option text="{!itms.value}" value="{!itms.key}" selected="{!itms.key==v.itm.Record_Type__c}" />
+                                            </aura:iteration>                            
+                                        </aura:if>
+                                    </aura:set>
+                                </aura:if>
+                            </aura:set>
+                        </aura:if>
+                    </lightning:select>
+                    <aura:if isTrue="{!v.itm.Record_Type__c == 'Sales'}">                        
+                        <lightning:select aura:id="SalesCompanyPicklist"  value="{!v.cmpsales.Name}" onchange="{!c.handleSalesCmpOnChange}" name="CompanyPicklist" label="Company" required="true" >
+                            <option value = "">Select Company</option>
+                            <aura:iteration items="{!v.SalesCompanyMap}" var="itms" indexVar="key">
+                                <option text="{!itms.value}" value="{!itms.key}" selected="{!itms.key==v.cmpsales.Name}" />
+                            </aura:iteration>
+                        </lightning:select>                        
+                        <lightning:select name="monthList" label="Month:" aura:id="monthList" onchange="{!c.handleMonthListOnChange}" value="{!v.selectedValues}" required="true">
+                            <option value = "">Select Month</option>
+                            <aura:iteration items="{!v.optionss}" var="option">
+                                <option text="{!option.label}" value="{!option.id}" selected="{!option.id == v.selectedValues}"  />
+                            </aura:iteration>
+                        </lightning:select>                        
+                        <lightning:select aura:id="yearDynamicList" value="{!v.selectedYear}" onchange="{!c.handleYearOnChange}" name="yearDynamicList" label="Year" required="true" >
+                            <option value = "">Select Year</option>
+                            <aura:iteration items="{!v.yearList}" var="years">
+                                <option text="{!years}" value="{!years}" />
+                            </aura:iteration>                            
+                        </lightning:select>
+                    </aura:if>
+                    <br/>
+                      <aura:if isTrue="{!v.batchIdExists}">
+                        <lightning:fileUpload label="Attach Sales File"
+                                              name="fileUploader"
+                                              multiple="false"
+                                              accept=".csv"
+                                              recordId="{!v.attachBatchRecordId}"
+                                              onuploadfinished="{!c.handleUploadFinished}" />
+                        <aura:set attribute="else"> 
+                            <lightning:button variant="brand" label="Next" aura:id="" onclick="{!c.generateBatchId}" />
+                        </aura:set>
+                    </aura:if>                            
+                </div>         
+            </div>
+        </section>
+        
+        <div class="slds-col slds-no-flex slds-grid slds-align-top">
+            <button class="slds-button slds-button_brand" name = "inventoryModal" onclick="{!c.newUpload}">Upload File</button>
+        </div>
+        <div aura:id="inventoryModalBackdrop" class="slds-backdrop"></div>
+    </div>
+    <!-- Modal PopUp -->   
+</aura:component>

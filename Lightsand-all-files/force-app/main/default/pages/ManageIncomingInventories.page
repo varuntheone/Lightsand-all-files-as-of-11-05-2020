@@ -1,0 +1,192 @@
+<apex:page controller="ManageIncomingInventoriesController">
+    <apex:includeScript value="{!URLFOR($Resource.EUR_CRM_jQuery_Lib, '/libs/jquery/js/jquery-1.9.1.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.EUR_CRM_jQuery_Lib, '/libs/jquery/js/jquery-ui-1.10.3.custom.min.js')}" />
+    <style>
+.overlayStatus {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #dcdcdc;
+    opacity: 0.6;
+    filter: alpha(opacity = 60);
+    z-index: 20;
+}
+
+.loadIMG {
+    display: block;
+    margin-top: 20%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.loadLabel {
+    font-weight: bold;
+    font-size: 14px;
+    color: black;
+}
+
+.tdLabel {
+    color: #4A4A56;
+    font-size: 91%;
+    font-weight: bold;
+    text-align: right;
+}
+.largerText {
+    font-size: 120%;
+}
+
+</style>
+
+    <apex:form >
+        <apex:pageBlock >
+
+            <apex:outputlabel value="Batch ID" />
+            <apex:selectList value="{!batchId}" multiselect="false" size="1">
+                <apex:selectOptions value="{!batchIdList}" id="items" />
+            </apex:selectList>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <!-- <apex:outputLabel value="Confirmed?" />
+            <apex:inputCheckbox value="{!confirmedBln}" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
+            <apex:commandButton value="Search" action="{!searchQuery}" />
+        </apex:pageBlock>
+        <apex:outputPanel id="pgBlockTable">
+
+            <apex:pageMessage severity="Info" summary="{!($Label.No_record)}"
+                rendered="{!IF(detailsList.size == 0 , true,false)}" />
+            <apex:pageBlock id="pgBlock"
+                rendered="{!IF(detailsList.size > 0 , true,false)}">
+                <apex:pageblockButtons location="top">
+                    <apex:commandButton value="Confirm" onclick="confirmAction(1);"
+                        status="actStatusId" disabled="{!isDuplicate}"
+                        reRender="pgBlockTable, pgBlock"/>
+<!--                         reRender="pgBlockTable, pgBlock" -->
+                    <apex:commandButton value="Delete" onclick="confirmAction(0);"
+                        reRender="pgBlockTable" status="actStatusId" />
+                </apex:pageblockButtons>
+                <apex:outputPanel id="test">
+                    <apex:pageMessages />
+                    <apex:pageblockTable value="{!detailsList}" var="lst" rendered="{!showTable}">
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inventory__c.Fields.Name.Label}">
+                            <apex:outputField value="{!lst.RTS_Product_ID__r.Name}" />
+                        </apex:column>
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.JDE_SKU__c.Label}">
+                            <apex:outputField value="{!lst.JDE_SKU__c}" />
+                        </apex:column>
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Model__c.Label}">
+                            <apex:outputField value="{!lst.Model__c}" />
+                        </apex:column>
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Lot_No__c.Label}">
+                            <apex:outputField value="{!lst.Lot_No__c}" />
+                        </apex:column>
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Transaction_Date__c.Label}">
+                            <apex:outputField value="{!lst.Transaction_Date__c}" />
+                        </apex:column>
+
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Inventory_Type__c.Label}">
+                            <apex:outputField value="{!lst.Inventory_Type__c}" />
+                        </apex:column>
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Location__c.Label}">
+                            <apex:outputField value="{!lst.Location__c}" />
+                        </apex:column>
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Packer__c.Label}">
+                            <apex:outputField value="{!lst.Packer__c}" />
+                        </apex:column>
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Quantity__c.Label}">
+                            <apex:outputField value="{!lst.Quantity__c}" />
+                        </apex:column>
+
+                        <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Total_Carton__c.Label}">
+                            <apex:outputField value="{!lst.Total_Carton__c}" />
+                        </apex:column>
+
+<!--                         <apex:column headerValue="{!$ObjectType.RTS_Product_Inv_Detail__c.Fields.Manager_Confirmed__c.Label}"> -->
+<!--                             <apex:outputField value="{!lst.Manager_Confirmed__c} "/> -->
+<!--                         </apex:column> -->
+                        
+                        <!-- <apex:column >
+                            <apex:facet name="header">
+                                <input type="checkbox" id="checkAllBox" onclick="toggleCheckAll(this)"/>
+                            </apex:facet>
+                            <apex:inputCheckBox styleClass="checkBoxSelected"
+                                html-data-recordId="{!lst.Id}" />
+                        </apex:column> -->
+                    </apex:pageblockTable>
+                    <table class ="largerText" style = "border-collapsed : collapse; border : 0px; width: 100%;">
+                        <tr>
+                            <th style="width:20%;"></th>
+                            <th style="width:10%; text-align : center;"><apex:outputText value="Total Quantity" /></th>
+                            <td style="width:10%;"><apex:outputText value="{!totalQuantity}" /></td>
+                            <th style="width:10%; text-align : center;"><apex:outputText value="Total Cartons" /></th>
+                            <td style="width:10%;"><apex:outputText value="{!totalCartons}" /></td>
+                            <th style="width:10%; text-align : center;"><apex:outputText value="Total Count" /></th>
+                            <td style="width:10%;"><apex:outputText value="{!detailsList.size}" /></td>
+                            <th style="width:20%;"></th>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+            </apex:pageBlock>
+        </apex:outputPanel>
+        <apex:actionFunction name="deleteRecords" action="{!deleteRecord}" />
+        <apex:actionFunction name="confirmRecords" action="{!confirmUpdate}" />
+<!--         <apex:inputHidden value="{!selectedIds}" id="hiddenSelectedId" /> -->
+    </apex:form>
+    
+    <script>
+        var j$ = jQuery.noConflict();
+
+        /* Function to set selected record Ids to hidden field
+        function setSelectedRecordIds() {
+            var selectedIds = '';
+            j$(".checkBoxSelected:checked").each(function(i) {
+                if (selectedIds == '')
+                    selectedIds = this.dataset.recordid;
+                else
+                    selectedIds += ',' + this.dataset.recordid;
+            });
+            j$('input[id$=hiddenSelectedId]').val(selectedIds);
+        }
+        
+        /* Function to select all records
+        function toggleCheckAll(checkAllBox) {
+            j$('.checkBoxSelected').prop('checked', checkAllBox.checked);
+        } */
+        
+        /* function to confirm operations */
+        function confirmAction(decider) {
+            if(decider == 1) {
+                var decision = confirm("The selected products will be confirmed. Do you want to proceed?");
+                if(decision == true) {
+                    confirmRecords();
+                } else {
+                    return false;
+                }
+            } else if(decider == 0) {
+                var decision = confirm("The selected products will be deleted. Do you want to proceed?");
+                if(decision == true) {
+                    deleteRecords();
+                } else {
+                    return false;
+                }
+            } else {
+                alert('There was a problem with the inputs.');
+                return false;
+            }
+        }
+    </script>
+    
+</apex:page>

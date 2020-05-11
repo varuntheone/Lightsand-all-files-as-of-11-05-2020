@@ -1,0 +1,525 @@
+<apex:page title="Marketing Portal Admin Console" controller="AzureService" lightningStyleSheets="true" >
+<apex:includeScript value="{!$Resource.AzureCommon}"/>
+<apex:includeScript value="{!$Resource.AzureBlob}"/>
+   
+    
+<apex:image url="{!$Resource.uploadLogo}" style="position:relative;left:05%"/>
+<apex:sectionHeader title="Marketing Portal Admin">
+    <div align="center">
+        <table width="95%" border="0">
+             <tr>
+                 <td width="10%" align="center"> &nbsp;</td>
+                <td align="center" width="80%">
+                    <div class="container" Id="bannerContainer">
+                         <!--<img src="{!$Resource.banner}" alt="Banner Name" ></img>--->
+                          <div class="centered" Id="folderLabel"><b>Marketing Portal Admin Console</b></div>
+                     </div>
+                </td>
+                <td width="10%"> &nbsp;</td>
+            </tr>
+         </table>
+    </div>
+</apex:sectionHeader>
+<style>
+.container {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.1);
+    transition: visibility 0s linear 0.25s, opacity 0.25s 0s, transform 0.25s;
+}
+.modal-content {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: skyblue;
+    padding: 1rem 1.5rem;
+    width: 24rem;
+    height:12rem;
+    border-radius: 0.5rem;
+}
+.close-button {
+    float: right;
+    width: 5rem;
+    line-height: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    background-color: lightgray;
+}
+.close-button:hover {
+    background-color: darkgray;
+}
+.show-modal {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1.0);
+    transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+}
+
+</style>
+
+<script type="text/javascript">
+var blobService;
+var speedSummary;
+var finishedOrError = false;
+var containerName;
+var currentFolderPath=null;    
+var selectCount = 1;
+    /************************************/
+    //This function will initialise the Azure Service.
+    /************************************/    
+function initBlobService(storage) {
+   
+    if (AzureStorage) {
+        blobUri = 'https://' + storage.storageName + '.blob.core.windows.net';
+        blobService = AzureStorage.createBlobService(storage.storageName, storage.storageKey);
+        containerName = storage.containerName;
+        
+        
+    } else {
+        alert('Azure service not found');
+    }
+}
+
+    /************************************/
+    //This function lists the folders when the 
+    // folder path is passed.
+    /************************************/    
+  function listDirectories(selectId) {
+      
+     if (blobService) {
+      
+         document.getElementById("fileSection").style.display = 'none';
+         if(selectId != null){
+             optionVal = document.getElementById(selectId);
+             folderPath = optionVal.options[optionVal.selectedIndex].value;
+              if(selectCount == 1 && selectId == 1){
+                 if(folderPath=="Select Folders"){
+                    folderPath=null;
+                 }                
+             }
+             if(folderPath != null){
+                 if(selectCount > selectId){                     
+                     var holderTD = document.getElementById("childFolders");
+                     for (i=selectId;i<=selectCount;i++){
+                         var IndexVal = i;
+                         var remId = (parseInt(IndexVal)+1);    
+                         var rem = document.getElementById(remId);
+                         holderTD.removeChild(rem); 
+                         selectCount = (parseInt(selectCount)-1);                               
+                     }
+                 }
+             }
+         } else{}   
+         
+         if(folderPath !="Select Folders"){
+             blobService.listBlobDirectoriesSegmentedWithPrefix(containerName, folderPath, null, {
+                 delimiter: '',
+                 maxResults: 100
+             }, function (error, results) {
+                 if (error) {
+                     document.getElementById("response").innerHTML = JSON.stringify(error);
+                 } else {
+                     if(results.entries.length > 0){                                           
+                         var list;
+                         var holderTD = document.getElementById("childFolders");         
+                         if(selectCount != 1 || folderPath != null ){                                                    
+                             list = document.createElement("select"); 
+                             selectCount++;  
+                             list.setAttribute('id', selectCount); 
+                             list.setAttribute('onchange', 'javascript:listDirectories(\''+selectCount+'\')');
+                             var option = document.createElement("option");
+                             option.value = "Select Folders";
+                             option.text = "Select Folders";
+                             list.appendChild(option);   
+                         } else{
+                             list = document.getElementById("1");                                
+                         }                 
+                         for (var i = 0, container; container = results.entries[i]; i++) {                                                                            
+                             var blobFileName = container.name;          
+                             var folderName = blobFileName.split( '/' );               
+                             var folderNameOnly = folderName[ folderName.length - 2 ] ;
+                             var option = document.createElement("option");
+                             option.value = blobFileName;
+                             option.text = folderNameOnly;
+                             list.appendChild(option);                       
+                         }
+                         
+                         if(selectCount != 1 || folderPath != null){
+                             holderTD.appendChild(list);
+                             var space = document.createTextNode("   ");
+                             holderTD.appendChild(space);
+                         }  
+                     }else{ }   
+                 }
+             });
+         }
+     } else {
+         alert("Blob Service not Found !");
+     }
+}
+ var blobs = [];
+function aggregateBlobs(err, result, cb) {
+    if (err) {
+        cb(er);
+    } else {
+        blobs = blobs.concat(result.entries);
+        if (result.continuationToken !== null) {
+            blobService.listBlobsSegmented(
+                containerName,
+                result.continuationToken,
+                aggregateBlobs);
+        } else {
+            cb(null, blobs);
+        }
+    }
+}
+    /************************************/
+    //This function lists both the directories
+    // and the files in those directories.
+    // This is called when the user clicks on the folders.
+    /************************************/
+function getFiles() {
+    
+     var filePath = uploadFolderPath();
+    if(filePath != null && filePath !="Select Folders"){
+            if (blobService) {          
+                    blobService.listBlobsSegmentedWithPrefix(containerName, filePath, null, {
+                        delimiter: '',
+                        include: 'metadata',
+                        maxResults: 100
+                    }, function(error, results) {
+                                
+                        aggregateBlobs(error, results, function(error, blobs) {
+                            if (error) {
+                                document.getElementById("response").innerHTML = JSON.stringify(error);
+                            } else {
+                                if(results.entries.length > 0){
+                                    document.getElementById("fileSection").style.display = 'block';
+                                    var list = document.getElementById("files");
+                                    list.innerHTML ='';
+                                    list.innerHTML ="<tr><th style='text-align:center;background-color:powderblue'><b>S#</b></th><th style='text-align:center;background-color:powderblue'><b>File Name</b></th><th style='text-align:center;background-color:powderblue'><b>Created Date</b></th><th style='text-align:center;background-color:powderblue'><b>Owner</b></th><th style='text-align:center;background-color:powderblue'><b>Action</b></th></tr>";
+                                    for (var i = 0, container; container = results.entries[i]; i++) {
+                                        //alert('File details'+container.metadata.filename+':::FileType'+container.metadata.filetype);
+                                        var  tr = document.createElement('tr');
+                                        var tdSNo = document.createElement('td');
+                                        var td = document.createElement('td'); 
+                                        var tdUpOn = document.createElement('td');
+                                        var tdUpBy = document.createElement('td');
+                                        var tdDel = document.createElement('td');
+                                        
+                                        tdSNo.innerHTML = parseInt(i)+1 ;
+                                        tdSNo.setAttribute('align', 'center');  
+                                        tdSNo.setAttribute('width', '10%'); 
+                                        
+                                        var link = document.createElement('a');
+                                        var accessPolicy = generateAccessPolicy();
+                                        var blobFileName = container.name;  
+                                        console.log('blobFileName'+blobFileName);
+                                        var token = blobService.generateSharedAccessSignature(containerName,blobFileName, accessPolicy);
+                                        var downloadLink = blobService.getUrl(containerName, blobFileName, token);                                                                            
+                                        
+                                        link.setAttribute('href', downloadLink);                        
+                                        var fileName = blobFileName.split( '/' );                 
+                                        var fileNameOnly = fileName[ fileName.length - 1 ] ;
+                                        link.innerHTML = fileNameOnly ;
+                                        link.setAttribute('target','_blank');
+                                        td.appendChild(link);
+                                        td.setAttribute('align', 'center');
+                                        td.setAttribute('width', '30%'); 
+                                        
+                                        tdUpOn.innerHTML = container.metadata.uploadedon;
+                                        tdUpOn.setAttribute('align', 'center');
+                                        tdUpOn.setAttribute('width', '20%'); 
+                                        tdUpBy.innerHTML = container.metadata.uploadedby;                                
+                                        tdUpBy.setAttribute('align', 'center');
+                                        tdUpBy.setAttribute('width', '20%');
+                                        
+                                        var linkDel = document.createElement('a');
+                                        var deleteImg = '{!$Resource.delete}';
+                                        linkDel.setAttribute('href', 'javascript:deleteFile(\''+container.name+'\')');                                                                        
+                                        linkDel.innerHTML = '<img src='+ deleteImg +' border=1 width=10% height=5%>';
+                                        tdDel.setAttribute('align', 'center');
+                                        tdDel.setAttribute('width', '20%'); 
+                                        tdDel.appendChild(linkDel);
+                                        
+                                        tr.appendChild(tdSNo);
+                                        tr.appendChild(td);
+                                        tr.appendChild(tdUpOn);
+                                        tr.appendChild(tdUpBy);
+                                        tr.appendChild(tdDel);
+                                        
+                                        list.appendChild(tr);
+                                        
+                                    }
+                                }else{}            
+                            }
+                        });
+                    });
+          
+        } else {
+            alert("Blob Service not Found !");
+        }
+    }
+}
+     /************************************/
+    // This function generates the access policy 
+    // which is used for the file access token 
+    // generation.
+    /************************************/
+    function generateAccessPolicy(){
+     var startDate = new Date();
+     var expiryDate = new Date(startDate);
+     expiryDate.setMinutes(startDate.getMinutes() + 100);
+     startDate.setMinutes(startDate.getMinutes() - 100);
+     return sharedAccessPolicy = {
+        AccessPolicy: {
+            Permissions: AzureStorage.BlobUtilities.SharedAccessPermissions.READ,
+            Start: startDate,
+            Expiry: expiryDate
+        }
+    };
+   
+}
+/************************************/
+     //This function get the details of the container
+    // this is called when the page is loaded.
+/************************************/
+function getContainerInfo() {
+    //alert("getContainerInfo");
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.AzureService.storageDetails}',
+        function(result, event) {
+            if (event.status) {
+                //alert("result"+result);
+                initBlobService(result);
+                listDirectories(selectCount);
+                } else if (event.type === 'exception') {        
+                document.getElementById("response").innerHTML = event.message;
+            } else {
+                document.getElementById("response").innerHTML = event.message;
+            }
+        }, {
+            escape: true
+        }
+    );
+}
+   /************************************/
+    //This function shows the progress when 
+    // any service is called.
+    /***********************************/
+function refreshProgress() {
+    setTimeout(function() {
+        if (!finishedOrError) {
+            var process = speedSummary.getCompletePercent();
+            console.log('processes:' + process);
+            refreshProgress();
+        }
+    }, 200);
+}    
+
+function deleteFile(fileName){
+     var answer = confirm("Are you sure you want to Delete the File \n\n"+ fileName +"?")
+    if (answer) {
+        if (blobService) {  
+            blobService.deleteBlobIfExists(containerName, fileName, function(error, result) {
+                if (error) {
+                    // Delete blob failed
+                    alert("File Deletion Failed,Please contact your system adminitrator\n\n"+error);
+                } else {
+                    // Delete blob successfully
+                    alert("File Deleted Successfully");
+                    getFiles();
+                }
+            });            
+         } else {
+            alert("Blob Service not Found !");
+         }   
+    }
+}
+function uploadFolderPath(){
+        var fileUploadPath ="";
+        for (i=1;i<=selectCount;i++){
+            var IndexVal = i;
+            var remId = (parseInt(IndexVal));    
+            var optionVal = document.getElementById(remId);
+            var filePath = optionVal.options[optionVal.selectedIndex].value;
+            if(filePath != ""){
+                fileUploadPath = filePath;
+            } 
+         }       
+        if(fileUploadPath =="" || fileUploadPath == "Select Folders"){
+            alert("Please select the folder");
+            fileUploadPath = "";
+            return false;
+        }
+       return fileUploadPath;
+}
+
+function uploadFile() {
+    var uploadFilePath = uploadFolderPath();
+    if(uploadFilePath != ""){
+       var file = document.getElementById('theFile').files[0];
+        if(file == null || file ==""){
+            alert("Please select a file to Upload");
+            return false;
+        }
+    }
+    var file = document.getElementById('theFile').files[0];
+    var dt = new Date();
+    var uid = Math.round(Date.now() + Math.random());
+    var metadata = {
+        uploadedby: '{!$User.FirstName}, {!$User.LastName}',
+        uploadedon: dt,
+        //filename:file.name,
+        //filetype:file.type,
+        docid:uid
+    };
+    
+    
+    var customBlockSize = file.size > 1024 * 1024 * 32 ? 1024 * 1024 * 4 : 1024 * 1024 * 1;
+    blobService.singleBlobPutThresholdInBytes = customBlockSize;
+    if (blobService) {
+        var fileName = file.name;
+        var blobName = uploadFilePath+fileName;        
+        speedSummary = blobService.createBlockBlobFromBrowserFile(
+            containerName,
+            blobName,
+            file, {
+                blockSize: customBlockSize,
+                metadata: metadata
+            },
+            function(error, result, response) { 
+                finishedOrError = true;
+                console.log(JSON.stringify(result));
+                console.log(JSON.stringify(response));
+                if (error) {
+                    document.getElementById("response").innerHTML = JSON.stringify(error);
+                } else {
+                     alert("File uploaded Successfully!");    
+                     toggleModal();
+                    document.getElementById('theFile').value = null;      
+                     getFiles();
+                }
+            });
+        refreshProgress();
+    }
+}
+</script>
+ <apex:form >
+    <div id="response"></div>
+             <apex:pageBlock >
+                <apex:pageMessages />                                                                                       
+                 <div id="folderSection">
+                     <table width="50%" align="center" Id="folder" border="0" cellspacing="1" cellpadding="1"> 
+                         <tr>
+                             <td width="20%" align="center">
+                                 <select name="rootFolders" id="1" onchange="javascript:listDirectories(1)">
+                                     <option value="">Select Folders</option>
+                                 </select>                                                                                                          
+                             </td>
+                             <td width="80%" id="childFolders"></td>
+                         </tr>
+                         <tr><td colspan="2">&nbsp;</td></tr> 
+                         <tr>                                                        
+                             <td colspan="2" align="center">
+                                 <input type="hidden" name="fullfolderpath"/>
+                                 <apex:commandButton value="Get Files from Folder"  reRender="block" onclick="javascript:getFiles();">                  
+                                 </apex:commandButton>
+                                 <apex:commandButton value="Upload File"  reRender="block" styleClass="trigger">                  
+                                 </apex:commandButton>                        
+                             </td>
+                         </tr>
+                     </table>                                        
+                 </div>
+                 <div id="fileSection" style="display:none" width="50%">
+                     <apex:pageBlockSection title="Files"  columns="1" id="fileBlock" >  
+                         <apex:pageBlock >
+                             <table border="1" Id="files" cellspacing="1" cellpadding="1" style="border-collapse: collapse"><caption>Request File Data</caption>                                                    
+                             </table>
+                         </apex:pageBlock>    
+                     </apex:pageBlockSection>
+                 </div>
+                 <div class="modal">
+                     <div class="modal-content">                                                                             
+                         <TABLE width="50%" align="center">
+                             <TR>
+                                 <TD colspan="2" width="80%" align="center">
+                                     <h1>File Upload</h1>   
+                                 </TD>                                                
+                             </TR>
+                             <TR>
+                                 <TD colspan="2" width="80%" align="center">
+                                     <input type="file" id="theFile" />     
+                                 </TD>                                                
+                             </TR>
+                             <tr><td>&nbsp;</td></tr>                                                                                           
+                             <TR>
+                                 <TD align="center" width="80%">
+                                     <table>
+                                         <tr>
+                                             <td align="center">
+                                                 <apex:commandButton value="Upload File" reRender="block" styleClass="fileUpload">                  
+                                                 </apex:commandButton>
+                                             </td>
+                                             <td align="center">
+                                                 <apex:commandButton value="Cancel" reRender="block" styleClass="close-button" id="closeModel">                  
+                                                 </apex:commandButton> 
+                                             </td>
+                                         </tr>
+                                     </table>                                                         
+                                 </TD>
+                             </TR>
+                         </TABLE>                                  
+                     </div>
+                 </div>   
+     </apex:pageBlock>
+     <script type="text/javascript">
+     // Any js placed here will be fired when output panel is rerendered     
+     getContainerInfo();        
+     </script>    
+<script>
+     var modal = document.querySelector(".modal");
+     var trigger = document.querySelector(".trigger");
+     var fileUpload = document.querySelector(".fileUpload");     
+     var closeButton = document.querySelector(".close-button");
+
+     function toggleModal() {
+         if(uploadFolderPath()){
+             modal.classList.toggle("show-modal");
+         }
+     }
+
+     function windowOnClick(event) {
+         if (event.target === modal) {
+             toggleModal();
+         }
+     }
+
+     fileUpload.addEventListener("click", uploadFile);
+     trigger.addEventListener("click", toggleModal);
+     closeButton.addEventListener("click", toggleModal);
+     window.addEventListener("click", windowOnClick);
+
+</script>
+    </apex:form>
+</apex:page>

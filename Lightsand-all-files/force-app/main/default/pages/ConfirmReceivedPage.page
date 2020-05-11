@@ -1,0 +1,2 @@
+<apex:page standardController="Mould_Action__c" extensions="ConfirmReceivedController" recordSetVar="selected_mould_actions" action="{!confirmReceived}">
+</apex:page>

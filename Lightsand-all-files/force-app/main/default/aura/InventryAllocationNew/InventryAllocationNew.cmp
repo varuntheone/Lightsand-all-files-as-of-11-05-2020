@@ -1,0 +1,62 @@
+<aura:component controller="InventryApex" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global">
+   <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:attribute name="Ws" type="Weekly_Demand_Summary__c"/>
+    <aura:attribute name="Allocate_Quantity" type="Inventory_Allocation__c"/> 
+    <h1 style="font-size:25px;text-align:center;font-color:DarkBlue">Inventry Allocation For RTS Re-Use Center"</h1>
+    <table class="slds-table slds-table_bordered" style="Background:#ecebea">
+    <div class="slds-scrollable" style="height:15rem;width:50rem">
+     <table id="row" class="slds-table slds-table_bordered slds-table_striped slds-table_col-bordered slds-table_edit slds-table_resizable-cols"  style="width:800px">
+        <thead class="row">
+            <tr>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Mainetti Company</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Retailer</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Product</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Color</div></th>
+                <th scope="col"><div align = "center" class="slds-truncate" title="Row_No">Print</div></th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.Ws}" var="li" indexVar="index">
+                <tr>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:280px">                                                    
+                            &nbsp;{!li.Order_to_Company__c}                                      
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:150px">                                                    
+                            &nbsp;{!li.Retailer_Code__r.Name}                                      
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:150px">                                                    
+                            &nbsp;{!li.Mainetti_Model__r.Name}                                      
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:50px">                                                    
+                            &nbsp;{!li.Color__c}                                      
+                        </div> 
+                    </td>
+                    <td>
+                        <div align ="center" class="slds-truncate" style="width:40px">                                                    
+                            &nbsp;{!li.Sizer_Print__c}                                      
+                        </div> 
+                    </td>
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+        </div>
+       <div align="Center">
+        <ui:inputText label="Allocate Quantity" aura:id="Allocate_Qty" value="{!v.Allocate_Quantity}">
+             </ui:inputText>
+            <div>
+        <ui:button label="Save" 
+                          press="{!c.clickSave}"/>
+         <ui:button label="Cancel" 
+                           press="{!c.clickCancel}"/>
+            </div>	
+        </div>
+      </table>
+    </aura:component>

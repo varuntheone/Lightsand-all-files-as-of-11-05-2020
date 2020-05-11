@@ -1,0 +1,12 @@
+<aura:event type="COMPONENT">
+    <aura:attribute name="company" type="string"/>
+    <aura:attribute name="retailer" type="string"/>
+    <aura:attribute name="product" type="string"/>
+    <aura:attribute name="startDate" type="Date"/>
+    <aura:attribute name="endDate" type="Date"/>
+    <aura:attribute name="source" type="string"/>
+    <aura:attribute name="allocationType" type="string"/>
+    <aura:attribute name="warehouse" type="string"/>
+    <aura:attribute name="currentWeek" type="boolean"/>
+    <aura:attribute name="shortfallProducts" type="boolean"/>
+</aura:event>

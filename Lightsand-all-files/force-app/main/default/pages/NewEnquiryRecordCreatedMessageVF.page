@@ -1,0 +1,5 @@
+<apex:page controller="NewEnquiryMessageController" showHeader="false" sidebar="false">
+<div id='greetings' style="width: 600px;height: 200px; margin: 0px auto;text-align:center;background-color: #F8F8F8;word-break: break-all;">
+    <font size="3"><b>{!message}<br/> A Sales Representative will contact with you to follow up the enquiry soon.</b></font>
+    </div>
+</apex:page>

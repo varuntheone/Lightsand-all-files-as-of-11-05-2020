@@ -1,0 +1,28 @@
+<apex:page controller="ListOfRetailerCodeForUserExt" showHeader="false" sidebar="false">
+    <script src="{!URLFOR($Resource.JQueryJS)}"></script>
+    <script>
+        var j$ = jQuery.noConflict();
+    //j$(document).ready(function() {
+            //var allModels=top.window.opener.getModelIds();
+            //console.log(allModels);
+    //});
+        function clicked(recordId,recordName){
+            //selectPrdtName.siblings().each(function (){alert(j$(this).text());});
+            top.window.opener.retailerLookupPick(recordId,recordName);
+            top.window.opener.closeLookupPopup();
+            //alert('recordId--->'+recordId);
+            //alert('recordName--->'+recordName);
+        }
+    </script>
+    <apex:pageBlock >
+        <apex:pageBlockSection title="Retailer Codes">
+            <apex:outputPanel styleClass="tableContainer" layout="block">
+            <apex:pageBlockTable value="{!customRetailerCodes}" var="contRetCode">
+                <apex:column headerValue="Retailer Code"><a href="#" onclick='clicked("{!contRetCode.RetailerCodeId}","{!contRetCode.RetailerCodeName}");' style="border: none; border-color: transparent;background-color:transparent;color: #000000;font-size:80%;word-wrap:break-word;">{!contRetCode.RetailerCodeName}</a></apex:column>
+                <!--<apex:column headerValue="Retailer Code">{!loggedInUser}</apex:column>-->
+            </apex:pageBlockTable>
+            <!--<apex:dataList value="{!customRetailerCodes}" var="eachRetCode">{!eachRetCode.RetailerCodeId}</apex:dataList>-->
+            </apex:outputPanel>    
+        </apex:pageBlockSection>
+        </apex:pageBlock>
+</apex:page>

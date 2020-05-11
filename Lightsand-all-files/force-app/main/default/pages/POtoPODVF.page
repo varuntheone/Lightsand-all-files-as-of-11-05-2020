@@ -1,0 +1,22 @@
+<apex:page controller="cntr197504">
+   <apex:pageBlock >
+       <apex:form >
+     <apex:pageBlockTable value="{!accs}" var="a">
+            <apex:column headerValue="Id" value="{!a.id}"/>
+            <apex:column headerValue="Name">
+                <apex:commandLink action="{!contactList}" reRender="outpnl" value="{!a.name}">
+                    <apex:param name="id" assignTo="{!accId}" value="{!a.id}"/>
+                </apex:commandLink>
+            </apex:column>                                
+    </apex:pageBlockTable>
+
+       <apex:outputPanel id="outpnl" >
+           <apex:pageBlockTable value="{!contacts}" var="c" rendered="{!showContacts}" >
+               <apex:column headerValue="Id" value="{!c.id}"/>
+               <apex:column headerValue="firstname" value="{!c.firstname}"/>
+               <apex:column headerValue="lastname" value="{!c.lastname}"/>
+           </apex:pageBlockTable>
+       </apex:outputPanel>
+      </apex:form>
+    </apex:pageBlock> 
+</apex:page>

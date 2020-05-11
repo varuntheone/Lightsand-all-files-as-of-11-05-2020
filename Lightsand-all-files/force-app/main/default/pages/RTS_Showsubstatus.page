@@ -1,0 +1,52 @@
+<apex:page controller="RTS_OrderStatusDisplayPageController" docType="html-5.0">
+
+<style>
+
+    /*.labelClass {
+        margin-left: 8.5%;
+        font-size: 91%;
+    }
+
+    .selectClass {
+        margin-left: 5.2%;
+    }*/
+
+</style>
+
+    <apex:form id="form">
+
+        <apex:pageBlock mode="edit">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!saveSubStatus}" />
+                <apex:commandButton value="Cancel" action="{!cancelSubStatus}" />
+            </apex:pageBlockButtons>
+<!--                     <apex:inputField value="{!placementInstance.Sub_Status__c}" label="Sub-Status" id="substatus"/> -->
+
+                    <table style="width:100%;">
+                        <tr>
+                            <td width = "30%"> </td>
+                            <td width = "10%">
+                                <apex:outputLabel ><h1>Sub Status</h1></apex:outputLabel>
+                            </td>
+                            <td width = "10%">
+                                <apex:selectList value="{!subItems}" multiselect="false" size="1" styleClass="selectClass">
+                                    <apex:selectOptions value="{!subItemsOptions}" />
+                                </apex:selectList>
+                            </td>
+                            <td width = "50%"> </td>
+                        </tr>
+                        <tr>
+                            <td width = "30%"> </td>
+                            <td width = "10%">
+                                <apex:outputLabel ><h1>Expected Ship Date</h1></apex:outputLabel>
+                            </td>
+                            <td width = "10%">
+                                 <apex:inputField value="{!detailInstance.Expected_Ship_Date__c}" label="test"/>
+                            </td>
+                            <td width = "50%"> </td>
+                        </tr>
+                    </table>
+        </apex:pageBlock>
+    </apex:form>
+    
+</apex:page>

@@ -1,0 +1,28 @@
+<aura:component controller="AddRemoveCartonfromTransferNote" implements="force:appHostable,flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes" access="global" >
+   
+    <aura:attribute name="mapMarkersData" type="Object"/>
+    <aura:attribute name="mapCenter" type="Object"/>
+    <aura:attribute name="zoomLevel" type="Integer" default="8" />
+    <aura:attribute name="markersTitle" type="String" />
+    <aura:attribute name="showFooter" type="Boolean" default="false"/>    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+     <aura:handler event="force:refreshView" action="{!c.doInit}" /> 
+    <aura:handler event="force:showToast" action="{!c.doInit}" />
+    <aura:handler name="save" event="force:recordSave" action="{!c.doInit}"/>
+    
+  <!--  
+<aura:dependency resource="markup://force:editRecord" type="COMPONENT,EVENT,INTERFACE,APPLICATION" /> <aura:handler  name="onSaveSuccess" event="force:recordSaveSuccess" action="{! c.refreshcontent }"/>  
+ <aura:handler event="aura:locationChange" action="{!c.doInit}"/>
+<aura:handler name="onSaveSuccess" event="force:recordSaveSuccess" action="{!c.doInit}"/> -->
+    
+    
+    <aura:if isTrue="{!v.mapMarkersData.length > 0}" > 
+        <!-- the map component center="{! v.mapCenter }" -->
+        <lightning:map mapMarkers="{! v.mapMarkersData }"                       
+                       zoomLevel="{! v.zoomLevel }"
+                       markersTitle="{! v.markersTitle }"
+                       showFooter="{ !v.showFooter }" />
+        </aura:if>
+    
+</aura:component>

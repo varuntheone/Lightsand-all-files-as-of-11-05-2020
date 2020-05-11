@@ -1,0 +1,21 @@
+.THIS.slds-page-header{
+    background-color:#C65239;
+    color: white;
+    border-radius: 20px;
+}
+.THIS.c-container {
+    border: 1px solid #d8dde6;
+    margin: 10px 0 20px 0;
+}
+.THIS.box {
+    margin-left:0px;
+    padding:10px;
+}
+.THIS .len {
+    width:15%;
+}
+.THIS .errorMissing{
+    margin-left:110px;
+    background-color:white;
+    color : red;
+}

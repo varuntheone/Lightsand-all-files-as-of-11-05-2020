@@ -1,0 +1,79 @@
+<apex:page standardcontroller="Design_Drawing_File_Details__c" extensions="designLogDeleteRecordAzureFileController">
+<apex:includeScript value="{!$Resource.AzureCommon}"/>
+<apex:includeScript value="{!$Resource.AzureBlob}"/>
+<apex:remoteObjects >
+        <apex:remoteObjectModel name="Design_Drawing_File_Details__c" fields="Id,File_Full_Path__c,Design_Log_Form__c,Design_Request_Form__c"/>
+</apex:remoteObjects>
+    <script type="text/javascript">
+    function deleteFile(fileName){
+        //alert("Inside Delete");
+        var answer = confirm("Are you sure you want to Delete the File?")
+        if (answer) {
+            if (blobService) {  
+                blobService.deleteBlobIfExists(containerName, fileName, function(error, result) {
+                    if (error) {
+                        // Delete blob failed
+                        alert("File Deletion Failed,Please contact your system adminitrator\n\n"+error);
+                    } else {
+                        // Delete blob successfully,delete SF Record      
+						deleteSFRecord();                                          
+                    }
+                });                
+            } else {
+                alert("Blob Service not Found !");
+            }   
+        }
+    }
+    function deleteSFRecord() {        
+        
+        var deleteRecordId = '{!desigLogForm.Id}';             
+        var ddfvd = new SObjectModel.Design_Drawing_File_Details__c();
+        //alert('deleteRecordId'+deleteRecordId);
+        ddfvd.del(deleteRecordId, function(error, records){
+            if (error) {
+                alert(error.message);
+            } else{
+                alert("File and Record Deleted Successfully"); 
+                var designLogId = '{!desigLogForm.Design_Log_Form__c}';  
+                var designFormId = '{!desigLogForm.Design_Request_Form__c}';  
+                 if(designLogId != ""){
+                		 window.top.location.href="/lightning/r/Design_Log_Form__c/"+designLogId+"/view";     
+                  }else{
+                          window.top.location.href="/lightning/r/Design_Request_Form__c/"+designFormId+"/view"; 
+                  }
+            }
+        });
+    }
+    function getContainerInfo() {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.designLogDeleteRecordAzureFileController.storageDetails}',
+            function(result, event) {
+                if (event.status) {
+                    initBlobService(result);
+                    deleteFile('{!desigLogForm.File_Full_Path__c}');
+                    
+                } else if (event.type === 'exception') {
+                    document.getElementById("response").innerHTML = event.message;
+                } else {
+                    document.getElementById("response").innerHTML = event.message;
+                }
+            }, {
+                escape: true
+            }
+        );
+    }
+    function initBlobService(storage) {
+        // alert("inside InitiBlob");
+         if (AzureStorage) {
+            blobUri = 'https://' + storage.storageName + '.blob.core.windows.net';
+            blobService = AzureStorage.createBlobService(storage.storageName, storage.storageKey);
+            containerName = storage.containerName;
+        } else {
+            alert('Azure service not found');
+        }
+        
+    }
+     getContainerInfo();
+   
+    </script>
+</apex:page>

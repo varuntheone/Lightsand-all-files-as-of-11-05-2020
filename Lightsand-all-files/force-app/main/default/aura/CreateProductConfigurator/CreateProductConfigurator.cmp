@@ -1,0 +1,6 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction" controller="UpdateCreateProductConfigurator">
+<aura:attribute name="updateCheckBox" type="Opportunity_Item_Master__c" default="{'sobjectType':'Opportunity_Item_Master__c'}"/>
+<aura:attribute name="recordId" type="Id" />
+Are you sure to create product configurator?
+	<lightning:button variant="brand" label="Yes" onclick="{!c.updateCheck11}"  />
+</aura:component>
